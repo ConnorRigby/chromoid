@@ -20,7 +20,7 @@ defmodule ChromoidWeb.DeviceSocket do
     end
   end
 
-  def connect(_, socket, _) do
+  def connect(_, _, _) do
     Logger.error("Could not authenticate device: no token supplied")
     :error
   end

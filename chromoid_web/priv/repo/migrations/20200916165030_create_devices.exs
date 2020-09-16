@@ -4,6 +4,7 @@ defmodule Chromoid.Repo.Migrations.CreateDevices do
   def change do
     create table(:devices) do
       add :serial, :string, null: false
+      add :avatar_url, :string
       timestamps()
     end
 

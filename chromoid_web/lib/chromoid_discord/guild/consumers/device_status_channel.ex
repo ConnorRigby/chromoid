@@ -11,6 +11,8 @@ defmodule ChromoidDiscord.Guild.DeviceStatusChannel do
 
   alias Phoenix.Socket.Broadcast
 
+  import Nostrum.Struct.Embed
+
   @doc false
   def start_link({guild, config, current_user}) do
     GenStage.start_link(__MODULE__, {guild, config, current_user}, name: via(guild, __MODULE__))
@@ -47,15 +49,39 @@ defmodule ChromoidDiscord.Guild.DeviceStatusChannel do
     join_events =
       for {id, meta} <- joins do
         device = Repo.get!(Chromoid.Devices.Device, id)
-        message = "#{device.serial} has come online: #{inspect(meta)}"
-        {:create_message!, [state.config.device_status_channel_id, message]}
+
+        embed =
+          %Nostrum.Struct.Embed{}
+          |> put_color(0x00FF00)
+          |> put_title("Device Status Report")
+          |> put_author(
+            device.serial,
+            "http://localhost:4000/devices/#{device.id}",
+            device.avatar_url
+          )
+          |> put_description("has come online")
+          |> put_timestamp(meta.online_at)
+
+        {:create_message!, [state.config.device_status_channel_id, [embed: embed]]}
       end
 
     leave_events =
-      for {id, meta} <- leaves do
+      for {id, _meta} <- leaves do
         device = Repo.get!(Chromoid.Devices.Device, id)
-        message = "#{device.serial} has come gone offline: #{inspect(meta)}"
-        {:create_message!, [state.config.device_status_channel_id, message]}
+
+        embed =
+          %Nostrum.Struct.Embed{}
+          |> put_color(0xFF0000)
+          |> put_title("Device Status Report")
+          |> put_author(
+            device.serial,
+            "http://localhost:4000/devices/#{device.id}",
+            device.avatar_url
+          )
+          |> put_description("has gone offline")
+          |> put_timestamp(DateTime.utc_now())
+
+        {:create_message!, [state.config.device_status_channel_id, [embed: embed]]}
       end
 
     {:noreply, join_events ++ leave_events, state}
