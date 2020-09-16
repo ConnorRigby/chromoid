@@ -4,6 +4,16 @@ defmodule ChromoidDiscord.NostrumConsumer do
   use Nostrum.Consumer
   require Logger
 
+  @doc "Fetches a guild config"
+  def get_or_create_config(%Nostrum.Struct.Guild{id: guild_id}) do
+    alias Chromoid.Repo
+
+    case Repo.get_by(ChromoidDiscord.Guild.Config, guild_id: guild_id) do
+      nil -> Repo.insert!(%ChromoidDiscord.Guild.Config{guild_id: guild_id})
+      config -> config
+    end
+  end
+
   @doc false
   def start_link() do
     Consumer.start_link(__MODULE__)
@@ -19,8 +29,9 @@ defmodule ChromoidDiscord.NostrumConsumer do
   def handle_event({:GUILD_AVAILABLE, {%Nostrum.Struct.Guild{} = guild}, _ws_state}) do
     Logger.info("GUILD_AVAILABLE: #{guild.name}")
     {:ok, current_user} = Nostrum.Api.get_current_user()
+    config = get_or_create_config(guild)
 
-    case ChromoidDiscord.GuildSupervisor.start_guild(guild, current_user) do
+    case ChromoidDiscord.GuildSupervisor.start_guild(guild, config, current_user) do
       {:ok, _pid} ->
         :ok
 

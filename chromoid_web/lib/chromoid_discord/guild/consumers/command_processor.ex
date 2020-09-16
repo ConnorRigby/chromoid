@@ -9,13 +9,13 @@ defmodule ChromoidDiscord.Guild.CommandProcessor do
   alias ChromoidDiscord.Guild.EventDispatcher
 
   @doc false
-  def start_link({guild, current_user}) do
-    GenStage.start_link(__MODULE__, {guild, current_user}, name: via(guild, __MODULE__))
+  def start_link({guild, config, current_user}) do
+    GenStage.start_link(__MODULE__, {guild, config, current_user}, name: via(guild, __MODULE__))
   end
 
   @impl GenStage
-  def init({guild, current_user}) do
-    {:consumer, %{guild: guild, current_user: current_user},
+  def init({guild, config, current_user}) do
+    {:consumer, %{guild: guild, current_user: current_user, config: config},
      subscribe_to: [via(guild, EventDispatcher)]}
   end
 

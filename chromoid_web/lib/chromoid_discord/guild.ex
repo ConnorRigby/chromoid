@@ -7,16 +7,17 @@ defmodule ChromoidDiscord.Guild do
   use Supervisor
 
   @doc false
-  def start_link({guild, current_user}) do
-    Supervisor.start_link(__MODULE__, {guild, current_user})
+  def start_link({guild, config, current_user}) do
+    Supervisor.start_link(__MODULE__, {guild, config, current_user})
   end
 
   @impl Supervisor
-  def init({guild, current_user}) do
+  def init({guild, config, current_user}) do
     children = [
       {ChromoidDiscord.Guild.Registry, guild},
       {ChromoidDiscord.Guild.EventDispatcher, guild},
-      {ChromoidDiscord.Guild.CommandProcessor, {guild, current_user}}
+      {ChromoidDiscord.Guild.CommandProcessor, {guild, config, current_user}},
+      {ChromoidDiscord.Guild.DeviceStatusChannel, {guild, config, current_user}}
     ]
 
     Supervisor.init(children, strategy: :one_for_one)

@@ -9,8 +9,8 @@ defmodule ChromoidDiscord.GuildSupervisor do
   end
 
   @doc "Starts a Guild instance. Should be called from the Event source"
-  def start_guild(guild, current_user) do
-    spec = {ChromoidDiscord.Guild, {guild, current_user}}
+  def start_guild(guild, config, current_user) do
+    spec = {ChromoidDiscord.Guild, {guild, config, current_user}}
     DynamicSupervisor.start_child(__MODULE__, spec)
   end
 

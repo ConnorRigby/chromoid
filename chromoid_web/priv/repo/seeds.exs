@@ -20,11 +20,11 @@ alias Chromoid.Repo
     password: default_password
   })
 
-{:ok, device} =
+device =
   %Chromoid.Devices.Device{
     serial: "abcdef"
   }
-  |> Repo.insert()
+  |> Repo.insert!()
 
 token = Chromoid.Devices.generate_token(device)
 
@@ -39,3 +39,9 @@ IO.warn(
   """,
   []
 )
+
+%ChromoidDiscord.Guild.Config{
+  guild_id: 755_804_994_053_341_194,
+  device_status_channel_id: 755_850_677_548_220_468
+}
+|> Repo.insert!()
