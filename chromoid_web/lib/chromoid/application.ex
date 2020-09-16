@@ -15,6 +15,8 @@ defmodule Chromoid.Application do
       {Phoenix.PubSub, name: Chromoid.PubSub},
       # Start the Discord bot
       ChromoidDiscord.Supervisor,
+      # Start the Device Presence
+      Chromoid.Devices.Presence,
       # Start the Endpoint (http/https)
       ChromoidWeb.Endpoint
       # Start a worker by calling: Chromoid.Worker.start_link(arg)
