@@ -1,5 +1,7 @@
 # Chromoid
 
+[invite the bot](https://discordapp.com/api/oauth2/authorize?client_id=755805360123805987&scope=bot&permissions=8)
+
 To start your Phoenix server:
 
   * Install dependencies with `mix deps.get`

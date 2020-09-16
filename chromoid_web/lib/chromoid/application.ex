@@ -13,6 +13,8 @@ defmodule Chromoid.Application do
       ChromoidWeb.Telemetry,
       # Start the PubSub system
       {Phoenix.PubSub, name: Chromoid.PubSub},
+      # Start the Discord bot
+      ChromoidDiscord.Supervisor,
       # Start the Endpoint (http/https)
       ChromoidWeb.Endpoint
       # Start a worker by calling: Chromoid.Worker.start_link(arg)

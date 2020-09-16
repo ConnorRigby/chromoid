@@ -31,11 +31,13 @@ defmodule Chromoid.MixProject do
   defp elixirc_paths(:test), do: ["lib", "test/support"]
   defp elixirc_paths(_), do: ["lib"]
 
-  nostrum = if System.get_env("DISCORD_TOKEN") do
-    {:nostrum, github: "Kraigie/nostrum", runtime: false}
-  else
-    {:nostrum, github: "Kraigie/nostrum", runtime: false}
-  end
+  nostrum =
+    if System.get_env("DISCORD_TOKEN") do
+      {:nostrum, github: "Kraigie/nostrum"}
+    else
+      {:nostrum, github: "Kraigie/nostrum", runtime: false}
+    end
+
   @nostrum nostrum
 
   # Specifies your project dependencies.
@@ -58,7 +60,7 @@ defmodule Chromoid.MixProject do
       {:cowlib, "~> 2.9", override: true},
       {:phx_gen_auth, "~> 0.5.0", runtime: false, only: :dev},
       {:ring_logger, "~> 0.7.0", only: :prod},
-      @nostrum,
+      @nostrum
     ]
   end
 
