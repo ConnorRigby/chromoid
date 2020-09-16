@@ -45,6 +45,8 @@ defmodule ChromoidWeb.Router do
     put "/admins/settings/update_password", AdminSettingsController, :update_password
     put "/admins/settings/update_email", AdminSettingsController, :update_email
     get "/admins/settings/confirm_email/:token", AdminSettingsController, :confirm_email
+
+    resources "/devices", DeviceController, only: [:index, :show]
     live_dashboard "/dashboard", metrics: ChromoidWeb.Telemetry
   end
 

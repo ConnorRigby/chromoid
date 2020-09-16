@@ -46,3 +46,9 @@ IO.warn(
   device_status_channel_id: 755_850_677_548_220_468
 }
 |> Repo.insert!()
+
+%ChromoidDiscord.Guild.Config{
+  guild_id: 643_947_339_895_013_416,
+  device_status_channel_id: 657_776_429_555_122_186
+}
+|> Repo.insert!()
