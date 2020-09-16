@@ -21,7 +21,11 @@ config :nerves, source_date_epoch: "1600265789"
 # See https://hexdocs.pm/ring_logger/readme.html for more information on
 # configuring ring_logger.
 
-config :logger, backends: [RingLogger]
+config :logger, backends: [:console, RingLogger]
+
+config :chromoid, :socket,
+  url:
+    "ws://localhost:4000/device_socket/websocket?token=XriyzJJUtfRH2ONfACjSruUdj1teg_1CHqWYnFQuacw"
 
 if Mix.target() != :host do
   import_config "target.exs"

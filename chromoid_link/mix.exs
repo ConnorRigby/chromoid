@@ -43,13 +43,15 @@ defmodule Chromoid.MixProject do
       {:shoehorn, "~> 0.6"},
       {:ring_logger, "~> 0.6"},
       {:toolshed, "~> 0.2"},
+      {:phoenix_client, "~> 0.11.1"},
+      {:jason, "~> 1.2"},
 
       # Dependencies for all targets except :host
       {:nerves_runtime, "~> 0.6", targets: @all_targets},
       {:nerves_pack, "~> 0.2", targets: @all_targets},
 
       # Dependencies for specific targets
-      {:nerves_system_rpi0, "~> 1.12", runtime: false, targets: :rpi0},
+      {:nerves_system_rpi0, "~> 1.12", runtime: false, targets: :rpi0}
     ]
   end
 

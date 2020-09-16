@@ -9,8 +9,12 @@ defmodule Chromoid.Application do
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: Chromoid.Supervisor]
+    socket_opts = Application.get_env(:chromoid, :socket, [])
+
     children =
       [
+        {PhoenixClient.Socket, {socket_opts, name: Chromoid.Socket}},
+        Chromoid.DeviceChannel
         # Children for all targets
         # Starts a worker by calling: Chromoid.Worker.start_link(arg)
         # {Chromoid.Worker, arg},
