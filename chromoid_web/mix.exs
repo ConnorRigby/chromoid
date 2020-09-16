@@ -61,6 +61,7 @@ defmodule Chromoid.MixProject do
       {:cowlib, "~> 2.9", override: true},
       {:phx_gen_auth, "~> 0.5.0", runtime: false, only: :dev},
       {:ring_logger, "~> 0.7.0", only: :prod},
+      {:phoenix_client, "~> 0.11.1", only: [:test, :dev]},
       @nostrum
     ]
   end
