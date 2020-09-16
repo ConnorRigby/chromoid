@@ -26,6 +26,7 @@ config :chromoid, ChromoidWeb.Endpoint,
       "--mode",
       "development",
       "--watch-stdin",
+      "--color",
       cd: Path.expand("../assets", __DIR__)
     ]
   ]
