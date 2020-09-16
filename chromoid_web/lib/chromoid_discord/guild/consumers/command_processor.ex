@@ -15,7 +15,7 @@ defmodule ChromoidDiscord.Guild.CommandProcessor do
 
   @impl GenStage
   def init({guild, config, current_user}) do
-    {:consumer, %{guild: guild, current_user: current_user, config: config},
+    {:producer_consumer, %{guild: guild, current_user: current_user, config: config},
      subscribe_to: [via(guild, EventDispatcher)]}
   end
 

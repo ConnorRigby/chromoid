@@ -6,6 +6,13 @@ defmodule ChromoidDiscord.Guild do
   """
   use Supervisor
 
+  alias ChromoidDiscord.Guild.{
+    CommandProcessor,
+    DeviceStatusChannel
+  }
+
+  import ChromoidDiscord.Guild.Registry, only: [via: 2]
+
   @doc false
   def start_link({guild, config, current_user}) do
     Supervisor.start_link(__MODULE__, {guild, config, current_user})
@@ -14,10 +21,17 @@ defmodule ChromoidDiscord.Guild do
   @impl Supervisor
   def init({guild, config, current_user}) do
     children = [
+      # boostrap processes
       {ChromoidDiscord.Guild.Registry, guild},
       {ChromoidDiscord.Guild.EventDispatcher, guild},
-      {ChromoidDiscord.Guild.CommandProcessor, {guild, config, current_user}},
-      {ChromoidDiscord.Guild.DeviceStatusChannel, {guild, config, current_user}}
+
+      # consumers
+      {CommandProcessor, {guild, config, current_user}},
+      {DeviceStatusChannel, {guild, config, current_user}},
+
+      # Responder
+      {ChromoidDiscord.Guild.Responder,
+       {guild, [via(guild, CommandProcessor), via(guild, DeviceStatusChannel)]}}
     ]
 
     Supervisor.init(children, strategy: :one_for_one)

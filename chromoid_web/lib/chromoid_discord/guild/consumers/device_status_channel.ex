@@ -20,12 +20,12 @@ defmodule ChromoidDiscord.Guild.DeviceStatusChannel do
   def init({guild, config, current_user}) do
     ChromoidWeb.Endpoint.subscribe("devices")
 
-    {:consumer, %{guild: guild, current_user: current_user, config: config},
+    {:producer_consumer, %{guild: guild, current_user: current_user, config: config},
      subscribe_to: [via(guild, EventDispatcher)]}
   end
 
   @impl GenStage
-  def handle_events(events, _from, %{current_user: %{id: current_user_id}} = state) do
+  def handle_events(events, _from, state) do
     state =
       Enum.reduce(events, state, fn
         _, state ->
@@ -44,18 +44,20 @@ defmodule ChromoidDiscord.Guild.DeviceStatusChannel do
         },
         state
       ) do
-    for {id, meta} <- joins do
-      device = Repo.get!(Chromoid.Devices.Device, id)
-      message = "#{device.serial} has come online: #{inspect(meta)}"
-      Nostrum.Api.create_message!(state.config.device_status_channel_id, message)
-    end
+    join_events =
+      for {id, meta} <- joins do
+        device = Repo.get!(Chromoid.Devices.Device, id)
+        message = "#{device.serial} has come online: #{inspect(meta)}"
+        {:create_message!, [state.config.device_status_channel_id, message]}
+      end
 
-    for {id, meta} <- leaves do
-      device = Repo.get!(Chromoid.Devices.Device, id)
-      message = "#{device.serial} has come gone offline: #{inspect(meta)}"
-      Nostrum.Api.create_message!(state.config.device_status_channel_id, message)
-    end
+    leave_events =
+      for {id, meta} <- leaves do
+        device = Repo.get!(Chromoid.Devices.Device, id)
+        message = "#{device.serial} has come gone offline: #{inspect(meta)}"
+        {:create_message!, [state.config.device_status_channel_id, message]}
+      end
 
-    {:noreply, [], state}
+    {:noreply, join_events ++ leave_events, state}
   end
 end
