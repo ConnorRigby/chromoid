@@ -18,11 +18,15 @@ friendly color name such as `red`, `green`, `blue`, `purple`, etc.
 
 ![basic-usage](assets/screenshot0001.png)
 
-## Chromoid Web
+## How does it work
+
+![functional-diagram](assets/chromoid-functional-diagram.png)
+
+### Chromoid Web
 
 Phoenix app that handles external connections and integrations.
 
-## Chromoid Link
+### Chromoid Link
 
 Nerves app that bridges the web app integrations to BLE devices.
 
