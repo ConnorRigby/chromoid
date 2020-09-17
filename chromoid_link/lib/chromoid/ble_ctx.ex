@@ -54,6 +54,23 @@ defmodule Chromoid.BLECtx do
     {:noreply, state}
   end
 
+  # Match for the Bulb.
+  def handle_info(
+        {:HCI_EVENT_PACKET, %AdvertisingReport{devices: devices}},
+        state
+      ) do
+    for device <- devices do
+      # IO.inspect(device, label: "device")
+      maybe_connect(device, state)
+    end
+
+    {:noreply, state}
+  end
+
+  def handle_info(_info, state) do
+    {:noreply, state}
+  end
+
   def connect(addr, serial, state) do
     IO.inspect(addr, base: :hex, label: serial)
 
@@ -85,21 +102,4 @@ defmodule Chromoid.BLECtx do
   end
 
   def maybe_connect(_, state), do: state
-
-  # Match for the Bulb.
-  def handle_info(
-        {:HCI_EVENT_PACKET, %AdvertisingReport{devices: devices}},
-        state
-      ) do
-    for device <- devices do
-      # IO.inspect(device, label: "device")
-      maybe_connect(device, state)
-    end
-
-    {:noreply, state}
-  end
-
-  def handle_info(_info, state) do
-    {:noreply, state}
-  end
 end

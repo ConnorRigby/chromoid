@@ -5,7 +5,7 @@ defmodule Chromoid.BLEConnection.Registry do
   end
 
   @doc "Dynamic name generation"
-  def via(%{address: addr}, module) do
-    {:via, Registry, {__MODULE__, module}}
+  def via(addr) do
+    {:via, Registry, {__MODULE__, addr}}
   end
 end

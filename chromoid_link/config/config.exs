@@ -22,6 +22,11 @@ config :nerves, source_date_epoch: "1600265789"
 # configuring ring_logger.
 
 config :logger, backends: [:console, RingLogger]
+config :logger, handle_otp_reports: true, handle_sasl_reports: true
+
+config :logger, :console,
+  format: "\n$time $metadata[$level] $levelpad$message\n",
+  metadata: [:ble_address]
 
 config :chromoid, :socket,
   url:
