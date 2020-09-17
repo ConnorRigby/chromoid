@@ -72,6 +72,36 @@ defmodule ChromoidDiscord.Guild.CommandProcessor do
     Set the color of a device. Color should be a html color code. IE: `#ff69ff`
   """
 
+  def handle_help(%{content: "-help color" <> _} = message, {actions, state}) do
+    embed =
+      %Nostrum.Struct.Embed{}
+      |> put_title("Color Help")
+      |> put_description("""
+      `-color` `[address]` `[color]`
+      """)
+      |> put_field("**Available Friendly Color Names**", """
+      `-color A4:C1:38:9D:1E:AD white`
+      `-color A4:C1:38:9D:1E:AD silver`
+      `-color A4:C1:38:9D:1E:AD gray`
+      `-color A4:C1:38:9D:1E:AD black`
+      `-color A4:C1:38:9D:1E:AD red`
+      `-color A4:C1:38:9D:1E:AD maroon`
+      `-color A4:C1:38:9D:1E:AD yellow`
+      `-color A4:C1:38:9D:1E:AD olive`
+      `-color A4:C1:38:9D:1E:AD lime`
+      `-color A4:C1:38:9D:1E:AD green`
+      `-color A4:C1:38:9D:1E:AD aqua`
+      `-color A4:C1:38:9D:1E:AD teal`
+      `-color A4:C1:38:9D:1E:AD blue`
+      `-color A4:C1:38:9D:1E:AD navy`
+      `-color A4:C1:38:9D:1E:AD fuchsia`
+      `-color A4:C1:38:9D:1E:AD purple`
+      `-color A4:C1:38:9D:1E:AD red`
+      """)
+
+    {actions ++ [{:create_message!, [message.channel_id, [embed: embed]]}], state}
+  end
+
   def handle_help(message, {actions, state}) do
     embed =
       %Nostrum.Struct.Embed{}

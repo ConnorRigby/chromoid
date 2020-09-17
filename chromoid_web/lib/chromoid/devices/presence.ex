@@ -3,6 +3,19 @@ defmodule Chromoid.Devices.Presence do
     otp_app: :chromoid,
     pubsub_server: Chromoid.PubSub
 
+  def device_id_for_address(address) do
+    for {id, _meta} <- Chromoid.Devices.Presence.list("devices") do
+      for {addr, _} <- Chromoid.Devices.Presence.list("devices:#{id}") do
+        {id, addr}
+      end
+    end
+    |> List.flatten()
+    |> Enum.find_value(fn
+      {device_id, ^address} -> device_id
+      _ -> false
+    end)
+  end
+
   def fetch("devices", entries) do
     for {key, entry} <- entries, into: %{}, do: {key, merge_device_metas(entry)}
   end
@@ -13,7 +26,7 @@ defmodule Chromoid.Devices.Presence do
 
   def fetch(_, entries), do: entries
 
-  @allowed_fields [:online_at, :device_id, :serial, :color]
+  @allowed_fields [:online_at, :device_id, :serial, :color, :error]
 
   defp merge_device_metas(%{metas: metas}) do
     # The most current meta is head of the list so we

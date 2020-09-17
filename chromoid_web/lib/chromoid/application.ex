@@ -15,6 +15,10 @@ defmodule Chromoid.Application do
       {Phoenix.PubSub, name: Chromoid.PubSub},
       # Start the Discord bot
       ChromoidDiscord.Supervisor,
+      # Start the Device Name registry
+      Chromoid.Devices.DeviceRegistry,
+      # Start the BLE Supervisor
+      Chromoid.Devices.BLESupervisor,
       # Start the Device Presence
       Chromoid.Devices.Presence,
       # Start the Endpoint (http/https)

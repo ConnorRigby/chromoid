@@ -54,12 +54,24 @@ defmodule ChromoidDiscord.NostrumConsumer do
     ChromoidDiscord.Guild.EventDispatcher.dispatch(guild, {:MESSAGE_CREATE, message})
   end
 
+  def handle_event(
+        {:MESSAGE_UPDATE, %Nostrum.Struct.Message{guild_id: guild_id} = message, _ws_state}
+      ) do
+    guild = %Nostrum.Struct.Guild{id: guild_id}
+    ChromoidDiscord.Guild.EventDispatcher.dispatch(guild, {:MESSAGE_UPDATE, message})
+  end
+
   def handle_event({:PRESENCE_UPDATE, {guild_id, old, new}, _ws_state}) do
     guild = %Nostrum.Struct.Guild{id: guild_id}
     ChromoidDiscord.Guild.EventDispatcher.dispatch(guild, {:PRESENCE_UPDATE, {old, new}})
   end
 
+  def handle_event({:TYPING_START, %{guild_id: guild_id} = typing_start, _ws_state}) do
+    guild = %Nostrum.Struct.Guild{id: guild_id}
+    ChromoidDiscord.Guild.EventDispatcher.dispatch(guild, {:TYPING_START, typing_start})
+  end
+
   def handle_event(event) do
-    Logger.error(["Unhandled event from Nostrum ", inspect(event)])
+    Logger.error(["Unhandled event from Nostrum ", inspect(event, pretty: true)])
   end
 end

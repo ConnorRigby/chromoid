@@ -92,7 +92,7 @@ defmodule ChromoidDiscord.Guild.DeviceStatusChannel do
             device.avatar_url
           )
           |> put_description("has gone offline")
-          |> put_timestamp(DateTime.utc_now())
+          |> put_timestamp(DateTime.utc_now() |> to_string())
 
         {:create_message!, [state.config.device_status_channel_id, [embed: embed]]}
       end
@@ -112,18 +112,7 @@ defmodule ChromoidDiscord.Guild.DeviceStatusChannel do
 
     join_events =
       for {address, meta} <- joins do
-        embed =
-          %Nostrum.Struct.Embed{}
-          |> put_color(0x00FF00)
-          |> put_title("New BLE Connection")
-          |> put_author(
-            device.serial,
-            device_url(@endpoint, :show, device),
-            device.avatar_url
-          )
-          |> put_description("Connected to BLE Device: #{format_address(address)}")
-          |> put_timestamp(meta.online_at)
-
+        embed = embed_for_ble_connection(device, address, meta)
         {:create_message!, [state.config.device_status_channel_id, [embed: embed]]}
       end
 
@@ -134,86 +123,123 @@ defmodule ChromoidDiscord.Guild.DeviceStatusChannel do
     {:noreply, [], state}
   end
 
-  # ChromoidWeb.Endpoint.broadcast("devices:1", "set_color", %{})
-
-  defp format_address(address) do
-    <<a, b, c, d, e, f>> = <<String.to_integer(address)::48>>
-    :io_lib.format('~2.16.0B:~2.16.0B:~2.16.0B:~2.16.0B:~2.16.0B:~2.16.0B', [a, b, c, d, e, f])
-  end
-
   @device_info_regex ~r/-device info (?<serial>[a-z_\-]+)/
-  @color_regex ~r/-color(?:\s{1,})(?<address>(?:[[:xdigit:]]{2}\:?){6})(?:\s{1,})(?<color>\#[[:xdigit:]]{6})/
+  @device_photo_regex ~r/-device photo (?<serial>[a-z_\-]+)/
+
+  @color_hex_regex ~r/-color(?:\s{1,})(?<address>(?:[[:xdigit:]]{2}\:?){6})(?:\s{1,})(?<color>\#[[:xdigit:]]{6})/
+  @color_friendly_regex ~r/-color(?:\s{1,})(?<address>(?:[[:xdigit:]]{2}\:?){6})(?:\s{1,})(?<color>(white)|(silver)|(gray)|(black)|(red)|(maroon)|(yellow)|(olive)|(lime)|(green)|(aqua)|(teal)|(blue)|(navy)|(fuchsia)|(purple))/
 
   def handle_message(message, {actions, state}) do
     cond do
       String.contains?(message.content, "-device list") ->
         {actions ++ device_list_action(message), state}
 
-      String.match?(message.content, @device_info_regex) ->
-        %{"serial" => serial} = Regex.named_captures(@device_info_regex, message.content)
-
-        case Repo.get_by(Chromoid.Devices.Device, serial: serial) do
-          nil ->
-            {actions ++
-               [error_action(message, "Could not find device by that serial number: `#{serial}`")],
-             state}
-
-          device ->
-            meta = Chromoid.Devices.Presence.list("devices")["#{device.id}"]
-            {actions ++ [device_info_action(message, device, meta)], state}
-        end
-
-      String.match?(message.content, @color_regex) ->
-        handle_color(
+      String.match?(message.content, @device_photo_regex) ->
+        handle_device_photo(
           message,
-          Regex.named_captures(@color_regex, message.content),
+          Regex.named_captures(@device_photo_regex, message.content),
           {actions, state}
         )
+
+      String.match?(message.content, @device_info_regex) ->
+        handle_device_info(
+          message,
+          Regex.named_captures(@device_info_regex, message.content),
+          {actions, state}
+        )
+
+      String.match?(message.content, @color_hex_regex) ->
+        handle_color(
+          message,
+          Regex.named_captures(@color_hex_regex, message.content),
+          {actions, state}
+        )
+
+      String.match?(message.content, @color_friendly_regex) ->
+        handle_color(
+          message,
+          Regex.named_captures(@color_friendly_regex, message.content),
+          {actions, state}
+        )
+
+      String.match?(message.content, ~r/-color(.)+/) ->
+        error_message = """
+        Could not decode color arguments.
+        `-color` `[address]` `color`
+        See `-help color` for more info
+
+        Examples:
+        `-color A4:C1:38:9D:1E:AD red`
+        `-color A4:C1:38:9D:1E:AD green`
+        `-color A4:C1:38:9D:1E:AD blue`
+        `-color A4:C1:38:9D:1E:AD #ff0000`
+        `-color A4:C1:38:9D:1E:AD #00ff00`
+        `-color A4:C1:38:9D:1E:AD #0000ff`
+        """
+
+        {actions ++ [error_action(message, error_message)], state}
 
       true ->
         {actions, state}
     end
   end
 
+  def handle_device_photo(message, %{"serial" => serial}, {actions, state}) do
+    case Repo.get_by(Chromoid.Devices.Device, serial: serial) do
+      nil ->
+        {actions ++
+           [error_action(message, "Could not find device by that serial number: `#{serial}`")],
+         state}
+
+      device ->
+        {:ok, data} = Chromoid.Devices.Photo.request_photo(device.id)
+
+        action =
+          {:create_message!,
+           [message.channel_id, [file: %{name: data["name"], body: data["content"]}]]}
+
+        {actions ++ [action], state}
+    end
+  end
+
+  def handle_device_info(message, %{"serial" => serial}, {actions, state}) do
+    case Repo.get_by(Chromoid.Devices.Device, serial: serial) do
+      nil ->
+        {actions ++
+           [error_action(message, "Could not find device by that serial number: `#{serial}`")],
+         state}
+
+      device ->
+        meta = Chromoid.Devices.Presence.list("devices")["#{device.id}"]
+        {actions ++ [device_info_action(message, device, meta)], state}
+    end
+  end
+
   def handle_color(
         message,
-        %{"address" => address_with_colons, "color" => "#" <> hex_str},
+        %{"address" => address_with_colons, "color" => color_arg},
         {actions, state}
       ) do
     address = String.replace(address_with_colons, ":", "") |> String.to_integer(16) |> to_string()
-    color = String.to_integer(hex_str, 16)
+    color = decode_color_arg(color_arg)
 
-    device_id =
-      for {id, _meta} <- Chromoid.Devices.Presence.list("devices") do
-        for {addr, _} <- Chromoid.Devices.Presence.list("devices:#{id}") do
-          {id, addr}
-        end
-      end
-      |> List.flatten()
-      |> Enum.find_value(fn
-        {device_id, ^address} -> device_id
-        _ -> false
-      end)
+    device_id = Chromoid.Devices.Presence.device_id_for_address(address)
 
     if device_id do
-      @endpoint.broadcast("devices:#{device_id}:#{address}", "set_color", %{color: color})
+      device = Repo.get!(Chromoid.Devices.Device, device_id)
 
-      embed =
-        %Nostrum.Struct.Embed{}
-        |> put_title("**#{format_address(address)}**")
-        |> put_color(color)
-        |> put_description("Color set successfully")
+      Logger.info(
+        "Sending color change command: #{format_address(address)} #{inspect(color, base: :hex)}"
+      )
 
-      {actions ++ [{:create_message!, [message.channel_id, [embed: embed]]}], state}
+      meta = Chromoid.Devices.Color.set_color(address, color)
+      embed = embed_for_ble_connection(device, address, meta)
+      action = {:create_message!, [message.channel_id, [embed: embed]]}
+      {actions ++ [action], state}
     else
-      {actions ++
-         [
-           {:create_message!,
-            [
-              message.channel_id,
-              "couldn't find the device that #{format_address(address)} is attached to"
-            ]}
-         ], state}
+      error_message = "couldn't find the device that #{format_address(address)} is attached to"
+      error = error_action(message, error_message)
+      {actions ++ [error], state}
     end
   end
 
@@ -246,7 +272,10 @@ defmodule ChromoidDiscord.Guild.DeviceStatusChannel do
       Enum.reduce(ble_meta, embed, fn
         {addr, %{serial: _serial}}, embed ->
           embed
-          |> put_field("**#{format_address(addr)}**", "-color #{format_address(addr)} #ff00ff")
+          |> put_field(
+            "**#{format_address(addr)}**",
+            "`-color #{format_address(addr)} #{random_color()}`"
+          )
       end)
 
     {:create_message!, [message.channel_id, [embed: embed]]}
@@ -254,5 +283,79 @@ defmodule ChromoidDiscord.Guild.DeviceStatusChannel do
 
   def error_action(message, error) do
     {:create_message!, [message.channel_id, error]}
+  end
+
+  defp embed_for_ble_connection(device, address, %{error: message} = meta)
+       when is_binary(message) do
+    %Nostrum.Struct.Embed{}
+    |> put_color(0xFF0000)
+    |> put_title("BLE Connection Update #{format_address(address)}")
+    |> put_author(
+      device.serial,
+      device_url(@endpoint, :show, device),
+      device.avatar_url
+    )
+    |> put_description(message)
+    |> put_timestamp(meta.online_at)
+  end
+
+  defp embed_for_ble_connection(device, address, meta) do
+    %Nostrum.Struct.Embed{}
+    |> put_color(meta.color)
+    |> put_title("BLE Connection Update #{format_address(address)}")
+    |> put_author(
+      device.serial,
+      device_url(@endpoint, :show, device),
+      device.avatar_url
+    )
+    # |> put_description("Connected to BLE Device: #{format_address(address)}")
+    |> put_timestamp(meta.online_at)
+  end
+
+  defp format_address(address) do
+    <<a, b, c, d, e, f>> = <<String.to_integer(address)::48>>
+    :io_lib.format('~2.16.0B:~2.16.0B:~2.16.0B:~2.16.0B:~2.16.0B:~2.16.0B', [a, b, c, d, e, f])
+  end
+
+  defp decode_color_arg("#" <> hex_str) do
+    String.to_integer(hex_str, 16)
+  end
+
+  defp decode_color_arg("white"), do: 0xFFFFFF
+  defp decode_color_arg("silver"), do: 0xC0C0C0
+  defp decode_color_arg("gray"), do: 0x808080
+  defp decode_color_arg("black"), do: 0x000000
+  defp decode_color_arg("red"), do: 0xFF0000
+  defp decode_color_arg("maroon"), do: 0x800000
+  defp decode_color_arg("yellow"), do: 0xFFFF00
+  defp decode_color_arg("olive"), do: 0x808000
+  defp decode_color_arg("lime"), do: 0x00FF00
+  defp decode_color_arg("green"), do: 0x008000
+  defp decode_color_arg("aqua"), do: 0x00FFFF
+  defp decode_color_arg("teal"), do: 0x008080
+  defp decode_color_arg("blue"), do: 0x0000FF
+  defp decode_color_arg("navy"), do: 0x000080
+  defp decode_color_arg("fuchsia"), do: 0xFF00FF
+  defp decode_color_arg("purple"), do: 0x800080
+
+  defp random_color() do
+    Enum.random([
+      "white",
+      "silver",
+      "gray",
+      "black",
+      "red",
+      "maroon",
+      "yellow",
+      "olive",
+      "lime",
+      "green",
+      "aqua",
+      "teal",
+      "blue",
+      "navy",
+      "fuchsia",
+      "purple"
+    ])
   end
 end

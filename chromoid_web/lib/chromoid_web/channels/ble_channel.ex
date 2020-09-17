@@ -5,9 +5,19 @@ defmodule ChromoidWeb.BLEChannel do
 
   def join("ble:" <> addr, params, socket) do
     send(self(), :after_join)
-    IO.inspect("devices:#{socket.assigns.device.id}:#{addr}")
-    socket.endpoint.subscribe("devices:#{socket.assigns.device.id}:#{addr}")
-    {:ok, assign(socket, :address, addr) |> assign(params)}
+
+    case Chromoid.Devices.BLESupervisor.start_child({socket.assigns.device.id, addr}) do
+      {:ok, pid} ->
+        socket.endpoint.subscribe("devices:#{socket.assigns.device.id}:#{addr}")
+        {:ok, assign(socket, :address, addr) |> assign(params) |> assign(:color_pid, pid)}
+
+      error ->
+        error
+    end
+  end
+
+  def terminate(_, %{assigns: %{color_pid: pid}}) do
+    Chromoid.Devices.BLESupervisor.stop_child(pid)
   end
 
   def handle_info(:after_join, socket) do
@@ -20,7 +30,8 @@ defmodule ChromoidWeb.BLEChannel do
           online_at: DateTime.utc_now(),
           device_id: socket.assigns.device.id,
           serial: socket.assigns["serial"],
-          color: 0x000000
+          color: 0x000000,
+          error: nil
         }
       )
 
@@ -28,18 +39,37 @@ defmodule ChromoidWeb.BLEChannel do
   end
 
   def handle_info(%Broadcast{event: "set_color", payload: payload}, socket) do
-    IO.inspect(payload, label: "????")
     push(socket, "set_color", payload)
     {:noreply, socket}
   end
 
-  def handle_info(%Broadcast{} = bc, socket) do
-    IO.inspect(bc, label: "fail")
+  def handle_info(%Broadcast{}, socket) do
     {:noreply, socket}
   end
 
   def handle_in("color_state", %{"color" => rgb}, socket) do
-    # Presence.update(self(), "devices:#{socket.assigns.device.id}", "#{socket.assigns.address}", &Map.put(&1, :color, rgb))
+    IO.inspect(rgb, label: "handle_in")
+
+    Presence.update(
+      self(),
+      "devices:#{socket.assigns.device.id}",
+      "#{socket.assigns.address}",
+      fn old ->
+        %{old | color: rgb, error: nil}
+      end
+    )
+
+    {:reply, {:ok, %{}}, socket}
+  end
+
+  def handle_in("error", %{"message" => message}, socket) do
+    Presence.update(
+      self(),
+      "devices:#{socket.assigns.device.id}",
+      "#{socket.assigns.address}",
+      &Map.put(&1, :error, message)
+    )
+
     {:reply, {:ok, %{}}, socket}
   end
 end
