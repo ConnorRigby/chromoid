@@ -1,6 +1,7 @@
 # Chromoid
 
 Elixir stack to control my office lights.
+[See it in action in the test server I setup](https://discord.gg/HdbPkUJ)
 
 ## Basic Usage
 
