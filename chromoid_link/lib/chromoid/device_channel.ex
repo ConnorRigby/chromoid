@@ -3,6 +3,7 @@ defmodule Chromoid.DeviceChannel do
   require Logger
 
   alias PhoenixClient.{Channel, Message}
+
   @socket Chromoid.Socket
   @topic "device"
 

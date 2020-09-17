@@ -13,6 +13,9 @@ defmodule Chromoid.Application do
 
     children =
       [
+        Chromoid.BLEConnection.Registry,
+        Chromoid.BLEConnectionSupervisor,
+        Chromoid.BLECtx,
         {PhoenixClient.Socket, {socket_opts, name: Chromoid.Socket}},
         Chromoid.DeviceChannel
         # Children for all targets

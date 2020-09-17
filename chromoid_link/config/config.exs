@@ -25,7 +25,7 @@ config :logger, backends: [:console, RingLogger]
 
 config :chromoid, :socket,
   url:
-    "ws://localhost:4000/device_socket/websocket?token=XriyzJJUtfRH2ONfACjSruUdj1teg_1CHqWYnFQuacw"
+    "ws://localhost:4000/device_socket/websocket?token=OPSIukTtrLgmdeibsMgjvyX29ZyYDhsGyrPXPu3J6to"
 
 if Mix.target() != :host do
   import_config "target.exs"

@@ -1,6 +1,11 @@
 %{
+  "blue_heron": {:git, "https://github.com/smartrent/blue_heron.git", "bcd8aaa517d97b490607bfc3f3743d42b0abbe0b", [branch: "main", sparse: "blue_heron"]},
+  "blue_heron_transport_uart": {:git, "https://github.com/smartrent/blue_heron.git", "bcd8aaa517d97b490607bfc3f3743d42b0abbe0b", [branch: "main", sparse: "blue_heron_transport_uart"]},
+  "blue_heron_transport_usb": {:git, "https://github.com/smartrent/blue_heron.git", "bcd8aaa517d97b490607bfc3f3743d42b0abbe0b", [branch: "main", sparse: "blue_heron_transport_usb"]},
+  "circuits_uart": {:hex, :circuits_uart, "1.4.2", "520817daced77620bc036c168eb42b55ba4b4c141c2de47a199895a35a86e690", [:mix], [{:elixir_make, "~> 0.6", [hex: :elixir_make, repo: "hexpm", optional: false]}], "hexpm", "d3da86c9ef9ef196150797c7de1c7a7d367ebcd0de44f325c36def8654976c06"},
   "dns": {:hex, :dns, "2.1.2", "81c46d39f7934f0e73368355126e4266762cf227ba61d5889635d83b2d64a493", [:mix], [{:socket, "~> 0.3.13", [hex: :socket, repo: "hexpm", optional: false]}], "hexpm", "6818589d8e59c03a2c73001e5cd7a957f99c30a796021aa32445ea14d0f3356b"},
   "elixir_make": {:hex, :elixir_make, "0.6.1", "8faa29a5597faba999aeeb72bbb9c91694ef8068f0131192fb199f98d32994ef", [:mix], [], "hexpm", "35d33270680f8d839a4003c3e9f43afb595310a592405a00afc12de4c7f55a18"},
+  "ex_bin": {:hex, :ex_bin, "0.4.0", "c86513598a6fd35f018966607f3e8996e6b16324094e8939d163e671ab7c184e", [:mix], [], "hexpm", "223ae53e25ac2874f1b8f469d11a75926bb068a35e8008603c2ede4277cece6c"},
   "gen_state_machine": {:hex, :gen_state_machine, "2.1.0", "a38b0e53fad812d29ec149f0d354da5d1bc0d7222c3711f3a0bd5aa608b42992", [:mix], [], "hexpm", "ae367038808db25cee2f2c4b8d0531522ea587c4995eb6f96ee73410a60fa06b"},
   "jason": {:hex, :jason, "1.2.2", "ba43e3f2709fd1aa1dce90aaabfd039d000469c05c56f0b8e31978e03fa39052", [:mix], [{:decimal, "~> 1.0 or ~> 2.0", [hex: :decimal, repo: "hexpm", optional: true]}], "hexpm", "18a228f5f0058ee183f29f9eae0805c6e59d61c3b006760668d8d18ff0d12179"},
   "mdns_lite": {:hex, :mdns_lite, "0.6.5", "11ec4567391dcd856347f46287a667a3b7b0739eedf3583bc2ace72310b28055", [:mix], [{:dns, "~> 2.1", [hex: :dns, repo: "hexpm", optional: false]}, {:vintage_net, "~> 0.7", [hex: :vintage_net, repo: "hexpm", optional: true]}], "hexpm", "8ff80d747462bf5c99f8f8cc663b9ecffa5613a4e2c5792432c2f31c7ecdb413"},
