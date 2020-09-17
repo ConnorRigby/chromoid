@@ -63,8 +63,11 @@ defmodule ChromoidDiscord.Guild.CommandProcessor do
   `-device` `list`
     Print the list of currently connected devices
 
-  `-device` `info` [device]
+  `-device` `info` `[device]`
     Print info about a currently connected device
+
+  `-device` `photo` `[device]`
+    Request a photo from a currently connected device
   """
 
   @color_help """

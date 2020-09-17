@@ -5,6 +5,27 @@ defmodule Chromoid.Devices.Color do
   @endpoint ChromoidWeb.Endpoint
   alias Phoenix.Socket.Broadcast
 
+  def random_color() do
+    Enum.random([
+      "white",
+      "silver",
+      "gray",
+      "black",
+      "red",
+      "maroon",
+      "yellow",
+      "olive",
+      "lime",
+      "green",
+      "aqua",
+      "teal",
+      "blue",
+      "navy",
+      "fuchsia",
+      "purple"
+    ])
+  end
+
   def set_color(addr, rgb) do
     GenServer.call(via({__MODULE__, to_string(addr)}), {:set_color, rgb})
   end

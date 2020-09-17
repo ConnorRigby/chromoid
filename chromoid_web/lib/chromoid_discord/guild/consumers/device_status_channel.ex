@@ -6,13 +6,12 @@ defmodule ChromoidDiscord.Guild.DeviceStatusChannel do
   use GenStage
   require Logger
   import ChromoidDiscord.Guild.Registry, only: [via: 2]
-  import ChromoidWeb.Router.Helpers, only: [device_url: 3]
   alias ChromoidDiscord.Guild.EventDispatcher
   alias Chromoid.Repo
+  import ChromoidDiscord.Guild.DeviceStatusChannel.Actions
+  import Chromoid.Devices.Ble.Utils
 
   alias Phoenix.Socket.Broadcast
-
-  import Nostrum.Struct.Embed
 
   @endpoint ChromoidWeb.Endpoint
 
@@ -61,40 +60,14 @@ defmodule ChromoidDiscord.Guild.DeviceStatusChannel do
       for {id, meta} <- joins do
         @endpoint.subscribe("devices:#{id}")
         device = Repo.get!(Chromoid.Devices.Device, id)
-
-        embed =
-          %Nostrum.Struct.Embed{}
-          |> put_color(0x00FF00)
-          |> put_title("Device Status Report")
-          |> put_author(
-            device.serial,
-            device_url(@endpoint, :show, device),
-            device.avatar_url
-          )
-          |> put_description("has come online")
-          |> put_timestamp(meta.online_at)
-
-        {:create_message!, [state.config.device_status_channel_id, [embed: embed]]}
+        device_join_action(state.config.device_status_channel_id, device, meta)
       end
 
     leave_events =
-      for {id, _meta} <- leaves do
+      for {id, meta} <- leaves do
         device = Repo.get!(Chromoid.Devices.Device, id)
         @endpoint.unsubscribe("devices:#{id}")
-
-        embed =
-          %Nostrum.Struct.Embed{}
-          |> put_color(0xFF0000)
-          |> put_title("Device Status Report")
-          |> put_author(
-            device.serial,
-            device_url(@endpoint, :show, device),
-            device.avatar_url
-          )
-          |> put_description("has gone offline")
-          |> put_timestamp(DateTime.utc_now() |> to_string())
-
-        {:create_message!, [state.config.device_status_channel_id, [embed: embed]]}
+        device_leave_action(state.config.device_status_channel_id, device, meta)
       end
 
     {:noreply, join_events ++ leave_events, state}
@@ -112,8 +85,7 @@ defmodule ChromoidDiscord.Guild.DeviceStatusChannel do
 
     join_events =
       for {address, meta} <- joins do
-        embed = embed_for_ble_connection(device, address, meta)
-        {:create_message!, [state.config.device_status_channel_id, [embed: embed]]}
+        ble_device_join_action(state.config.device_status_channel_id, device, address, meta)
       end
 
     {:noreply, join_events, state}
@@ -123,16 +95,20 @@ defmodule ChromoidDiscord.Guild.DeviceStatusChannel do
     {:noreply, [], state}
   end
 
-  @device_info_regex ~r/-device info (?<serial>[a-z_\-]+)/
-  @device_photo_regex ~r/-device photo (?<serial>[a-z_\-]+)/
-
+  @device_list_regex ~r/-device(?:\s{1,})list/
+  @device_info_regex ~r/-device(?:\s{1,})info(?:\s{1,})(?<serial>[a-z_\-]+)/
+  @device_photo_regex ~r/-device(?:\s{1,})photo(?:\s{1,})(?<serial>[a-z_\-]+)/
   @color_hex_regex ~r/-color(?:\s{1,})(?<address>(?:[[:xdigit:]]{2}\:?){6})(?:\s{1,})(?<color>\#[[:xdigit:]]{6})/
   @color_friendly_regex ~r/-color(?:\s{1,})(?<address>(?:[[:xdigit:]]{2}\:?){6})(?:\s{1,})(?<color>(white)|(silver)|(gray)|(black)|(red)|(maroon)|(yellow)|(olive)|(lime)|(green)|(aqua)|(teal)|(blue)|(navy)|(fuchsia)|(purple))/
 
   def handle_message(message, {actions, state}) do
     cond do
-      String.contains?(message.content, "-device list") ->
-        {actions ++ device_list_action(message), state}
+      String.match?(message.content, @device_list_regex) ->
+        handle_device_list(
+          message,
+          Regex.named_captures(@device_list_regex, message.content),
+          {actions, state}
+        )
 
       String.match?(message.content, @device_photo_regex) ->
         handle_device_photo(
@@ -182,6 +158,10 @@ defmodule ChromoidDiscord.Guild.DeviceStatusChannel do
       true ->
         {actions, state}
     end
+  end
+
+  def handle_device_list(message, _, {actions, state}) do
+    {actions ++ device_list_action(message), state}
   end
 
   def handle_device_photo(message, %{"serial" => serial}, {actions, state}) do
@@ -243,80 +223,6 @@ defmodule ChromoidDiscord.Guild.DeviceStatusChannel do
     end
   end
 
-  def device_list_action(message) do
-    for {id, meta} <- Chromoid.Devices.Presence.list("devices") do
-      device = Repo.get!(Chromoid.Devices.Device, id)
-      device_info_action(message, device, meta)
-    end
-  end
-
-  def device_info_action(message, device, nil) do
-    error_action(message, "Device `#{device.serial}` is not online")
-  end
-
-  def device_info_action(message, device, meta) do
-    ble_meta = Chromoid.Devices.Presence.list("devices:#{device.id}")
-
-    embed =
-      %Nostrum.Struct.Embed{}
-      |> put_color(0x00FF00)
-      |> put_title("Device Status Report")
-      |> put_author(
-        device.serial,
-        device_url(@endpoint, :show, device),
-        device.avatar_url
-      )
-      |> put_timestamp(meta.online_at)
-
-    embed =
-      Enum.reduce(ble_meta, embed, fn
-        {addr, %{serial: _serial}}, embed ->
-          embed
-          |> put_field(
-            "**#{format_address(addr)}**",
-            "`-color #{format_address(addr)} #{random_color()}`"
-          )
-      end)
-
-    {:create_message!, [message.channel_id, [embed: embed]]}
-  end
-
-  def error_action(message, error) do
-    {:create_message!, [message.channel_id, error]}
-  end
-
-  defp embed_for_ble_connection(device, address, %{error: message} = meta)
-       when is_binary(message) do
-    %Nostrum.Struct.Embed{}
-    |> put_color(0xFF0000)
-    |> put_title("BLE Connection Update #{format_address(address)}")
-    |> put_author(
-      device.serial,
-      device_url(@endpoint, :show, device),
-      device.avatar_url
-    )
-    |> put_description(message)
-    |> put_timestamp(meta.online_at)
-  end
-
-  defp embed_for_ble_connection(device, address, meta) do
-    %Nostrum.Struct.Embed{}
-    |> put_color(meta.color)
-    |> put_title("BLE Connection Update #{format_address(address)}")
-    |> put_author(
-      device.serial,
-      device_url(@endpoint, :show, device),
-      device.avatar_url
-    )
-    # |> put_description("Connected to BLE Device: #{format_address(address)}")
-    |> put_timestamp(meta.online_at)
-  end
-
-  defp format_address(address) do
-    <<a, b, c, d, e, f>> = <<String.to_integer(address)::48>>
-    :io_lib.format('~2.16.0B:~2.16.0B:~2.16.0B:~2.16.0B:~2.16.0B:~2.16.0B', [a, b, c, d, e, f])
-  end
-
   defp decode_color_arg("#" <> hex_str) do
     String.to_integer(hex_str, 16)
   end
@@ -337,25 +243,4 @@ defmodule ChromoidDiscord.Guild.DeviceStatusChannel do
   defp decode_color_arg("navy"), do: 0x000080
   defp decode_color_arg("fuchsia"), do: 0xFF00FF
   defp decode_color_arg("purple"), do: 0x800080
-
-  defp random_color() do
-    Enum.random([
-      "white",
-      "silver",
-      "gray",
-      "black",
-      "red",
-      "maroon",
-      "yellow",
-      "olive",
-      "lime",
-      "green",
-      "aqua",
-      "teal",
-      "blue",
-      "navy",
-      "fuchsia",
-      "purple"
-    ])
-  end
 end

@@ -41,7 +41,6 @@ defmodule ChromoidWeb.DeviceChannel do
         %{"content" => _jpeg_base64, "name" => _name} = response,
         socket
       ) do
-    # broadcast_from!(socket, "photo_response", response)
     socket.endpoint.broadcast("devices:#{socket.assigns.device.id}", "photo_response", response)
     {:reply, {:ok, %{}}, socket}
   end
