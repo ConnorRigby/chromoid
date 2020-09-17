@@ -4,6 +4,7 @@ defmodule ChromoidWeb.DeviceSocket do
 
   ## Channels
   channel "device:*", ChromoidWeb.DeviceChannel
+  channel "ble:*", ChromoidWeb.BLEChannel
 
   @impl true
   def connect(%{"token" => token}, socket, _connect_info) do

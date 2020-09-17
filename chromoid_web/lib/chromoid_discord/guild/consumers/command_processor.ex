@@ -67,6 +67,11 @@ defmodule ChromoidDiscord.Guild.CommandProcessor do
     Print info about a currently connected device
   """
 
+  @color_help """
+  `-color` `[address]` `[color]`
+    Set the color of a device. Color should be a html color code. IE: `#ff69ff`
+  """
+
   def handle_help(message, {actions, state}) do
     embed =
       %Nostrum.Struct.Embed{}
@@ -75,6 +80,7 @@ defmodule ChromoidDiscord.Guild.CommandProcessor do
       |> put_color(0xFF69FF)
       |> put_field("**Help Commands**", @help_help)
       |> put_field("**Device Commands**", @device_help)
+      |> put_field("**Color Commands**", @color_help)
 
     {actions ++ [{:create_message!, [message.channel_id, [embed: embed]]}], state}
   end
