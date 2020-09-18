@@ -62,6 +62,7 @@ defmodule Chromoid.MixProject do
       {:phx_gen_auth, "~> 0.5.0", runtime: false, only: :dev},
       {:ring_logger, "~> 0.7.0", only: :prod},
       {:phoenix_client, "~> 0.11.1", only: [:test, :dev]},
+      {:exirc, "~> 2.0"},
       @nostrum
     ]
   end

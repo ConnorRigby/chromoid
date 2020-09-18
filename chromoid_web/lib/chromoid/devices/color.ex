@@ -26,6 +26,10 @@ defmodule Chromoid.Devices.Color do
     ])
   end
 
+  def format_color(color) do
+    inspect(color, base: :hex)
+  end
+
   def set_color(addr, rgb) do
     GenServer.call(via({__MODULE__, to_string(addr)}), {:set_color, rgb})
   end
