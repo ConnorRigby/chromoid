@@ -3,6 +3,8 @@ defmodule ChromoidDiscord.Guild.DeviceStatusChannel.Actions do
   @endpoint ChromoidWeb.Endpoint
   import ChromoidWeb.Router.Helpers, only: [device_url: 3]
   import Chromoid.Devices.Ble.Utils
+  alias Chromoid.Devices.Color
+  alias Chromoid.Repo
 
   def device_list_action(message) do
     for {id, meta} <- Chromoid.Devices.Presence.list("devices") do
