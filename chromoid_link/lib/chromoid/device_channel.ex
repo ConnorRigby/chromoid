@@ -35,7 +35,7 @@ defmodule Chromoid.DeviceChannel do
   end
 
   def handle_info(%Message{event: "photo_request"}, state) do
-    {:ok, jpeg} = Chromoid.FFMpegJPEG.jpeg()
+    {:ok, jpeg} = Chromoid.CameraProvider.Picam.jpeg()
 
     Channel.push(state.channel, "photo_response", %{
       content_type: "image/jpeg",

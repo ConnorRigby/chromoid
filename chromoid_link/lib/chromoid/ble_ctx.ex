@@ -14,12 +14,22 @@ defmodule Chromoid.BLECtx do
 
   # Sets the name of the BLE device
   @write_local_name %WriteLocalName{name: "ChromoidLink"}
-
-  @default_usb_config %BlueHeronTransportUSB{
-    vid: 0x0BDA,
-    pid: 0xB82C,
+  @default_usb_config %BlueHeronTransportUART{
+    device: "ttyS0",
+    uart_opts: [speed: 115_200],
     init_commands: [@write_local_name]
   }
+
+  # @default_usb_config %BlueHeronTransportUART{
+  #   device: "ttyACM0",
+  #   uart_opts: [speed: 115_200],
+  #   init_commands: [@write_local_name]
+  # }
+  # @default_usb_config %BlueHeronTransportUSB{
+  #   vid: 0x0BDA,
+  #   pid: 0xB82C,
+  #   init_commands: [@write_local_name]
+  # }
 
   @doc false
   def start_link(args) do
@@ -82,7 +92,7 @@ defmodule Chromoid.BLECtx do
         :ok
 
       {:error, {:already_started, _pid}} ->
-        Logger.info("already connected")
+        # Logger.info("already connected")
 
         :ok
 

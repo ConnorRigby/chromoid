@@ -45,9 +45,12 @@ defmodule Chromoid.MixProject do
       {:toolshed, "~> 0.2"},
       {:phoenix_client, "~> 0.11.1"},
       {:jason, "~> 1.2"},
-      {:blue_heron, path: "/home/connor/workspace/smartrent/bt/blue_heron/", override: true},
-      # {:blue_heron,
-      #  github: "smartrent/blue_heron", branch: "main", sparse: "blue_heron", override: true},
+      # {:blue_heron, path: "/home/connor/workspace/smartrent/bt/blue_heron/", override: true},
+      {:blue_heron,
+       github: "smartrent/blue_heron",
+       branch: "att-client-updates",
+       sparse: "blue_heron",
+       override: true},
       {:blue_heron_transport_usb,
        github: "smartrent/blue_heron",
        branch: "main",
@@ -55,16 +58,20 @@ defmodule Chromoid.MixProject do
        targets: :host},
       {:blue_heron_transport_uart,
        github: "smartrent/blue_heron",
-       branch: "main",
+       branch: "framing-rewrite",
        sparse: "blue_heron_transport_uart",
        targets: @all_targets},
+      # {:blue_heron_transport_uart,
+      #  path: "/home/connor/workspace/smartrent/bt/blue_heron_transport_uart/"},
 
       # Dependencies for all targets except :host
       {:nerves_runtime, "~> 0.6", targets: @all_targets},
       {:nerves_pack, "~> 0.2", targets: @all_targets},
 
       # Dependencies for specific targets
-      {:nerves_system_rpi0, "~> 1.12", runtime: false, targets: :rpi0}
+      {:nerves_system_rpi0, "~> 1.12", runtime: false, targets: :rpi0},
+      # {:nerves_system_rpi0, "~> 1.6.0", runtime: false, targets: :rpi0},
+      {:picam, "~> 0.4.1", targets: :rpi0}
     ]
   end
 

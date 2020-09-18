@@ -92,6 +92,11 @@ defmodule Chromoid.BLEConnection do
     {:noreply, %{state | ble_connected?: false}}
   end
 
+  def handle_info({BlueHeron.ATT.Client, _, message}, state) do
+    Logger.info("ATT Client message: #{inspect(message)}")
+    {:noreply, state}
+  end
+
   def handle_info(
         %PhoenixClient.Message{event: "set_color", payload: %{"color" => rgb}},
         %{ble_connected?: true} = state

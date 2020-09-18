@@ -21,16 +21,22 @@ config :nerves, source_date_epoch: "1600265789"
 # See https://hexdocs.pm/ring_logger/readme.html for more information on
 # configuring ring_logger.
 
-config :logger, backends: [:console, RingLogger]
+config :logger, backends: [:console, RingLogger, BlueHeron.HCIDump.Logger]
 config :logger, handle_otp_reports: true, handle_sasl_reports: true
 
 config :logger, :console,
   format: "\n$time $metadata[$level] $levelpad$message\n",
   metadata: [:ble_address]
 
+url =
+  System.get_env("CHROMOID_URL") ||
+    raise """
+    environment variable CHROMOID_URL is missing.
+    """
+
 config :chromoid, :socket,
-  url:
-    "ws://localhost:4000/device_socket/websocket?token=OPSIukTtrLgmdeibsMgjvyX29ZyYDhsGyrPXPu3J6to"
+  url: url,
+  reconnect_interval: 5000
 
 if Mix.target() != :host do
   import_config "target.exs"

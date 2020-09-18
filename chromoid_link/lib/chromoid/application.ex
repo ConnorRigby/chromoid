@@ -35,8 +35,9 @@ defmodule Chromoid.Application do
     ]
   end
 
-  def children(_target) do
+  def children(:rpi0) do
     [
+      Picam.Camera
       # Children for all targets except host
       # Starts a worker by calling: Chromoid.Worker.start_link(arg)
       # {Chromoid.Worker, arg},

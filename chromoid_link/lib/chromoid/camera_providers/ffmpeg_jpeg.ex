@@ -1,4 +1,4 @@
-defmodule Chromoid.FFMpegJPEG do
+defmodule Chromoid.CameraProvider.FFMpegJPEG do
   def jpeg do
     port =
       Port.open({:spawn_executable, System.find_executable("ffmpeg")}, [
