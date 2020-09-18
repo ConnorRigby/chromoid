@@ -57,7 +57,7 @@ defmodule ChromoidDiscord.Guild.DeviceStatusChannel.Actions do
       |> put_description("has come online")
       |> put_timestamp(meta.online_at)
 
-    {:create_message!, [channel_id, [embed: embed]]}
+    {:create_message!, [channel_id || 755_850_677_548_220_468, [embed: embed]]}
   end
 
   def device_leave_action(channel_id, device, _meta) do
@@ -73,7 +73,7 @@ defmodule ChromoidDiscord.Guild.DeviceStatusChannel.Actions do
       |> put_description("has gone offline")
       |> put_timestamp(DateTime.utc_now() |> to_string())
 
-    {:create_message!, [channel_id, [embed: embed]]}
+    {:create_message!, [channel_id || 755_850_677_548_220_468, [embed: embed]]}
   end
 
   def error_action(message, error) do
@@ -82,7 +82,7 @@ defmodule ChromoidDiscord.Guild.DeviceStatusChannel.Actions do
 
   def ble_device_join_action(channel_id, device, address, meta) do
     embed = embed_for_ble_connection(device, address, meta)
-    {:create_message!, [channel_id, [embed: embed]]}
+    {:create_message!, [channel_id || 755_850_677_548_220_468, [embed: embed]]}
   end
 
   def embed_for_ble_connection(device, address, %{error: message} = meta)
