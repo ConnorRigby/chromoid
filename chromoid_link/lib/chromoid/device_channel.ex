@@ -20,9 +20,9 @@ defmodule Chromoid.DeviceChannel do
 
   @impl GenServer
   def handle_info(:join_channel, %{channel: nil} = state) do
-    uid = System.unique_integer([:positive])
-
-    case Channel.join(@socket, "#{@topic}:#{uid}") do
+    # uid = System.unique_integer([:positive])
+    # case Channel.join(@socket, "#{@topic}:#{uid}") do
+    case Channel.join(@socket, @topic) do
       {:ok, response, channel} ->
         Logger.info("Connected to channel: #{inspect(response)}")
         {:noreply, %{state | channel: channel, connected?: true}}
