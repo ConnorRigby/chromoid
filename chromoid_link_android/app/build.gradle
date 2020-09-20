@@ -24,6 +24,12 @@ android {
     }
 }
 
+repositories {
+    maven {
+        setUrl("https://dl.bintray.com/kuon/java/")
+    }
+}
+
 dependencies {
     implementation fileTree(dir: "libs", include: ["*.jar"])
     implementation "org.jetbrains.kotlin:kotlin-stdlib:$kotlin_version"
@@ -33,5 +39,8 @@ dependencies {
     testImplementation 'junit:junit:4.12'
     androidTestImplementation 'androidx.test.ext:junit:1.1.1'
     androidTestImplementation 'androidx.test.espresso:espresso-core:3.2.0'
+    implementation "com.neovisionaries:nv-websocket-client:2.9"
+    implementation "com.github.openjson:openjson:1.0.11"
+    implementation "ch.kuon.phoenix:channel:0.1.6"
 
 }
