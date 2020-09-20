@@ -11,13 +11,19 @@ defmodule ChromoidWeb.BLEChannel do
         socket.endpoint.subscribe("devices:#{socket.assigns.device.id}:#{addr}")
         {:ok, assign(socket, :address, addr) |> assign(params) |> assign(:color_pid, pid)}
 
+      # hack due to hot code reload typo. Delete me one day
+      {:error, {:already_started, pid}} ->
+        {:ok, assign(socket, :address, addr) |> assign(params) |> assign(:color_pid, pid)}
+
       error ->
         error
     end
   end
 
-  def terminate(_, %{assigns: %{color_pid: pid}}) do
-    Chromoid.Devices.BLESupervisor.stop_child(pid)
+  def terminate(_, socket) do
+    if pid = socket.assigns[:color_pid] do
+      Chromoid.Devices.BLESupervisor.stop_child(pid)
+    end
   end
 
   def handle_info(:after_join, socket) do

@@ -3,7 +3,7 @@ defmodule ChromoidWeb.DeviceSocket do
   require Logger
 
   ## Channels
-  channel "device:*", ChromoidWeb.DeviceChannel
+  channel "device", ChromoidWeb.DeviceChannel
   channel "ble:*", ChromoidWeb.BLEChannel
 
   @impl true
