@@ -1,3 +1,8 @@
 <resources>
     <string name="app_name">Chromoid Link</string>
+    <string name="connectButton">Connect to Chromo.id</string>
+    <string name="connectionOK">Connected to Chromo.id!</string>
+    <string name="connectionErr">Error connecting to Chromo.id!</string>
+    <string name="connectionErrTimeout">Timeout connecting to Chromo.id!</string>
+
 </resources>
