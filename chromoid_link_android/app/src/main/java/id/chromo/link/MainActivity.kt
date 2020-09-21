@@ -1,16 +1,19 @@
 package id.chromo.link
 
+import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothManager
+import android.bluetooth.le.ScanCallback
+import android.bluetooth.le.ScanResult
 import android.content.Intent
-import android.graphics.Color
 import android.os.Bundle
+import android.util.Log
+import android.view.LayoutInflater
+import android.view.ViewGroup
 import android.widget.Button
 import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
-import android.widget.TextView
-import android.view.ViewGroup
-import android.view.LayoutInflater
 import com.google.android.material.card.MaterialCardView
 import kotlinx.android.synthetic.main.my_text_view.view.*
 
@@ -24,8 +27,10 @@ class MyAdapter(private val myDataset: ArrayList<String>) :
     class MyViewHolder(val textView: MaterialCardView) : RecyclerView.ViewHolder(textView)
 
     // Create new views (invoked by the layout manager)
-    override fun onCreateViewHolder(parent: ViewGroup,
-                                    viewType: Int): MyAdapter.MyViewHolder {
+    override fun onCreateViewHolder(
+        parent: ViewGroup,
+        viewType: Int
+    ): MyAdapter.MyViewHolder {
         // create a new view
         val textView = LayoutInflater.from(parent.context)
             .inflate(R.layout.my_text_view, parent, false) as MaterialCardView
@@ -51,6 +56,7 @@ class MainActivity : AppCompatActivity() {
     private lateinit var viewAdapter: RecyclerView.Adapter<*>
     private lateinit var viewManager: RecyclerView.LayoutManager
     lateinit var myDataset: ArrayList<String>
+    private val REQUEST_ENABLE_BT = 1
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -72,13 +78,39 @@ class MainActivity : AppCompatActivity() {
 
         }
 
-        val button: Button = findViewById(R.id.add_button)
-        button.setOnClickListener {
-            myDataset.add(0, "a")
-            viewAdapter.notifyItemInserted(0);
+        // Initializes Bluetooth adapter.
+        val bluetoothManager = getSystemService(BLUETOOTH_SERVICE) as BluetoothManager
+        val bluetoothAdapter = bluetoothManager.adapter
+        // Ensures Bluetooth is available on the device and it is enabled. If not,
+        // displays a dialog requesting user permission to enable Bluetooth.
+        if (bluetoothAdapter == null || !bluetoothAdapter.isEnabled) {
+            val enableBtIntent = Intent(BluetoothAdapter.ACTION_REQUEST_ENABLE)
+            startActivityForResult(enableBtIntent, REQUEST_ENABLE_BT)
         }
 
-        startService()
+        val bluetoothLeScanner = BluetoothAdapter.getDefaultAdapter().bluetoothLeScanner
+        bluetoothLeScanner.startScan(leScanCallback)
+
+        val button: Button = findViewById(R.id.add_button)
+        button.setOnClickListener {
+//            myDataset.add(0, "a")
+//            viewAdapter.notifyItemInserted(0);
+//            bluetoothLeScanner.stopScan(leScanCallback)
+            bluetoothLeScanner.startScan(leScanCallback)
+        }
+        //startService()
+    }
+//    private val leDeviceListAdapter: LeDeviceListAdapter? = null
+
+    private val leScanCallback: ScanCallback = object : ScanCallback() {
+        override fun onScanResult(callbackType: Int, result: ScanResult) {
+            super.onScanResult(callbackType, result)
+            Log.i("leScanCallback", "New ScanResult")
+            myDataset.add(0, result.device.address)
+            viewAdapter.notifyItemInserted(0);
+//            leDeviceListAdapter!!.addDevice(result.device)
+//            leDeviceListAdapter.notifyDataSetChanged()
+        }
     }
 
     override fun onDestroy() {
