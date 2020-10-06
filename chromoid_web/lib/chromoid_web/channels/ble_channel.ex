@@ -3,8 +3,16 @@ defmodule ChromoidWeb.BLEChannel do
   alias Chromoid.Devices.Presence
   alias Phoenix.Socket.Broadcast
 
+  def normalize_addr(<<a::2*8, ":", b::2*8, ":", c::2*8, ":", d::2*8, ":", e::2*8, ":", f::2*8>>) do
+    <<addr::48>> = <<a, b, c, d, e, f>>
+    "#{addr}"
+  end
+
+  def normalize_addr(addr), do: to_string(addr)
+
   def join("ble:" <> addr, params, socket) do
     send(self(), :after_join)
+    addr = normalize_addr(addr)
 
     case Chromoid.Devices.BLESupervisor.start_child({socket.assigns.device.id, addr}) do
       {:ok, pid} ->
