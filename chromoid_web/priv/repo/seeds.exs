@@ -10,15 +10,7 @@
 # We recommend using the bang functions (`insert!`, `update!`
 # and so on) as they will fail if something goes wrong.
 
-default_email = "admin@chromo.id"
-default_password = "password123456"
 alias Chromoid.Repo
-
-{:ok, user} =
-  Chromoid.Administration.register_admin(%{
-    email: default_email,
-    password: default_password
-  })
 
 device =
   %Chromoid.Devices.Device{
@@ -31,7 +23,6 @@ token = Chromoid.Devices.generate_token(device)
 
 IO.warn(
   """
-  User Credentials: #{user.email}:#{default_password}
   Device Token: #{token}
   Device connect call:
     PhoenixClient.Socket.start_link(url: "ws://localhost:4000/device_socket/websocket?token=#{

@@ -1,19 +1,19 @@
-defmodule ChromoidWeb.AdminAuth do
+defmodule ChromoidWeb.UserAuth do
   import Plug.Conn
   import Phoenix.Controller
 
-  alias Chromoid.Administration
+  alias Chromoid.Accounts
   alias ChromoidWeb.Router.Helpers, as: Routes
 
   # Make the remember me cookie valid for 60 days.
   # If you want bump or reduce this value, also change
-  # the token expiry itself in AdminToken.
+  # the token expiry itself in UserToken.
   @max_age 60 * 60 * 24 * 60
-  @remember_me_cookie "admin_remember_me"
+  @remember_me_cookie "user_remember_me"
   @remember_me_options [sign: true, max_age: @max_age, same_site: "Lax"]
 
   @doc """
-  Logs the admin in.
+  Logs the user in.
 
   It renews the session ID and clears the whole session
   to avoid fixation attacks. See the renew_session
@@ -24,16 +24,16 @@ defmodule ChromoidWeb.AdminAuth do
   disconnected on log out. The line can be safely removed
   if you are not using LiveView.
   """
-  def log_in_admin(conn, admin, params \\ %{}) do
-    token = Administration.generate_admin_session_token(admin)
-    admin_return_to = get_session(conn, :admin_return_to)
+  def log_in_user(conn, user, params \\ %{}) do
+    token = Accounts.generate_user_session_token(user)
+    user_return_to = get_session(conn, :user_return_to)
 
     conn
     |> renew_session()
-    |> put_session(:admin_token, token)
-    |> put_session(:live_socket_id, "admins_sessions:#{Base.url_encode64(token)}")
+    |> put_session(:user_token, token)
+    |> put_session(:live_socket_id, "users_sessions:#{Base.url_encode64(token)}")
     |> maybe_write_remember_me_cookie(token, params)
-    |> redirect(to: admin_return_to || signed_in_path(conn))
+    |> redirect(to: user_return_to || signed_in_path(conn))
   end
 
   defp maybe_write_remember_me_cookie(conn, token, %{"remember_me" => "true"}) do
@@ -66,13 +66,13 @@ defmodule ChromoidWeb.AdminAuth do
   end
 
   @doc """
-  Logs the admin out.
+  Logs the user out.
 
   It clears all session data for safety. See renew_session.
   """
-  def log_out_admin(conn) do
-    admin_token = get_session(conn, :admin_token)
-    admin_token && Administration.delete_session_token(admin_token)
+  def log_out_user(conn) do
+    user_token = get_session(conn, :user_token)
+    user_token && Accounts.delete_session_token(user_token)
 
     if live_socket_id = get_session(conn, :live_socket_id) do
       ChromoidWeb.Endpoint.broadcast(live_socket_id, "disconnect", %{})
@@ -85,23 +85,23 @@ defmodule ChromoidWeb.AdminAuth do
   end
 
   @doc """
-  Authenticates the admin by looking into the session
+  Authenticates the user by looking into the session
   and remember me token.
   """
-  def fetch_current_admin(conn, _opts) do
-    {admin_token, conn} = ensure_admin_token(conn)
-    admin = admin_token && Administration.get_admin_by_session_token(admin_token)
-    assign(conn, :current_admin, admin)
+  def fetch_current_user(conn, _opts) do
+    {user_token, conn} = ensure_user_token(conn)
+    user = user_token && Accounts.get_user_by_session_token(user_token)
+    assign(conn, :current_user, user)
   end
 
-  defp ensure_admin_token(conn) do
-    if admin_token = get_session(conn, :admin_token) do
-      {admin_token, conn}
+  defp ensure_user_token(conn) do
+    if user_token = get_session(conn, :user_token) do
+      {user_token, conn}
     else
       conn = fetch_cookies(conn, signed: [@remember_me_cookie])
 
-      if admin_token = conn.cookies[@remember_me_cookie] do
-        {admin_token, put_session(conn, :admin_token, admin_token)}
+      if user_token = conn.cookies[@remember_me_cookie] do
+        {user_token, put_session(conn, :user_token, user_token)}
       else
         {nil, conn}
       end
@@ -109,10 +109,10 @@ defmodule ChromoidWeb.AdminAuth do
   end
 
   @doc """
-  Used for routes that require the admin to not be authenticated.
+  Used for routes that require the user to not be authenticated.
   """
-  def redirect_if_admin_is_authenticated(conn, _opts) do
-    if conn.assigns[:current_admin] do
+  def redirect_if_user_is_authenticated(conn, _opts) do
+    if conn.assigns[:current_user] do
       conn
       |> redirect(to: signed_in_path(conn))
       |> halt()
@@ -122,19 +122,19 @@ defmodule ChromoidWeb.AdminAuth do
   end
 
   @doc """
-  Used for routes that require the admin to be authenticated.
+  Used for routes that require the user to be authenticated.
 
-  If you want to enforce the admin email is confirmed before
+  If you want to enforce the user email is confirmed before
   they use the application at all, here would be a good place.
   """
-  def require_authenticated_admin(conn, _opts) do
-    if conn.assigns[:current_admin] do
+  def require_authenticated_user(conn, _opts) do
+    if conn.assigns[:current_user] do
       conn
     else
       conn
       |> put_flash(:error, "You must log in to access this page.")
       |> maybe_store_return_to()
-      |> redirect(to: Routes.admin_session_path(conn, :new))
+      |> redirect(to: Routes.page_path(conn, :index))
       |> halt()
     end
   end
@@ -142,7 +142,7 @@ defmodule ChromoidWeb.AdminAuth do
   defp maybe_store_return_to(%{method: "GET"} = conn) do
     %{request_path: request_path, query_string: query_string} = conn
     return_to = if query_string == "", do: request_path, else: request_path <> "?" <> query_string
-    put_session(conn, :admin_return_to, return_to)
+    put_session(conn, :user_return_to, return_to)
   end
 
   defp maybe_store_return_to(conn), do: conn

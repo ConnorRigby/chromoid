@@ -1,4 +1,4 @@
-defmodule Chromoid.Administration.AdminNotifier do
+defmodule Chromoid.Accounts.UserNotifier do
   # For simplicity, this module simply logs messages to the terminal.
   # You should replace it by a proper email or notification tool, such as:
   #
@@ -14,12 +14,12 @@ defmodule Chromoid.Administration.AdminNotifier do
   @doc """
   Deliver instructions to confirm account.
   """
-  def deliver_confirmation_instructions(admin, url) do
-    deliver(admin.email, """
+  def deliver_confirmation_instructions(user, url) do
+    deliver(user.email, """
 
     ==============================
 
-    Hi #{admin.email},
+    Hi #{user.email},
 
     You can confirm your account by visiting the URL below:
 
@@ -32,14 +32,14 @@ defmodule Chromoid.Administration.AdminNotifier do
   end
 
   @doc """
-  Deliver instructions to reset a admin password.
+  Deliver instructions to reset a user password.
   """
-  def deliver_reset_password_instructions(admin, url) do
-    deliver(admin.email, """
+  def deliver_reset_password_instructions(user, url) do
+    deliver(user.email, """
 
     ==============================
 
-    Hi #{admin.email},
+    Hi #{user.email},
 
     You can reset your password by visiting the URL below:
 
@@ -52,14 +52,14 @@ defmodule Chromoid.Administration.AdminNotifier do
   end
 
   @doc """
-  Deliver instructions to update a admin email.
+  Deliver instructions to update a user email.
   """
-  def deliver_update_email_instructions(admin, url) do
-    deliver(admin.email, """
+  def deliver_update_email_instructions(user, url) do
+    deliver(user.email, """
 
     ==============================
 
-    Hi #{admin.email},
+    Hi #{user.email},
 
     You can change your email by visiting the URL below:
 

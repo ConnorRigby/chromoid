@@ -63,6 +63,7 @@ defmodule Chromoid.MixProject do
       {:ring_logger, "~> 0.7.0", only: :prod},
       {:phoenix_client, "~> 0.11.1", only: [:test, :dev]},
       {:exirc, "~> 2.0"},
+      {:tesla, "~> 1.3.0"},
       @nostrum
     ]
   end
