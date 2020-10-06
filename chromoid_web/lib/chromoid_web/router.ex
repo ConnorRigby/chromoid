@@ -2,7 +2,6 @@ defmodule ChromoidWeb.Router do
   use ChromoidWeb, :router
 
   import ChromoidWeb.UserAuth
-  import ChromoidWeb.AuthorizeWithDiscordPlug
   import Phoenix.LiveDashboard.Router
 
   pipeline :browser do
