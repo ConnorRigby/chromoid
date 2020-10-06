@@ -33,6 +33,18 @@ discord_token =
     environment variable DISCORD_TOKEN is missing.
     """
 
+discord_client_id =
+  System.get_env("DISCORD_CLIENT_ID") ||
+    raise """
+    environment variable DISCORD_CLIENT_ID is missing.
+    """
+
+discord_client_secret =
+  System.get_env("DISCORD_CLIENT_SECRET") ||
+    raise """
+    environment variable DISCORD_CLIENT_SECRET is missing.
+    """
+
 config :chromoid, Chromoid.Repo,
   # ssl: true,
   url: database_url,
@@ -48,4 +60,7 @@ config :chromoid, ChromoidWeb.Endpoint,
     transport_options: [socket_opts: [:inet6]]
   ]
 
-config :nostrum, token: discord_token
+config :nostrum,
+  token: discord_token,
+  client_id: discord_client_id,
+  client_secret: discord_client_secret

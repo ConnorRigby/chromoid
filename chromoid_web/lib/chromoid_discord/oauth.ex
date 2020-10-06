@@ -1,7 +1,6 @@
 defmodule ChromoidDiscord.OAuth do
-  @client_id 755_805_360_123_805_987
-  @client_secret "TN85dQdi-wQ1sAIsD_qPPegqrZlgWMoB"
-  # @token "NzU1ODA1MzYwMTIzODA1OTg3.X2IomA.3ZHpLMS4frz4CfvuiNojMBQ157E"
+  @client_id Application.get_env(:nostrum, :client_id)
+  @client_secret Application.get_env(:nostrum, :client_secret)
 
   use Tesla
   plug Tesla.Middleware.Logger
