@@ -31,8 +31,12 @@ defmodule ChromoidWeb.Router do
   scope "/", ChromoidWeb do
     pipe_through [:browser, :require_authenticated_user]
     get "/logout", DiscordOauthController, :logout
-    live_dashboard "/dashboard", metrics: ChromoidWeb.Telemetry
     resources "/devices", DeviceController, only: [:index, :show]
+  end
+
+  scope "/", ChromoidWeb do
+    pipe_through [:browser, :require_authenticated_user, :require_admin_user]
+    live_dashboard "/admin/dashboard", metrics: ChromoidWeb.Telemetry
   end
 
   scope "/", ChromoidWeb do

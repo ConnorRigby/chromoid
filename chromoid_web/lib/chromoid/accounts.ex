@@ -25,6 +25,16 @@ defmodule Chromoid.Accounts do
     Repo.get_by(User, email: email)
   end
 
+  def add_admin_permission(user) do
+    User.admin_changeset(user, %{admin: true})
+    |> Repo.update()
+  end
+
+  def remove_admin_permission(user) do
+    User.admin_changeset(user, %{admin: false})
+    |> Repo.update()
+  end
+
   @doc """
   Gets a single user.
 

@@ -29,4 +29,10 @@ defmodule ChromoidWeb.DiscordOauthController do
       end
     end
   end
+
+  def oauth(conn, %{"error" => error, "error_description" => reason}) do
+    conn
+    |> put_flash(:error, "#{error} #{reason}")
+    |> redirect(to: Routes.page_path(conn, :index))
+  end
 end

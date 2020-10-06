@@ -32,7 +32,7 @@ defmodule Chromoid.MixProject do
   defp elixirc_paths(_), do: ["lib"]
 
   nostrum =
-    if System.get_env("DISCORD_TOKEN") do
+    if Mix.env() == :prod && System.get_env("DISCORD_TOKEN") do
       {:nostrum, github: "Kraigie/nostrum"}
     else
       {:nostrum, github: "Kraigie/nostrum", runtime: false}

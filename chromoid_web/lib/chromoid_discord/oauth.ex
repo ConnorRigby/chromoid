@@ -16,7 +16,7 @@ defmodule ChromoidDiscord.OAuth do
   import ChromoidWeb.Router.Helpers
   @endpoint ChromoidWeb.Endpoint
 
-  def authorization_url do
+  def authorization_url(state \\ "") do
     query =
       URI.encode_query(%{
         "client_id" => @client_id,
@@ -24,7 +24,7 @@ defmodule ChromoidDiscord.OAuth do
         "redirect_uri" => discord_oauth_url(@endpoint, :oauth),
         "response_type" => "code",
         "scope" => "email guilds.join",
-        "state" => "15773059ghq9183habn"
+        "state" => state
       })
 
     %URI{

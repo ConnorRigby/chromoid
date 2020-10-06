@@ -35,7 +35,7 @@ if discord_client_id = System.get_env("DISCORD_CLIENT_ID") do
 end
 
 if discord_client_secret = System.get_env("DISCORD_CLIENT_SECRET") do
-  config :nostrum, client_id: discord_client_secret
+  config :nostrum, client_secret: discord_client_secret
 end
 
 # Import environment specific config. This must remain at the bottom

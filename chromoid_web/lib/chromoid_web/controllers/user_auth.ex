@@ -139,6 +139,18 @@ defmodule ChromoidWeb.UserAuth do
     end
   end
 
+  def require_admin_user(conn, _opts) do
+    if conn.assigns[:current_user].admin == true do
+      conn
+    else
+      conn
+      |> put_flash(:error, "You must be an admin to access this page.")
+      |> maybe_store_return_to()
+      |> redirect(to: Routes.page_path(conn, :index))
+      |> halt()
+    end
+  end
+
   defp maybe_store_return_to(%{method: "GET"} = conn) do
     %{request_path: request_path, query_string: query_string} = conn
     return_to = if query_string == "", do: request_path, else: request_path <> "?" <> query_string

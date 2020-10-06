@@ -6,6 +6,7 @@ defmodule Chromoid.Accounts.User do
   schema "users" do
     field :email, :string
     field :confirmed_at, :naive_datetime
+    field :admin, :boolean
     timestamps()
   end
 
@@ -21,6 +22,11 @@ defmodule Chromoid.Accounts.User do
     user
     |> cast(attrs, [:email])
     |> validate_email()
+  end
+
+  def admin_changeset(user, attrs) do
+    user
+    |> cast(attrs, [:admin])
   end
 
   defp validate_email(changeset) do

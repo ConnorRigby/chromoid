@@ -2,7 +2,7 @@ defmodule ChromoidDiscord.Supervisor do
   @moduledoc false
   use Supervisor
 
-  if Application.get_env(:nostrum, :token) do
+  if Mix.env() == :prod && Application.get_env(:nostrum, :token) do
     @dispatch_source ChromoidDiscord.NostrumConsumer
   else
     @dispatch_source ChromoidDiscord.FakeDiscordSource
