@@ -1,6 +1,8 @@
 package id.chromo.link
 
+import android.app.NotificationManager
 import android.bluetooth.BluetoothAdapter
+import android.bluetooth.BluetoothDevice
 import android.bluetooth.BluetoothManager
 import android.bluetooth.le.ScanCallback
 import android.bluetooth.le.ScanResult
@@ -14,10 +16,32 @@ import androidx.appcompat.app.AppCompatActivity
 import androidx.core.content.ContextCompat
 import androidx.recyclerview.widget.LinearLayoutManager
 import androidx.recyclerview.widget.RecyclerView
+import ch.kuon.phoenix.Channel
 import com.google.android.material.card.MaterialCardView
 import kotlinx.android.synthetic.main.my_text_view.view.*
+import ch.kuon.phoenix.Socket
 
-class MyAdapter(private val myDataset: ArrayList<String>) :
+public class BLEConn(socket: Socket, device: BluetoothDevice) {
+    val device = device;
+    private val socket = socket;
+    private val chan = socket.channel("ble:" + device.address)
+    public fun init() {
+        chan
+            .join()
+            .receive("ok") { msg ->
+                Log.i("ble:" + device.address, "Channel connected")
+            }
+            .receive("error") { msg ->
+                Log.e("ble:" + device.address, "Device Channel error")
+            }
+    }
+
+    public fun deinit() {
+        chan.leave()
+    }
+}
+
+class MyAdapter(private val myDataset: ArrayList<BLEConn>) :
     RecyclerView.Adapter<MyAdapter.MyViewHolder>() {
 
     // Provide a reference to the views for each data item
@@ -43,7 +67,7 @@ class MyAdapter(private val myDataset: ArrayList<String>) :
         // - get element from your dataset at this position
         // - replace the contents of the view with that element
         //holder.textView.text = myDataset[position]
-        holder.textView.cardtitle.text = myDataset[position]
+        holder.textView.cardtitle.text = myDataset[position].device.address
     }
 
     // Return the size of your dataset (invoked by the layout manager)
@@ -55,12 +79,53 @@ class MainActivity : AppCompatActivity() {
     private lateinit var recyclerView: RecyclerView
     private lateinit var viewAdapter: RecyclerView.Adapter<*>
     private lateinit var viewManager: RecyclerView.LayoutManager
-    lateinit var myDataset: ArrayList<String>
+    lateinit var myDataset: ArrayList<BLEConn>
     private val REQUEST_ENABLE_BT = 1
+    private lateinit var socket : Socket;
+    private var socketOpts = Socket.Options()
+    private lateinit var deviceChannel: Channel
+
+    // dev
+    //private val socketURL = "ws://10.0.2.2:4000/device_socket"
+    //private val socketToken = "m_CVZWnscA-eyajZzx180YBQNnII2bXa4hv1JrLqwRw"
+
+    // prod
+    private val socketURL = "wss://chromo.id/device_socket"
+    private val socketToken = "DGR_xUctGXrVHhxrVDaPHQu5rMYOxuN1lAJCUkr1U4k"
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
         setContentView(R.layout.activity_main)
+
+        // Initialize socket
+        Log.i("Socket", "initializing socketOpts")
+        socketOpts.timeout = 5_000
+        socketOpts.heartbeatIntervalMs = 10_000
+        socketOpts.rejoinAfterMs = { tries -> tries * 500}
+        socketOpts.reconnectAfterMs = { tries -> tries * 500}
+        socketOpts.params = hashMapOf("token" to socketToken)
+        Log.i("Socket", "initializing socket")
+        socket = Socket(socketURL, socketOpts)
+        socket.onError {
+            Log.e("Socket", "There was an error with the connection!")
+        }
+        socket.onClose { _, s: String ->
+            Log.w("Socket", "Socket disconnected: $s")
+        }
+        // Connect to socket
+        Log.i("Socket", "connecting socket")
+        socket.connect()
+        deviceChannel = socket.channel("device")
+        deviceChannel
+            .join()
+            .receive("ok") { msg ->
+                Log.i("DEVICECHANNNEL", "Device Channel connected")
+            }
+            .receive("error") { msg ->
+                Log.e("DEVICECHANNNEL", "Device Channel error")
+            }
+
+        // Initialize card view
         viewManager = LinearLayoutManager(this)
         myDataset = arrayListOf()
         viewAdapter = MyAdapter(myDataset)
@@ -89,32 +154,26 @@ class MainActivity : AppCompatActivity() {
         }
 
         val bluetoothLeScanner = BluetoothAdapter.getDefaultAdapter().bluetoothLeScanner
-        bluetoothLeScanner.startScan(leScanCallback)
-
         val button: Button = findViewById(R.id.add_button)
         button.setOnClickListener {
-//            myDataset.add(0, "a")
-//            viewAdapter.notifyItemInserted(0);
-//            bluetoothLeScanner.stopScan(leScanCallback)
             bluetoothLeScanner.startScan(leScanCallback)
         }
         //startService()
     }
-//    private val leDeviceListAdapter: LeDeviceListAdapter? = null
-
     private val leScanCallback: ScanCallback = object : ScanCallback() {
         override fun onScanResult(callbackType: Int, result: ScanResult) {
             super.onScanResult(callbackType, result)
-            Log.i("leScanCallback", "New ScanResult")
-            myDataset.add(0, result.device.address)
-            viewAdapter.notifyItemInserted(0);
-//            leDeviceListAdapter!!.addDevice(result.device)
-//            leDeviceListAdapter.notifyDataSetChanged()
+//            Log.i("leScanCallback", "New ScanResult")
+//            val dev = BLEConn(socket, result.device)
+//            dev.init()
+//            myDataset.add(0, dev)
+//            viewAdapter.notifyItemInserted(0);
         }
     }
 
     override fun onDestroy() {
-        stopService()
+//        stopService()
+        socket.disconnect()
         super.onDestroy()
     }
 

@@ -19,12 +19,12 @@ public class ForegroundService : Service() {
     private var socketOpts = Socket.Options()
 
     // dev
-    private val socketURL = "ws://10.0.2.2:4000/device_socket"
-    private val socketToken = "m_CVZWnscA-eyajZzx180YBQNnII2bXa4hv1JrLqwRw"
+    //private val socketURL = "ws://10.0.2.2:4000/device_socket"
+    //private val socketToken = "m_CVZWnscA-eyajZzx180YBQNnII2bXa4hv1JrLqwRw"
 
     // prod
-    // private val socketURL = "wss://chromo.id/device_socket"
-    // private val socketToken = "DGR_xUctGXrVHhxrVDaPHQu5rMYOxuN1lAJCUkr1U4k"
+    private val socketURL = "wss://chromo.id/device_socket"
+    private val socketToken = "DGR_xUctGXrVHhxrVDaPHQu5rMYOxuN1lAJCUkr1U4k"
 
     override fun onCreate() {
         socketOpts.timeout = 5_000
