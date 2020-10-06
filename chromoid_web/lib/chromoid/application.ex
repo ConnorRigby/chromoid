@@ -14,7 +14,7 @@ defmodule Chromoid.Application do
       # Start the PubSub system
       {Phoenix.PubSub, name: Chromoid.PubSub},
       # Start the Discord bot
-      # ChromoidDiscord.Supervisor,
+      ChromoidDiscord.Supervisor,
       # Start the Device Name registry
       Chromoid.Devices.DeviceRegistry,
       # Start the BLE Supervisor
