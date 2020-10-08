@@ -25,6 +25,7 @@ defmodule Chromoid.DeviceChannel do
     case Channel.join(@socket, @topic) do
       {:ok, response, channel} ->
         Logger.info("Connected to channel: #{inspect(response)}")
+        true = Process.link(channel)
         {:noreply, %{state | channel: channel, connected?: true}}
 
       error ->
@@ -32,6 +33,13 @@ defmodule Chromoid.DeviceChannel do
         send(self(), :join_channel)
         {:noreply, %{state | channel: nil, connected?: false}}
     end
+  end
+
+  def handle_info({Channel, channel, {:disconnected, reason}}, %{channel: channel} = state) do
+    Logger.error("Channel disconnected")
+    Channel.leave(channel)
+    send(self(), :join_channel)
+    {:noreply, %{state | channel: nil}}
   end
 
   def handle_info(%Message{event: "photo_request"}, state) do

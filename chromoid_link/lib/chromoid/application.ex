@@ -16,11 +16,8 @@ defmodule Chromoid.Application do
         Chromoid.BLEConnection.Registry,
         Chromoid.BLEConnectionSupervisor,
         Chromoid.BLECtx,
-        {PhoenixClient.Socket, {socket_opts, name: Chromoid.Socket}},
+        {Chromoid.SocketMonitor, socket_opts},
         Chromoid.DeviceChannel
-        # Children for all targets
-        # Starts a worker by calling: Chromoid.Worker.start_link(arg)
-        # {Chromoid.Worker, arg},
       ] ++ children(target())
 
     Supervisor.start_link(children, opts)
