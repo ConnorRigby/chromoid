@@ -1,25 +1,18 @@
-<!DOCTYPE html>
-<html lang="en">
-  <head>
-    <meta charset="utf-8"/>
-    <meta http-equiv="X-UA-Compatible" content="IE=edge"/>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
-    <title>Chromoid Dashboard</title>
-    <link rel="stylesheet" href="<%= Routes.static_path(@conn, "/css/app.css") %>"/>
-    <script defer type="text/javascript" src="<%= Routes.static_path(@conn, "/js/app.js") %>"></script>
-  </head>
-  <body>
-    <header>
-      <section class="container">
-        <nav role="navigation">
-          <%= render "_user_menu.html", assigns %>
-        </nav>
-      </section>
-    </header>
-    <main role="main" class="container">
-      <p class="alert alert-info" role="alert"><%= get_flash(@conn, :info) %></p>
-      <p class="alert alert-danger" role="alert"><%= get_flash(@conn, :error) %></p>
-      <%= @inner_content %>
-    </main>
-  </body>
-</html>
+<main role="main">
+  <% error_flash = get_flash(@conn, :error) %>
+  <% info_flash = get_flash(@conn, :error) %>
+
+  <%= if error_flash do %>
+    <div class="alert alert-danger m-1 bg-red-200 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+      <p class="block sm:inline"><%= error_flash %></p>
+    </div>
+  <% end %>
+
+  <%= if info_flash do %>
+    <div class="alert alert-danger m-1 bg-blue-200 border border-blue-400 text-blue-900 px-4 py-3 rounded relative" role="alert">
+      <p class="block sm:inline"><%= info_flash %></p>
+    </div>
+  <% end %>
+
+  <%= @inner_content %>
+</main>

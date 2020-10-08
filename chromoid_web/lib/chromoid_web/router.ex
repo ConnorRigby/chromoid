@@ -8,6 +8,8 @@ defmodule ChromoidWeb.Router do
     plug :accepts, ["html"]
     plug :fetch_session
     plug :fetch_flash
+    plug :fetch_live_flash
+    plug :put_root_layout, {ChromoidWeb.LayoutView, :root}
     plug :protect_from_forgery
     plug :put_secure_browser_headers
     plug :fetch_current_user
@@ -31,7 +33,8 @@ defmodule ChromoidWeb.Router do
   scope "/", ChromoidWeb do
     pipe_through [:browser, :require_authenticated_user]
     get "/logout", DiscordOauthController, :logout
-    resources "/devices", DeviceController, only: [:index, :show]
+    live "/devices", DeviceLive, :index
+    # resources "/devices", DeviceController, only: [:index, :show]
   end
 
   scope "/", ChromoidWeb do

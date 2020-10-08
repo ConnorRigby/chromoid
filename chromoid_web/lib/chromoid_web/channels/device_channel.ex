@@ -20,7 +20,9 @@ defmodule ChromoidWeb.DeviceChannel do
   def handle_info(:after_join, socket) do
     {:ok, _} =
       Presence.track(self(), "devices", "#{socket.assigns.device.id}", %{
-        online_at: DateTime.utc_now()
+        online_at: DateTime.utc_now(),
+        last_communication: DateTime.utc_now(),
+        status: "connected"
       })
 
     {:noreply, socket}

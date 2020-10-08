@@ -1,0 +1,9 @@
+<div>
+<%= for device <- @devices do %>
+  <div>
+    <img src="<%= device.avatar_url %>"/>
+    <h2> <%= device.serial %> </h2>
+    <%= device.status %>
+  </div>
+<% end %>
+</div>
