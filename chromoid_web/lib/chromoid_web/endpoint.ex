@@ -16,7 +16,8 @@ defmodule ChromoidWeb.Endpoint do
 
   socket "/device_socket", ChromoidWeb.DeviceSocket,
     websocket: true,
-    longpoll: false
+    longpoll: false,
+    timeout: 5000
 
   socket "/live", Phoenix.LiveView.Socket, websocket: [connect_info: [session: @session_options]]
 
