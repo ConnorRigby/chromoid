@@ -14,22 +14,17 @@ defmodule Chromoid.BLECtx do
 
   # Sets the name of the BLE device
   @write_local_name %WriteLocalName{name: "ChromoidLink"}
-  @default_usb_config %BlueHeronTransportUART{
-    device: "ttyS0",
-    uart_opts: [speed: 115_200],
-    init_commands: [@write_local_name]
-  }
-
-  # @default_usb_config %BlueHeronTransportUART{
-  #   device: "ttyACM0",
-  #   uart_opts: [speed: 115_200],
-  #   init_commands: [@write_local_name]
-  # }
-  # @default_usb_config %BlueHeronTransportUSB{
-  #   vid: 0x0BDA,
-  #   pid: 0xB82C,
-  #   init_commands: [@write_local_name]
-  # }
+  if Mix.target() == :host do
+    @default_transport_config %BlueHeronTransportStub{
+      init_commands: [@write_local_name]
+    }
+  else
+    @default_transport_config %BlueHeronTransportUART{
+      device: "ttyS0",
+      uart_opts: [speed: 115_200],
+      init_commands: [@write_local_name]
+    }
+  end
 
   @doc false
   def start_link(args) do
@@ -44,7 +39,7 @@ defmodule Chromoid.BLECtx do
 
   @impl GenServer
   def handle_info(:init_ble, %{ctx: nil} = state) do
-    case BlueHeron.transport(@default_usb_config) do
+    case BlueHeron.transport(@default_transport_config) do
       {:ok, ctx} ->
         :ok = BlueHeron.add_event_handler(ctx)
         {:noreply, %{state | ctx: ctx}}
@@ -84,9 +79,7 @@ defmodule Chromoid.BLECtx do
   def connect(addr, serial, state) do
     IO.inspect(addr, base: :hex, label: serial)
 
-    case Chromoid.BLEConnectionSupervisor.create_connection(
-           {state.ctx, %{address: addr, serial: serial}}
-         ) do
+    case Chromoid.BLEConnectionSupervisor.create_connection({state.ctx, %{address: addr, serial: serial}}) do
       {:ok, _pid} ->
         Logger.info("Trying to connect to Govee LED #{inspect(addr, base: :hex)}")
         :ok

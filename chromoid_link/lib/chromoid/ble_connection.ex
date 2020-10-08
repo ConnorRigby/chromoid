@@ -58,8 +58,7 @@ defmodule Chromoid.BLEConnection do
   end
 
   def handle_info(:ble_connect, %{ble_connected?: false} = state) do
-    :ok =
-      BlueHeron.ATT.Client.create_connection(state.conn, peer_address: state.device_info.address)
+    :ok = BlueHeron.ATT.Client.create_connection(state.conn, peer_address: state.device_info.address)
 
     Logger.info("Create connection request complete")
     {:noreply, state}
@@ -138,8 +137,7 @@ defmodule Chromoid.BLEConnection do
   defp build_payload(state, rgb) do
     case state.device_info.serial do
       "H6125" <> _ ->
-        <<0x33, 0x5, 0xB, rgb::24, 0xFF, 0x7F, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0,
-          0x0>>
+        <<0x33, 0x5, 0xB, rgb::24, 0xFF, 0x7F, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0, 0x0>>
 
       "H6001" <> _ ->
         <<0x33, 0x5, 0x2, rgb::24, 0, rgb::24, 0, 0, 0, 0, 0, 0, 0, 0, 0>>

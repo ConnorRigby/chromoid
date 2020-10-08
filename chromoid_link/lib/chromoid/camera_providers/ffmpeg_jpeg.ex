@@ -2,8 +2,7 @@ defmodule Chromoid.CameraProvider.FFMpegJPEG do
   def jpeg do
     port =
       Port.open({:spawn_executable, System.find_executable("ffmpeg")}, [
-        {:args,
-         ~w(-f video4linux2 -s 640x480 -i /dev/video0 -ss 0:0:1 -frames 1 -f mpjpeg pipe:1)},
+        {:args, ~w(-f video4linux2 -s 640x480 -i /dev/video0 -ss 0:0:1 -frames 1 -f mpjpeg pipe:1)},
         :binary,
         :exit_status
       ])
