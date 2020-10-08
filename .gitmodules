@@ -1,0 +1,3 @@
+[submodule "phoenix_client"]
+	path = phoenix_client
+	url = git@github.com:ConnorRigby/phoenix_client.git
