@@ -68,7 +68,7 @@ config :chromoid, ChromoidWeb.Endpoint,
 
 # Do not include metadata nor timestamps in development logs
 config :logger, :console, format: "[$level] $message\n"
-config :logger, handle_otp_reports: true, handle_sasl_reports: true
+# config :logger, handle_otp_reports: true, handle_sasl_reports: true
 
 # Set a higher stacktrace during development. Avoid configuring such
 # in production as building large stacktraces may be expensive.

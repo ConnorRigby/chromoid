@@ -14,8 +14,8 @@ alias Chromoid.Repo
 
 device =
   %Chromoid.Devices.Device{
-    serial: "abcdef",
-    avatar_url: "https://api.adorable.io/avatars/285/abcdef.png"
+    serial: "00000001",
+    avatar_url: "https://api.adorable.io/avatars/285/00000001.png"
   }
   |> Repo.insert!()
 

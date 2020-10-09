@@ -6,27 +6,24 @@ defmodule ChromoidWeb.DeviceLive do
   @impl true
   def mount(_params, _session, socket) do
     :ok = socket.endpoint.subscribe("devices")
-    # :ok = ChromoidWeb.Endpoint.subscribe("devices")
-    send(self(), :WTF)
     {:ok, assign(socket, :devices, [])}
 
-    # devices =
-    #   sync_devices(Chromoid.Repo.all(Devices.Device), %{
-    #     joins: Presence.list("devices"),
-    #     leaves: %{}
-    #   })
+    devices =
+      sync_devices(Chromoid.Repo.all(Devices.Device), %{
+        joins: Presence.list("devices"),
+        leaves: %{}
+      })
 
-    # {:ok,
-    #  socket
-    #  |> assign(:devices, devices)}
+    {:ok,
+     socket
+     |> assign(:devices, devices)}
   end
 
   @impl true
   def handle_info(%Broadcast{event: "presence_diff", topic: "devices", payload: diff}, socket) do
-    raise "??????"
     devices = sync_devices(Chromoid.Repo.all(Devices.Device), diff)
 
-    {:ok,
+    {:noreply,
      socket
      |> assign(:devices, devices)}
   end

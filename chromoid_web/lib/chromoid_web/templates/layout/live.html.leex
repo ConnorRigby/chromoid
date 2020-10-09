@@ -1,18 +1,16 @@
-<main role="main">
-  <% flash_info = live_flash(@flash, :info) %>
-  <% flash_error = live_flash(@flash, :error) %>
+<% flash_info = live_flash(@flash, :info) %>
+<% flash_error = live_flash(@flash, :error) %>
 
-  <%= if flash_error do %>
-    <div class="alert alert-danger m-1 bg-red-200 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
-      <p class="block sm:inline" phx-click="lv:clear-flash" phx-value-key="info"><%= flash_error %></p>
-    </div>
-  <% end %>
+<%= if flash_error do %>
+  <div class="alert alert-danger m-1 bg-red-200 border border-red-400 text-red-700 px-4 py-3 rounded relative" role="alert">
+    <p class="block sm:inline" phx-click="lv:clear-flash" phx-value-key="info"><%= flash_error %></p>
+  </div>
+<% end %>
 
-  <%= if flash_info do %>
-    <div class="alert alert-danger m-1 bg-blue-200 border border-blue-400 text-blue-900 px-4 py-3 rounded relative" role="alert">
-      <p class="block sm:inline" phx-click="lv:clear-flash" phx-value-key="error" > <%= flash_info %></p>
-    </div>
-  <% end %>
+<%= if flash_info do %>
+  <div class="alert alert-danger m-1 bg-blue-200 border border-blue-400 text-blue-900 px-4 py-3 rounded relative" role="alert">
+    <p class="block sm:inline" phx-click="lv:clear-flash" phx-value-key="error" > <%= flash_info %></p>
+  </div>
+<% end %>
 
-  <%= @inner_content %>
-</main>
+<%= @inner_content %>

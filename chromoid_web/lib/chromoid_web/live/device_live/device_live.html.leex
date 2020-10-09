@@ -1,9 +1,33 @@
-<div>
 <%= for device <- @devices do %>
-  <div>
-    <img src="<%= device.avatar_url %>"/>
-    <h2> <%= device.serial %> </h2>
-    <%= device.status %>
+  <div class="max-w-sm w-full lg:max-w-full lg:flex py-1">
+    <div class="border-r border-b border-l border-gray-400 lg:border-l-0 lg:border-t lg:border-gray-400 bg-white rounded-b lg:rounded-b-none lg:rounded-r p-4 flex flex-col justify-between leading-normal">
+      <div class="mb-8">
+        <div class="text-gray-900 font-bold text-xl mb-2">Can coffee make you a better developer?</div>
+        <p class="text-gray-700 text-base">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Voluptatibus quia, nulla! Maiores et perferendis eaque, exercitationem praesentium nihil.</p>
+      </div>
+      <div class="flex items-center">
+        <img class="w-10 h-10 rounded-full mr-4" src="<%= device.avatar_url %>" alt="<%= device.serial %> avatar">
+        <div class="text-sm">
+          <p class="text-gray-900 leading-none"><%= device.serial %> </p>
+          <p class="text-gray-600">Aug 18</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="max-w-sm w-full lg:max-w-full lg:flex">
+    <div class="border-r border-b border-l border-gray-400 lg:border-l-0 lg:border-t lg:border-gray-400 bg-white rounded-b lg:rounded-b-none lg:rounded-r p-4 flex flex-col justify-between leading-normal">
+      <div class="mb-8">
+        <div class="text-gray-900 font-bold text-xl mb-2">Can coffee make you a better developer?</div>
+        <p class="text-gray-700 text-base">Lorem ipsum dolor sit amet, consectetur adipisicing elit. Voluptatibus quia, nulla! Maiores et perferendis eaque, exercitationem praesentium nihil.</p>
+      </div>
+      <div class="flex items-center">
+        <img class="w-10 h-10 rounded-full mr-4" src="<%= device.avatar_url %>" alt="<%= device.serial %> avatar">
+        <div class="text-sm">
+          <p class="text-gray-900 leading-none"><%= device.serial %> </p>
+          <p class="text-gray-600">Aug 18</p>
+        </div>
+      </div>
+    </div>
   </div>
 <% end %>
-</div>
