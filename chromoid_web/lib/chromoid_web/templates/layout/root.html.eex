@@ -25,7 +25,16 @@
         >
           <span class="text-2xl pl-2">Chromoid</span>
         </a>
+        <%= unless @current_user do %>
+          <%= link "Login with Discord",
+            to: ChromoidDiscord.OAuth.authorization_url(),
+            class: "block text-sm mx-1 px-1 py-2 leading-none border rounded text-white border-white hover:border-transparent hover:text-indigo-500 hover:bg-white lg:mt-0"
+          %>
+        <% end %>
       </div>
+
+
+
 
       <!--Toggle button (hidden on large screens)-->
       <button
@@ -65,41 +74,38 @@
         >
           <li class="mr-3">
             <a
-              class="inline-block py-2 px-4 text-white no-underline"
-              href="#"
+              class="<%= if active?(@conn, Routes.page_path(@conn, :index)), do: "inline-block py-2 px-4 text-white no-underline", else: "inline-block text-gray-500 no-underline hover:text-gray-200 hover:text-underline py-2 px-4" %>"
+              href="<%= Routes.page_path(@conn, :index) %>"
               @click="isOpen = false"
-              >Active
+              >Dashboard
             </a>
           </li>
-          <li class="mr-3">
-            <a
-              class="inline-block text-gray-600 no-underline hover:text-gray-200 hover:text-underline py-2 px-4"
-              href="#"
-              @click="isOpen = false"
-              >link
-            </a>
-          </li>
-          <li class="mr-3">
-            <a
-              class="inline-block text-gray-600 no-underline hover:text-gray-200 hover:text-underline py-2 px-4"
-              href="#"
-              @click="isOpen = false"
-              >link
-            </a>
-          </li>
-          <li class="mr-3">
-            <a
-              class="inline-block text-gray-600 no-underline hover:text-gray-200 hover:text-underline py-2 px-4"
-              href="#"
-              @click="isOpen = false"
-              >link
-            </a>
-          </li>
+          <%= if @current_user do %>
+
+            <li class="mr-3">
+              <a
+                class="<%= if active?(@conn, Routes.device_path(@conn, :index)), do: "inline-block py-2 px-4 text-white no-underline", else: "inline-block text-gray-500 no-underline hover:text-gray-200 hover:text-underline py-2 px-4" %>"
+                href="<%= Routes.device_path(@conn, :index) %>"
+                @click="isOpen = false"
+                >Devices
+              </a>
+            </li>
+
+            <%= if @current_user.admin do %>
+              <li class="mr-3">
+                <a
+                  class="<%= if active?(@conn, Routes.live_dashboard_path(@conn, :home)), do: "inline-block py-2 px-4 text-white no-underline", else: "inline-block text-gray-500 no-underline hover:text-gray-200 hover:text-underline py-2 px-4" %>"
+                  href="<%= Routes.live_dashboard_path(@conn, :home) %>"
+                  @click="isOpen = false"
+                  >Admin Dashboard
+                </a>
+              </li>
+            <% end %>
+          <% end %>
+
         </ul>
       </div>
     </nav>
-
-
 
     <%= @inner_content %>
   </body>

@@ -63,6 +63,10 @@ defmodule ChromoidDiscord.OAuth do
     with %Tesla.Env{status: 200} = env <- response,
          {:ok, %Tesla.Env{body: body}} <- Tesla.Middleware.JSON.decode(env, []) do
       client(body)
+    else
+      %Tesla.Env{} = env ->
+        env = Tesla.Middleware.JSON.decode(env, [])
+        raise inspect(env.body)
     end
   end
 
