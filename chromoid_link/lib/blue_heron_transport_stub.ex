@@ -3,8 +3,29 @@ defmodule BlueHeronTransportStub do
 
   use GenServer
   @behaviour BlueHeron.HCI.Transport
+  alias BlueHeron.HCI.Event.{
+    LEMeta.AdvertisingReport,
+    LEMeta.AdvertisingReport.Device
+  }
+
   # @hci_command_packet 0x01
   # @hci_acl_packet 0x02
+
+  def advertise_device() do
+    addr = 0x181149785464493
+    serial = "H6001_1EAD"
+    ble_ctx = Chromoid.BLECtx
+
+    device = %Device{
+      address: addr,
+      data: ["\tMinger_" <> serial],
+      event_type: nil,
+      address_type: nil,
+      rss: nil
+    }
+
+    send(ble_ctx, {:HCI_EVENT_PACKET, %AdvertisingReport{devices: [device]}})
+  end
 
   defstruct recv: nil,
             init_commands: []
@@ -81,7 +102,7 @@ defmodule BlueHeronTransportStub do
   stub_command <<0x0C, 0x20, _::binary>>, "\x0e\x04\x02\x0c\x20\x00"
 
   def maybe_reply(:command, data, _state) do
-    raise "Unknown command: #{inspect(data, base: :hex, limit: :infinity)}"
+    # raise "Unknown command: #{inspect(data, base: :hex, limit: :infinity)}"
   end
 
   def maybe_reply(_type, _data, _state) do
