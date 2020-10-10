@@ -34,6 +34,7 @@ defmodule ChromoidWeb.Router do
     pipe_through [:browser, :require_authenticated_user]
     get "/logout", DiscordOauthController, :logout
     live "/devices", DeviceLive, :index
+    live "/devices/:id", DeviceLive, :index
     # resources "/devices", DeviceController, only: [:index, :show]
   end
 

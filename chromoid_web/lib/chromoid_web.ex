@@ -90,6 +90,7 @@ defmodule ChromoidWeb do
       import ChromoidWeb.ErrorHelpers
       import ChromoidWeb.Gettext
       alias ChromoidWeb.Router.Helpers, as: Routes
+      import Chromoid.Devices.Ble.Utils
     end
   end
 

@@ -18,6 +18,11 @@ import LiveSocket from "phoenix_live_view"
 import 'alpinejs'
 
 let Hooks = {}
+Hooks.PushEvent = {
+  mounted() {
+    window.pushEventHook = this
+  }
+}
 let csrfToken = document.querySelector("meta[name='csrf-token']").getAttribute("content")
 let liveSocket = new LiveSocket('/live', Socket, {
   dom: {

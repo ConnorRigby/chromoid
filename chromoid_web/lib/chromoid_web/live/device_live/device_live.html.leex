@@ -1,6 +1,50 @@
-<div class="mx-4 my-1 w-max">
+
+	<style>
+		[x-cloak] {
+			display: none;
+		}
+
+		.duration-75 {
+			transition-duration: 75ms;
+		}
+
+		.ease-in {
+			transition-timing-function: cubic-bezier(0.4, 0, 1, 1);
+		}
+
+		.ease-out {
+			transition-timing-function: cubic-bezier(0, 0, 0.2, 1);
+		}
+
+		.scale-90 {
+			transform: scale(.9);
+		}
+
+		.scale-100 {
+			transform: scale(1);
+		}
+	</style>
+	<script>
+		function colorPicker() {
+			return {
+				isOpen: false,
+				colors: ['#2196F3', '#009688', '#9C27B0', '#FFEB3B', '#afbbc9', '#4CAF50', '#2d3748', '#f56565', '#ed64a6'],
+				colorSelected: '#2196F3'
+			}
+		}
+	</script>
+
+<div class="mx-4 my-1 w-max"
+  x-data="{ 'showModal': false }"
+  @keydown.escape="showModal = false"
+>
+
   <%= for device <- @devices do %>
-    <div class="max-w-sm w-full lg:max-w-full py-1">
+    <div class="max-w-sm w-full lg:max-w-full py-1"
+      @click="showModal = true"
+      phx-click="show_modal"
+      phx-value-device_id="<%= device.id %>"
+    >
       <div class="border-r border-b border-l border-gray-400 lg:border-l-0 lg:border-t lg:border-gray-400 bg-white rounded-b lg:rounded-b-none lg:rounded-r p-4 flex flex-col justify-between leading-normal">
 
         <div class="flex items-center">
@@ -17,5 +61,81 @@
         </div>
       </div>
     </div>
+  <% end %>
+
+  <%= if @modal_device do %>
+    <!--Overlay-->
+    <div class="overflow-auto w-full lg:max-w-full"
+      style="background-color: rgba(0,0,0,0.5)"
+      x-show="showModal"
+      :class="{ 'absolute inset-0 z-10 flex items-center justify-center': showModal }"
+    >
+      <!--Dialog-->
+      <div class="bg-white w-11/12 md:max-w-md lg:max-w-lg mx-auto rounded shadow-lg py-4 text-left px-6"
+        id="modal"
+        x-show="showModal"
+        phx-hook="PushEvent"
+        @click.away="showModal=false; pushEventHook.pushEvent('hide_modal', '{}')"
+        x-transition:enter="ease-out duration-75"
+        x-transition:enter-start="opacity-0 scale-90"
+        x-transition:enter-end="opacity-100 scale-100"
+        x-transition:leave="ease-in duration-75"
+        x-transition:leave-start="opacity-100 scale-100"
+        x-transition:leave-end="opacity-0 scale-90"
+      >
+
+        <!--Title-->
+        <div class="flex justify-between items-center pb-3">
+          <p class="text-2xl font-bold">
+            Viewing Device <%= @modal_device.serial %>
+          </p>
+          <div class="cursor-pointer z-50" @click="showModal = false">
+            <svg class="fill-current text-black" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18">
+              <path d="M14.53 4.53l-1.06-1.06L9 7.94 4.53 3.47 3.47 4.53 7.94 9l-4.47 4.47 1.06 1.06L9 10.06l4.47 4.47 1.06-1.06L10.06 9z"></path>
+            </svg>
+          </div>
+        </div>
+
+        <div>
+          <%= for {addr_str, _ble} <- @ble do%>
+            <%= format_address(addr_str) %>
+            <div x-data="colorPicker()">
+              <div class="max-w-sm mx-auto">
+
+                <div class="">
+                  <div class="flex">
+                    <div class="">
+                      <div class="right-0 mt-2">
+                        <div class="px-4 py-3">
+                          <div class="flex flex-wrap -mx-2">
+                            <%= for color <- @colors do %>
+                              <div
+                                phx-click="color_picker"
+                                phx-value-color="<%= color %>"
+                                phx-value-address="<%= addr_str %>"
+                                class="w-8 h-8 inline-flex rounded-full cursor-pointer border-4 border-white focus:outline-none focus:shadow-outline"
+                                :style="`background: <%= color %>;`"
+                              ></div>
+                            <% end %>
+                          </div>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+          <% end %>
+        </div>
+
+        <!--Footer-->
+        <div class="flex justify-end pt-2">
+          <button class="px-4 bg-transparent p-3 rounded-lg text-indigo-500 hover:bg-gray-100 hover:text-indigo-400 mr-2" @click="alert('Additional Action');">Action</button>
+          <button class="modal-close px-4 bg-indigo-500 p-3 rounded-lg text-white hover:bg-indigo-400" @click="showModal = false">Close</button>
+        </div>
+
+      </div>
+      <!--/Dialog -->
+    </div><!-- /Overlay -->
   <% end %>
 </div>

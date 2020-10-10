@@ -3,7 +3,7 @@ defmodule Chromoid.Devices do
   Interface for working with Device records
   """
   alias Chromoid.Repo
-  alias Chromoid.Devices.DeviceToken
+  alias Chromoid.Devices.{Device, DeviceToken}
 
   @doc """
   Generate a token for a device
@@ -20,5 +20,9 @@ defmodule Chromoid.Devices do
   def get_device_by_token(token) do
     {:ok, query} = DeviceToken.verify_token_query(token)
     Repo.one(query)
+  end
+
+  def get_device(id) do
+    Repo.get_by(Device, id: id)
   end
 end
