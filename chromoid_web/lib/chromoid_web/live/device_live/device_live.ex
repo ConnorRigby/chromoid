@@ -6,7 +6,7 @@ defmodule ChromoidWeb.DeviceLive do
   import Chromoid.Devices.Ble.Utils
 
   @impl true
-  def mount(_params, _session, socket) do
+  def mount(params, _session, socket) do
     :ok = socket.endpoint.subscribe("devices")
     {:ok, assign(socket, :devices, [])}
 
@@ -16,11 +16,16 @@ defmodule ChromoidWeb.DeviceLive do
         leaves: %{}
       })
 
+    modal_device =
+      if params["id"] do
+        Devices.get_device(params["id"])
+      end
+
     {:ok,
      socket
      |> assign(:devices, devices)
-     |> assign(:modal_device_id, nil)
-     |> assign(:modal_device, nil)
+     |> assign(:modal_device_id, params["id"])
+     |> assign(:modal_device, modal_device)
      |> assign(:ble, %{})
      |> assign(:colors, [
        "#2196F3",

@@ -24,18 +24,9 @@
 			transform: scale(1);
 		}
 	</style>
-	<script>
-		function colorPicker() {
-			return {
-				isOpen: false,
-				colors: ['#2196F3', '#009688', '#9C27B0', '#FFEB3B', '#afbbc9', '#4CAF50', '#2d3748', '#f56565', '#ed64a6'],
-				colorSelected: '#2196F3'
-			}
-		}
-	</script>
 
 <div class="mx-4 my-1 w-max"
-  x-data="{ 'showModal': false }"
+  x-data="{ 'showModal': <%= is_map(@modal_device) %> }"
   @keydown.escape="showModal = false"
 >
 
@@ -99,9 +90,8 @@
         <div>
           <%= for {addr_str, _ble} <- @ble do%>
             <%= format_address(addr_str) %>
-            <div x-data="colorPicker()">
+            <div>
               <div class="max-w-sm mx-auto">
-
                 <div class="">
                   <div class="flex">
                     <div class="">
