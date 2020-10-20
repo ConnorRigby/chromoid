@@ -23,7 +23,7 @@ defmodule ChromoidDiscord.OAuth do
         "prompt" => "consent",
         "redirect_uri" => discord_oauth_url(@endpoint, :oauth),
         "response_type" => "code",
-        "scope" => "email guilds.join",
+        "scope" => "email",
         "state" => state
       })
 
