@@ -7,8 +7,10 @@ defmodule ChromoidDiscord.Guild do
   use Supervisor
 
   alias ChromoidDiscord.Guild.{
+    ChannelCache,
     CommandProcessor,
-    DeviceStatusChannel
+    DeviceStatusChannel,
+    LuaConsumer
   }
 
   import ChromoidDiscord.Guild.Registry, only: [via: 2]
@@ -26,8 +28,10 @@ defmodule ChromoidDiscord.Guild do
       {ChromoidDiscord.Guild.EventDispatcher, guild},
 
       # consumers
+      {ChannelCache, {guild, config, current_user}},
       {CommandProcessor, {guild, config, current_user}},
       {DeviceStatusChannel, {guild, config, current_user}},
+      {LuaConsumer, {guild, config, current_user}},
 
       # Responder
       {ChromoidDiscord.Guild.Responder,

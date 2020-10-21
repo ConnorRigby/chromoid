@@ -10,4 +10,8 @@ defmodule ChromoidDiscord.Guild.Registry do
   def via(%Nostrum.Struct.Guild{id: id}, module) do
     {:via, Registry, {Module.concat(__MODULE__, "#{id}"), module}}
   end
+
+  def via(id, module) do
+    {:via, Registry, {Module.concat(__MODULE__, "#{id}"), module}}
+  end
 end
