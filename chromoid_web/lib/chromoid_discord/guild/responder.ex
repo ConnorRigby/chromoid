@@ -2,8 +2,12 @@ defmodule ChromoidDiscord.Guild.Responder do
   @moduledoc "Sends API events in response to Consumer events"
   use GenStage
   require Logger
-  # @api Nostrum.Api
-  @api ChromoidDiscord.FakeAPI
+
+  if Mix.env() == :prod do
+    @api Nostrum.Api
+  else
+    @api ChromoidDiscord.FakeAPI
+  end
 
   import ChromoidDiscord.Guild.Registry, only: [via: 2]
 

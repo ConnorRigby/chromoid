@@ -42,6 +42,7 @@ defmodule ChromoidDiscord.Guild.LuaConsumer do
   end
 
   def handle_info({:action, action}, state) do
+    Logger.info("Inbound action from lua script: #{inspect(action)}")
     {:noreply, [action], state}
   end
 

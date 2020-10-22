@@ -7,7 +7,7 @@ end)
 
 client:on('messageCreate', function(message)
   print('channel message')
-  message.channel:send('Pong!')
-	-- if message.content == '!ping' then
-	-- end
+	if message.content == '!ping' then
+		message.channel:send('Pong!')
+	end
 end)
