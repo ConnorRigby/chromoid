@@ -50,6 +50,8 @@ config :chromoid, Chromoid.Repo,
   url: database_url,
   pool_size: String.to_integer(System.get_env("POOL_SIZE") || "10")
 
+config :chromoid, Chromoid.Lua.ScriptStorage, root_dir: "/scripts"
+
 config :chromoid, ChromoidWeb.Endpoint,
   url: [host: "chromo.id", port: 80],
   cache_static_manifest: "priv/static/cache_manifest.json",

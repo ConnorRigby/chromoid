@@ -7,6 +7,7 @@ defmodule Chromoid.Accounts.User do
     field :email, :string
     field :confirmed_at, :naive_datetime
     field :admin, :boolean
+    has_many :scripts, Chromoid.Lua.Script, foreign_key: :created_by_id
     timestamps()
   end
 

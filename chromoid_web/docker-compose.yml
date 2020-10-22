@@ -11,6 +11,8 @@ services:
   app:
     build: .
     image: "registry.sixtyeightplus.one/chromoid"
+    volumes:
+      - ./scripts:/scripts
     depends_on: 
       - 'db'
     ports: 
