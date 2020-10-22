@@ -3,10 +3,6 @@ defmodule Chromoid.Lua.ScriptStorage do
   import Ecto.Query, warn: false
 
   @root_dir Application.get_env(:chromoid, __MODULE__)[:root_dir]
-  @root_dir ||
-    Mix.raise("""
-    Script root dir is not configured
-    """)
 
   alias Chromoid.Lua.Script
 

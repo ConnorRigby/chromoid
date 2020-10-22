@@ -25,35 +25,29 @@
 </style>
 
 <div class="mx-4 my-1 w-max"
-  x-data="{ 'showModal': <%= is_map(@modal_device) %> }"
+  x-data="{ 'showModal': <%= is_map(@modal_script) %> }"
   @keydown.escape="showModal = false"
 >
 
-  <%= for device <- @devices do %>
+  <%= for script <- @scripts do %>
     <div class="max-w-sm w-full lg:max-w-full py-1"
       @click="showModal = true"
-      phx-click="show_modal"
-      phx-value-device_id="<%= device.id %>"
+      <% # phx-click="show_modal" %>
+      phx-value-script_id="<%= script.id %>"
     >
       <div class="border-r border-b border-l border-gray-400 lg:border-l-0 lg:border-t lg:border-gray-400 bg-white rounded-b lg:rounded-b-none lg:rounded-r p-4 flex flex-col justify-between leading-normal">
 
         <div class="flex items-center">
-          <img class="w-10 h-10 rounded-full mr-4" src="<%= device.avatar_url %>" alt="<%= device.serial %> avatar">
           <div class="text-sm">
-            <p class="text-gray-900 leading-none"><%= device.serial %> </p>
-
-            <%= if device.last_communication do %>
-              <p class="text-gray-700"> last communication <%= Timex.from_now(device.last_communication) %> </p>
-            <% else %>
-              <p class="text-gray-700"> offline </p>
-            <% end %>
+            <!-- <p class="text-gray-900 leading-none"><%= script.filename %> </p> -->
+            <%= link script.filename, to: Routes.script_path(@socket, :edit, script) %>
           </div>
         </div>
       </div>
     </div>
   <% end %>
 
-  <%= if @modal_device do %>
+  <%= if @modal_script do %>
     <!--Overlay-->
     <div class="overflow-auto w-full lg:max-w-full"
       style="background-color: rgba(0,0,0,0.5)"
@@ -77,44 +71,13 @@
         <!--Title-->
         <div class="flex justify-between items-center pb-3">
           <p class="text-2xl font-bold">
-            Viewing Device <%= @modal_device.serial %>
+            Script Editor <%= @modal_script.filename %>
           </p>
           <div class="cursor-pointer z-50" @click="showModal = false">
             <svg class="fill-current text-black" xmlns="http://www.w3.org/2000/svg" width="18" height="18" viewBox="0 0 18 18">
               <path d="M14.53 4.53l-1.06-1.06L9 7.94 4.53 3.47 3.47 4.53 7.94 9l-4.47 4.47 1.06 1.06L9 10.06l4.47 4.47 1.06-1.06L10.06 9z"></path>
             </svg>
           </div>
-        </div>
-
-        <div>
-          <%= for {addr_str, _ble} <- @ble do%>
-            <%= format_address(addr_str) %>
-            <div>
-              <div class="max-w-sm mx-auto">
-                <div class="">
-                  <div class="flex">
-                    <div class="">
-                      <div class="right-0 mt-2">
-                        <div class="px-4 py-3">
-                          <div class="flex flex-wrap -mx-2">
-                            <%= for color <- @colors do %>
-                              <div
-                                phx-click="color_picker"
-                                phx-value-color="<%= color %>"
-                                phx-value-address="<%= addr_str %>"
-                                class="w-8 h-8 inline-flex rounded-full cursor-pointer border-4 border-white focus:outline-none focus:shadow-outline"
-                                :style="`background: <%= color %>;`"
-                              ></div>
-                            <% end %>
-                          </div>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-            </div>
-          <% end %>
         </div>
 
         <!--Footer-->

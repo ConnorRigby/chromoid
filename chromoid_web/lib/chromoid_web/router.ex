@@ -41,6 +41,8 @@ defmodule ChromoidWeb.Router do
   scope "/", ChromoidWeb do
     pipe_through [:browser, :require_authenticated_user, :require_admin_user]
     live_dashboard "/admin/dashboard", metrics: ChromoidWeb.Telemetry
+    live "/scripts", ScriptLive, :index
+    resources "/scripts", ScriptController, only: [:show, :edit]
   end
 
   scope "/", ChromoidWeb do

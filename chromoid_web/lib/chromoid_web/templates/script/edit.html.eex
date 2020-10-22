@@ -1,0 +1,28 @@
+<div class="px-6 py-6">
+  <div class="flex items-center justify-between bg-white shadow-xl py-4 pr-3 rounded">
+    <span class="text-lg px-4 font-bold text-indigo-900"> Script Editor </span>
+    <input
+      autocomplete="off"
+      class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+      id="name"
+      type="text"
+      placeholder="Script Name",
+      value="<%= @script.filename %>"
+    >
+    <button class="shadow-lg rounded border py-2 px-3 bg-indigo-900 text-white"> save </button>
+
+  </div>
+
+  <div class="flex pt-1">
+    <div class="h-full w-full" style="height: 100vh;" id="container"></div>
+  </div>
+</div>
+
+<script type="text/javascript">
+  window.script = {
+    content: "<%= raw javascript_escape(@script.content) %>",
+    id: "<%= @script.id %>"
+  }
+</script>
+
+<script type="text/javascript" src="<%= Routes.static_path(@conn, "/js/editor.js") %>"></script>
