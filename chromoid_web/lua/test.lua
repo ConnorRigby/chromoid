@@ -1,4 +1,4 @@
-local client = discord.Client()
+client = discord.Client()
 
 client:on('ready', function()
 	-- client.user is the path for your bot
@@ -11,5 +11,3 @@ client:on('messageCreate', function(message)
 	-- if message.content == '!ping' then
 	-- end
 end)
-
-return client;

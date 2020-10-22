@@ -7,20 +7,10 @@ defmodule Chromoid.Lua do
 
   def init(guild, user) do
     state = :luerl.init()
-
-    state =
-      :luerl.set_table(
-        ["_discord"],
-        [
-          {"_guild", {:userdata, guild}},
-          {"_user", {:userdata, user}},
-          {"_self", {:userdata, self()}}
-        ],
-        state
-      )
-
-    # state = :luerl.set_table(["_G", "_guild"], , state)
-    # state = :luerl.set_table(["_G", "_user"], user, state)
+    state = :luerl.set_table(["_guild"], {:userdata, guild}, state)
+    state = :luerl.set_table(["_user"], {:userdata, user}, state)
+    state = :luerl.set_table(["_self"], {:userdata, self()}, state)
+    state = :luerl.set_table(["_client"], {:userdata, nil}, state)
     :luerl.load_module(["discord"], Discord, state)
   end
 end

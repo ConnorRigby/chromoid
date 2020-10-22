@@ -35,7 +35,13 @@ defmodule ChromoidDiscord.Guild do
 
       # Responder
       {ChromoidDiscord.Guild.Responder,
-       {guild, [via(guild, CommandProcessor), via(guild, DeviceStatusChannel)]}}
+       {guild,
+        [
+          via(guild, ChannelCache),
+          via(guild, CommandProcessor),
+          via(guild, DeviceStatusChannel),
+          via(guild, LuaConsumer)
+        ]}}
     ]
 
     Supervisor.init(children, strategy: :one_for_one)

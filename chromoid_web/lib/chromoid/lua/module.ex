@@ -1,7 +1,8 @@
 defmodule Chromoid.Lua.Module do
   import Record, only: [defrecord: 2]
-  defrecord :luerl, Record.extract(:luerl, from: "_build/dev/lib/luerl/include/luerl.hrl")
-  defrecord :tref, Record.extract(:tref, from: "_build/dev/lib/luerl/include/luerl.hrl")
+  @luerl_header Application.app_dir(:luerl, ["include", "luerl.hrl"])
+  defrecord :luerl, Record.extract(:luerl, from: @luerl_header)
+  defrecord :tref, Record.extract(:tref, from: @luerl_header)
 
   @type luerl :: record(:luerl, [])
   @type tref :: record(:tref, [])
