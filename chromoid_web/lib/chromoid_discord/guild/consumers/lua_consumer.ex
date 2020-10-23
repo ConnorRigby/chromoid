@@ -19,7 +19,8 @@ defmodule ChromoidDiscord.Guild.LuaConsumer do
 
     scripts =
       Chromoid.Repo.all(
-        from s in Chromoid.Lua.Script, where: s.active == true and s.subsystem == "discord"
+        from s in Chromoid.Lua.Script,
+          where: s.active == true and s.subsystem == "discord" and is_nil(s.deleted_at)
       )
 
     for script <- scripts do
