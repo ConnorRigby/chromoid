@@ -19,12 +19,12 @@ defmodule ChromoidDiscord.Guild.LuaConsumer.Runtime do
   def init([guild, current_user, script, parent]) do
     lua = Chromoid.Lua.init(guild, current_user)
     path = to_charlist(Path.expand(script.path))
-    {_, lua} = :luerl.dofile(path, lua)
-    {:ok, %{script: script, parent: parent, client: nil, lua: lua}}
+    {[client], lua} = :luerl.dofile(path, lua)
+    {:ok, %{script: script, parent: parent, client: client, lua: lua}}
   end
 
   @impl GenServer
-  def handle_info({:client, tref}, state) do
+  def handle_info({:client, tref}, %{client: tref} = state) do
     {_, lua} = Chromoid.Lua.Discord.Client.ready(tref, state.lua)
     {:noreply, %{state | client: tref, lua: lua}}
   end

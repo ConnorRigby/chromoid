@@ -23,3 +23,5 @@ config :chromoid, ChromoidWeb.Endpoint,
 
 # Print only warnings and errors during test
 config :logger, level: :warn
+
+config :chromoid, Chromoid.Lua.ScriptStorage, root_dir: "./scripts"

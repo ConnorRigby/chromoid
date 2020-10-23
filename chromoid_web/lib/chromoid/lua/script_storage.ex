@@ -99,6 +99,8 @@ defmodule Chromoid.Lua.ScriptStorage do
     client:on('messageCreate', function(message)
       -- handle messages here
     end)
+
+    return client
     """
   end
 end
