@@ -1,17 +1,20 @@
 <div class="px-6 py-6">
-  <div class="flex items-center justify-between bg-white shadow-xl py-4 pr-3 rounded">
+  <%= f = form_for @changeset, Routes.script_script_path(@conn, :update, @script),
+    class: "flex items-center justify-between bg-white shadow-xl py-4 pr-3 rounded"
+  %>
     <span class="text-lg px-4 font-bold text-indigo-900"> Script Editor </span>
-    <input
-      autocomplete="off"
-      class="shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
-      id="name"
-      type="text"
-      placeholder="Script Name",
-      value="<%= @script.filename %>"
-    >
-    <button class="shadow-lg rounded border py-2 px-3 bg-indigo-900 text-white"> save </button>
-
-  </div>
+    <%= text_input f, :filename,
+      autocomplete: "off",
+      placeholder: "Script Name",
+      class: "shadow appearance-none border rounded w-full py-2 px-3 text-gray-700 leading-tight focus:outline-none focus:shadow-outline"
+    %>
+    <%= checkbox f, :active,
+      class: "shadow-lg rounded border py-2 px-3 bg-red-700 text-white ml-1"
+    %>
+    <%= submit "Save",
+      class: "shadow-lg rounded border py-2 px-3 bg-indigo-900 text-white ml-1"
+    %>
+  </form>
 
   <div class="flex pt-1">
     <div class="h-full w-full" style="height: 100vh;" id="container"></div>

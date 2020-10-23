@@ -6,21 +6,22 @@ defmodule Chromoid.Lua.ScriptStorage do
 
   alias Chromoid.Lua.Script
 
-  def new_script_for_user(user, filename) do
-    attrs = %{
-      subsystem: "discord",
-      filename: filename,
-      path: Path.join(@root_dir, Ecto.UUID.generate())
-    }
+  def new_script_for_user(user, attrs) do
+    attrs =
+      Map.merge(attrs, %{
+        "subsystem" => "discord",
+        "path" => Path.join(@root_dir, Ecto.UUID.generate())
+      })
 
     changeset =
       Ecto.build_assoc(user, :scripts)
       |> Script.changeset(attrs)
 
-    with {:ok, script} <- Repo.insert(changeset) do
+    with {:ok, script} <- Repo.insert(changeset),
+         :ok <- File.write!(script.path, default_content(user, script)) do
       case File.touch(script.path, NaiveDateTime.to_erl(script.inserted_at)) do
         :ok ->
-          {:ok, %{script | content: ""}}
+          {:ok, %{script | content: default_content(user, script)}}
 
         {:error, reason} ->
           _ = Repo.delete!(script)
@@ -38,7 +39,7 @@ defmodule Chromoid.Lua.ScriptStorage do
     changeset = Script.changeset(script, %{})
 
     with {:ok, _chunk, _} <- :luerl.load(script.content, :luerl.init()),
-         {:ok, script} <- Chromoid.Repo.update!(changeset, force: true) do
+         {:ok, script} <- Chromoid.Repo.update(changeset, force: true) do
       case File.touch(script.path, NaiveDateTime.to_erl(script.updated_at)) do
         :ok ->
           {:ok, script}
@@ -58,5 +59,45 @@ defmodule Chromoid.Lua.ScriptStorage do
   def load_script(id) do
     Repo.get!(Script, id)
     |> load_script()
+  end
+
+  def mark_deleted(script) do
+    Script.delete_changeset(script)
+    |> Repo.update!()
+  end
+
+  def activate(script) do
+    Script.activate_changeset(script, true)
+    |> Repo.update!()
+  end
+
+  def deactivate(script) do
+    Script.activate_changeset(script, false)
+    |> Repo.update!()
+  end
+
+  def default_content(%{email: email, subsystem: "discord"}, %Script{
+        filename: filename,
+        inserted_at: inserted_at
+      }) do
+    """
+    -- Filename: #{filename}
+    -- Creator: #{email}
+    -- Created: #{inserted_at}
+
+    -- Create a client connection
+    client = discord.Client()
+
+    -- 'ready' event will be emitted when the script is loaded
+    client:on('ready', function()
+      -- client.user is the path for your bot
+      print('Script started as '.. client.user.username)
+    end)
+
+    -- 'messageCreate' callback will be called every time a message is sent
+    client:on('messageCreate', function(message)
+      -- handle messages here
+    end)
+    """
   end
 end

@@ -7,6 +7,8 @@ defmodule Chromoid.Repo.Migrations.CreateScripts do
       add :path, :string, null: false
       add :filename, :string, null: false
       add :subsystem, :string, null: false
+      add :deleted_at, :utc_datetime
+      add :active, :boolean, default: false
       timestamps()
     end
 

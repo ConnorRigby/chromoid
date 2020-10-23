@@ -42,7 +42,11 @@ defmodule ChromoidWeb.Router do
     pipe_through [:browser, :require_authenticated_user, :require_admin_user]
     live_dashboard "/admin/dashboard", metrics: ChromoidWeb.Telemetry
     live "/scripts", ScriptLive, :index
-    resources "/scripts", ScriptController, only: [:show, :edit]
+
+    resources "/scripts", ScriptController, only: [:edit] do
+      put "/save", ScriptController, :save
+      put "/update", ScriptController, :update
+    end
   end
 
   scope "/", ChromoidWeb do
