@@ -10,7 +10,7 @@ defmodule Chromoid.Lua.ScriptStorage do
     attrs =
       Map.merge(attrs, %{
         "subsystem" => "discord",
-        "path" => Path.join(@root_dir, Ecto.UUID.generate())
+        "path" => Path.join(@root_dir, [Ecto.UUID.generate(), ".lua"])
       })
 
     changeset =
@@ -76,9 +76,10 @@ defmodule Chromoid.Lua.ScriptStorage do
     |> Repo.update!()
   end
 
-  def default_content(%{email: email, subsystem: "discord"}, %Script{
+  def default_content(%{email: email}, %Script{
         filename: filename,
-        inserted_at: inserted_at
+        inserted_at: inserted_at,
+        subsystem: "discord"
       }) do
     """
     -- Filename: #{filename}

@@ -8,12 +8,19 @@ defmodule ChromoidWeb.ScriptController do
     render(conn, "edit.html", script: script, action: "/scripts/#{id}", changeset: changeset)
   end
 
-  def update(conn, %{"script_id" => id, "script" => params}) do
+  def update(conn, %{"script_id" => id, "script" => attrs} = params) do
     script = Chromoid.Lua.ScriptStorage.load_script(id)
-    changeset = Chromoid.Lua.Script.changeset(script, params)
+    changeset = Chromoid.Lua.Script.changeset(script, attrs)
 
     case Chromoid.Repo.update(changeset) do
       {:ok, script} ->
+        if params["reload"] do
+          for {id, guild} <- ChromoidDiscord.GuildCache.list_guilds() do
+            Logger.info("Activating script for guild: #{id}")
+            ChromoidDiscord.Guild.LuaConsumer.activate_script(guild, script)
+          end
+        end
+
         redirect(conn, to: Routes.script_path(conn, :edit, script))
 
       {:error, changeset} ->

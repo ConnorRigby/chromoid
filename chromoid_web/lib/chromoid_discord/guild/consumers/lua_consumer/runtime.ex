@@ -1,13 +1,18 @@
 defmodule ChromoidDiscord.Guild.LuaConsumer.Runtime do
   use GenServer
-  # import ChromoidDiscord.Guild.Registry, only: [via: 2]
+  import ChromoidDiscord.Guild.Registry, only: [via: 2]
 
   def start_link(guild, current_user, script, parent) do
-    GenServer.start_link(__MODULE__, [guild, current_user, script, parent])
+    # atom leak
+    name = via(guild, Module.concat([__MODULE__, script.path]))
+    GenServer.start_link(__MODULE__, [guild, current_user, script, parent], name: name)
   end
 
   def message_create(pid, message, channel) do
     GenServer.call(pid, {:message_create, message, channel})
+  catch
+    error, reason ->
+      {error, reason}
   end
 
   @impl GenServer
@@ -26,13 +31,14 @@ defmodule ChromoidDiscord.Guild.LuaConsumer.Runtime do
 
   def handle_info({:action, action}, state) do
     send(state.parent, {:action, action})
+    {:noreply, state}
   end
 
   @impl GenServer
   def handle_call({:message_create, message, channel}, _from, state) do
-    {_return, lua} =
+    {return, lua} =
       Chromoid.Lua.Discord.Client.message_create(state.client, message, channel, state.lua)
 
-    {:reply, %{state | lua: lua}}
+    {:reply, return, %{state | lua: lua}}
   end
 end

@@ -9,7 +9,6 @@ window.saveScript = function (content, callback) {
   var formData = new FormData();
   var json;
   xhr.open("PUT", "/scripts/" + window.script.id + "/save", true);
-  formData.append("filename", document.getElementById("filename").value);
   formData.append("content", content);
   formData.append("_csrf_token", csrfToken);
   console.dir(callback)
