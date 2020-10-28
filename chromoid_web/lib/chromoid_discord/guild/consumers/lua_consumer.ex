@@ -37,6 +37,10 @@ defmodule ChromoidDiscord.Guild.LuaConsumer do
     GenServer.call(via(guild, __MODULE__), {:activate, script})
   end
 
+  def deactivate_script(guild, script) do
+    GenServer.call(via(guild, __MODULE__), {:deactivate, script})
+  end
+
   @impl GenStage
   def init({guild, config, current_user}) do
     Process.flag(:trap_exit, true)
@@ -129,6 +133,11 @@ defmodule ChromoidDiscord.Guild.LuaConsumer do
     {:reply, reply, [], state}
   end
 
+  def handle_call({:deactivate, script}, _from, state) do
+    {reply, state} = stop_runtime(state, script)
+    {:reply, reply, [], state}
+  end
+
   defp start_runtime(state, script) do
     case Runtime.start_link(state.guild, state.current_user, script, self()) do
       {:ok, pid} ->
@@ -146,6 +155,18 @@ defmodule ChromoidDiscord.Guild.LuaConsumer do
       error ->
         Logger.error("Failed to load script: #{inspect(script)}: #{inspect(error)}")
         {error, state}
+    end
+  end
+
+  def stop_runtime(state, script) do
+    case state.pool[script.id] do
+      {pid, monitor} ->
+        Process.demonitor(monitor, [:flush, :info])
+        reply = GenServer.stop(pid, :normal)
+        {reply, %{state | pool: Map.delete(state.pool, script.id)}}
+
+      nil ->
+        {nil, state.pool}
     end
   end
 

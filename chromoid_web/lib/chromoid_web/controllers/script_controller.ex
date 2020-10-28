@@ -14,11 +14,16 @@ defmodule ChromoidWeb.ScriptController do
 
     case Chromoid.Repo.update(changeset) do
       {:ok, script} ->
-        if params["reload"] do
+        if script.active || params["reload"] do
           for {id, guild} <- ChromoidDiscord.GuildCache.list_guilds() do
             Logger.info("Activating script for guild: #{id}")
             ChromoidDiscord.Guild.LuaConsumer.activate_script(guild, script)
           end
+        end
+
+        if !script.active do
+          Logger.info("Deactivating script")
+          Chromoid.Lua.ScriptStorage.handle_deactivation(script)
         end
 
         redirect(conn, to: Routes.script_path(conn, :edit, script))

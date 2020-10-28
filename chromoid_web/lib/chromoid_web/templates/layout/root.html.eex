@@ -95,6 +95,15 @@
             <%= if @current_user.admin do %>
               <li class="mr-3">
                 <a
+                  class="<%= if active?(@conn, Routes.script_path(@conn, :index)), do: "inline-block py-2 px-4 text-white no-underline", else: "inline-block text-gray-500 no-underline hover:text-gray-200 hover:text-underline py-2 px-4" %>"
+                  href="<%= Routes.script_path(@conn, :index) %>"
+                  @click="isOpen = false"
+                  >Scripts
+                </a>
+              </li>
+
+              <li class="mr-3">
+                <a
                   class="<%= if active?(@conn, Routes.live_dashboard_path(@conn, :home)), do: "inline-block py-2 px-4 text-white no-underline", else: "inline-block text-gray-500 no-underline hover:text-gray-200 hover:text-underline py-2 px-4" %>"
                   href="<%= Routes.live_dashboard_path(@conn, :home) %>"
                   @click="isOpen = false"

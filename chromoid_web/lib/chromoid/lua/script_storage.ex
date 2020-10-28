@@ -5,6 +5,7 @@ defmodule Chromoid.Lua.ScriptStorage do
   @root_dir Application.get_env(:chromoid, __MODULE__)[:root_dir]
 
   alias Chromoid.Lua.Script
+  require Logger
 
   def new_script_for_user(user, attrs) do
     attrs =
@@ -47,6 +48,19 @@ defmodule Chromoid.Lua.ScriptStorage do
         {:error, reason} ->
           _ = Repo.delete!(script)
           raise File.Error, action: "touch", reason: reason, path: script.path
+      end
+    end
+  end
+
+  def handle_deactivation(%Script{content: nil, path: path}) do
+    raise File.Error, action: "read", reason: :einval, path: path
+  end
+
+  def handle_deactivation(script) do
+    if !script.active do
+      for {id, guild} <- ChromoidDiscord.GuildCache.list_guilds() do
+        Logger.info("Deactivating script for guild: #{id}")
+        ChromoidDiscord.Guild.LuaConsumer.deactivate_script(guild, script)
       end
     end
   end
