@@ -1,6 +1,7 @@
 defmodule ChromoidDiscord.Guild.LuaConsumer.Runtime do
   use GenServer
   import ChromoidDiscord.Guild.Registry, only: [via: 2]
+  require Logger
 
   def start_link(guild, current_user, script, parent) do
     # atom leak
@@ -19,8 +20,15 @@ defmodule ChromoidDiscord.Guild.LuaConsumer.Runtime do
   def init([guild, current_user, script, parent]) do
     lua = Chromoid.Lua.init(guild, current_user)
     path = to_charlist(Path.expand(script.path))
-    {[client], lua} = :luerl.dofile(path, lua)
-    {:ok, %{script: script, parent: parent, client: client, lua: lua}}
+
+    case :luerl.dofile(path, lua) do
+      {[client], lua} ->
+        {:ok, %{script: script, parent: parent, client: client, lua: lua}}
+
+      {error, _lua} ->
+        Logger.error("Failed to start lua script: #{inspect(script.id)}")
+        {:stop, error}
+    end
   end
 
   @impl GenServer

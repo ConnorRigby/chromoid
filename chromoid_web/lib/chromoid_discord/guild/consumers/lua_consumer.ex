@@ -146,14 +146,14 @@ defmodule ChromoidDiscord.Guild.LuaConsumer do
         {{:ok, pid}, %{state | pool: pool}}
 
       {:error, {:already_started, pid}} ->
-        Logger.warn("Restarting script: #{inspect(script)}")
+        Logger.warn("Restarting script: #{inspect(script.id)}")
         {{^pid, monitor}, pool} = Map.pop!(state.pool, script.id)
         Process.demonitor(monitor, [:flush, :info])
         GenServer.stop(pid, :normal)
         start_runtime(%{state | pool: pool}, script)
 
       error ->
-        Logger.error("Failed to load script: #{inspect(script)}: #{inspect(error)}")
+        Logger.error("Failed to load script: #{inspect(script.id)}: #{inspect(error)}")
         {error, state}
     end
   end
@@ -166,7 +166,7 @@ defmodule ChromoidDiscord.Guild.LuaConsumer do
         {reply, %{state | pool: Map.delete(state.pool, script.id)}}
 
       nil ->
-        {nil, state.pool}
+        {nil, state}
     end
   end
 
