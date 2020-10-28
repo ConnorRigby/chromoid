@@ -13,15 +13,18 @@ defmodule ChromoidDiscord.OAuth do
   plug Tesla.Middleware.FormUrlencoded
   plug Tesla.Middleware.FollowRedirects
 
-  import ChromoidWeb.Router.Helpers
-  @endpoint ChromoidWeb.Endpoint
+  if Mix.env() == :prod do
+    @url "https://chromo.id/discord/oauth"
+  else
+    @url "http://localhost:4000/discord/oauth"
+  end
 
   def authorization_url(state \\ "") do
     query =
       URI.encode_query(%{
         "client_id" => @client_id,
         "prompt" => "consent",
-        "redirect_uri" => discord_oauth_url(@endpoint, :oauth),
+        "redirect_uri" => @url,
         "response_type" => "code",
         "scope" => "email",
         "state" => state
@@ -56,7 +59,7 @@ defmodule ChromoidDiscord.OAuth do
         client_secret: @client_secret,
         grant_type: "authorization_code",
         code: code,
-        redirect_uri: discord_oauth_url(@endpoint, :oauth),
+        redirect_uri: @url,
         scope: "identify email connections"
       })
 
@@ -65,7 +68,7 @@ defmodule ChromoidDiscord.OAuth do
       client(body)
     else
       %Tesla.Env{} = env ->
-        env = Tesla.Middleware.JSON.decode(env, [])
+        {:ok, env} = Tesla.Middleware.JSON.decode(env, [])
         raise inspect(env.body)
     end
   end
