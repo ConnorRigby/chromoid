@@ -64,6 +64,7 @@ config :chromoid, ChromoidWeb.Endpoint,
       ~r"priv/static/.*(js|css|png|jpeg|jpg|gif|svg)$",
       ~r"priv/gettext/.*(po)$",
       ~r"lib/chromoid_web/(live|views)/.*(ex)$",
+      ~r"lib/chromoid_web/live/.*(leex)$",
       ~r"lib/chromoid_web/templates/.*(eex)$"
     ]
   ]

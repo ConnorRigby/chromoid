@@ -3,6 +3,7 @@ defmodule Chromoid.Repo.Migrations.AddRecipes do
 
   def change do
     create table(:recipes) do
+      add :name, :string, null: false
       add :user_id, references(:users)
       timestamps()
     end
