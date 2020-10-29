@@ -35,7 +35,8 @@ defmodule ChromoidWeb.Router do
     get "/logout", DiscordOauthController, :logout
     live "/devices", DeviceLive, :index
     live "/devices/:id", DeviceLive, :show
-    # resources "/devices", DeviceController, only: [:index, :show]
+    live "/recipes", RecipeLive, :index
+    live "/recipes/:id", RecipeLive, :show
   end
 
   scope "/", ChromoidWeb do
