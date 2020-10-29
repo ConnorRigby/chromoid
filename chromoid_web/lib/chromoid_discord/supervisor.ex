@@ -16,6 +16,8 @@ defmodule ChromoidDiscord.Supervisor do
   @impl Supervisor
   def init(_args) do
     children = [
+      # Monitors an ETS table for guilds to save data on
+      ChromoidDiscord.GuildCache,
       # dynamic supervisor for each guild the bot is in
       ChromoidDiscord.GuildSupervisor,
       # source of discord events

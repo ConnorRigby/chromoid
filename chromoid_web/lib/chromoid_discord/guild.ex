@@ -15,6 +15,13 @@ defmodule ChromoidDiscord.Guild do
 
   import ChromoidDiscord.Guild.Registry, only: [via: 2]
 
+  def child_spec({guild, config, user}) do
+    %{
+      id: guild.id,
+      start: {__MODULE__, :start_link, [{guild, config, user}]}
+    }
+  end
+
   @doc false
   def start_link({guild, config, current_user}) do
     Supervisor.start_link(__MODULE__, {guild, config, current_user})
@@ -41,7 +48,8 @@ defmodule ChromoidDiscord.Guild do
           via(guild, CommandProcessor),
           via(guild, DeviceStatusChannel),
           via(guild, LuaConsumer)
-        ]}}
+        ]}},
+      {Task, fn -> LuaConsumer.index_scripts(guild) end}
     ]
 
     Supervisor.init(children, strategy: :one_for_one)

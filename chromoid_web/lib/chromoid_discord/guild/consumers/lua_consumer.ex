@@ -14,6 +14,21 @@ defmodule ChromoidDiscord.Guild.LuaConsumer do
     GenStage.start_link(__MODULE__, {guild, config, current_user}, name: via(guild, __MODULE__))
   end
 
+  def index_scripts(guild) do
+    import Ecto.Query
+
+    scripts =
+      Chromoid.Repo.all(
+        from s in Chromoid.Lua.Script,
+          where: s.active == true and s.subsystem == "discord" and is_nil(s.deleted_at)
+      )
+
+    for script <- scripts do
+      Logger.info("Loading script: #{inspect(script)}")
+      activate_script(guild, script)
+    end
+  end
+
   def pid(guild) do
     GenServer.whereis(via(guild, __MODULE__))
   end
@@ -22,8 +37,13 @@ defmodule ChromoidDiscord.Guild.LuaConsumer do
     GenServer.call(via(guild, __MODULE__), {:activate, script})
   end
 
+  def deactivate_script(guild, script) do
+    GenServer.call(via(guild, __MODULE__), {:deactivate, script})
+  end
+
   @impl GenStage
   def init({guild, config, current_user}) do
+    Process.flag(:trap_exit, true)
     state = %{guild: guild, current_user: current_user, config: config, pool: %{}}
     {:producer_consumer, state, subscribe_to: [via(guild, EventDispatcher)]}
   end
@@ -34,6 +54,73 @@ defmodule ChromoidDiscord.Guild.LuaConsumer do
     {:noreply, [action], state}
   end
 
+  def handle_info({:EXIT, pid, :normal}, state) do
+    id =
+      Enum.find_value(state.pool, fn
+        {id, {^pid, monitor}} ->
+          Process.demonitor(monitor)
+          id
+
+        {_id, {_pid, _monitor}} ->
+          false
+      end)
+
+    pool = Map.delete(state.pool, id)
+    state = %{state | pool: pool}
+    {:noreply, [], state}
+  end
+
+  def handle_info({:EXIT, pid, reason}, state) do
+    id =
+      Enum.find_value(state.pool, fn
+        {id, {^pid, monitor}} ->
+          Process.demonitor(monitor)
+          Logger.error("Script #{inspect(id)} crashed: #{inspect(reason)}")
+          id
+
+        {_id, {_pid, _monitor}} ->
+          false
+      end)
+
+    pool = Map.delete(state.pool, id)
+    state = %{state | pool: pool}
+
+    if id do
+      Logger.info("Restarting script: #{inspect(id)}")
+      script = Chromoid.Lua.ScriptStorage.load_script(id)
+      {_, state} = start_runtime(state, script)
+      {:noreply, [], state}
+    else
+      Logger.warn("Could not fetch script. Not restarting")
+      {:noreply, [], state}
+    end
+  end
+
+  def handle_info({:DOWN, monitor, :process, pid, reason}, state) do
+    id =
+      Enum.find_value(state.pool, fn
+        {id, {^pid, ^monitor}} ->
+          Logger.error("Script #{inspect(id)} crashed: #{inspect(reason)}")
+          id
+
+        {_id, {_pid, _monitor}} ->
+          false
+      end)
+
+    pool = Map.delete(state.pool, id)
+    state = %{state | pool: pool}
+
+    if id do
+      Logger.info("Restarting script: #{inspect(id)}")
+      script = Chromoid.Lua.ScriptStorage.load_script(id)
+      {_, state} = start_runtime(state, script)
+      {:noreply, [], state}
+    else
+      Logger.warn("Could not fetch script. Not restarting")
+      {:noreply, [], state}
+    end
+  end
+
   @impl GenStage
   def handle_events(events, _from, state) do
     {actions, pool} = Enum.reduce(events, {[], state.pool}, &handle_event/2)
@@ -42,16 +129,51 @@ defmodule ChromoidDiscord.Guild.LuaConsumer do
 
   @impl GenStage
   def handle_call({:activate, script}, _from, state) do
-    {:ok, pid} = Runtime.start_link(state.guild, state.current_user, script, self())
-    Process.monitor(pid)
-    pool = Map.put(state.pool, script.id, pid)
-    {:reply, {:ok, pid}, [], %{state | pool: pool}}
+    {reply, state} = start_runtime(state, script)
+    {:reply, reply, [], state}
+  end
+
+  def handle_call({:deactivate, script}, _from, state) do
+    {reply, state} = stop_runtime(state, script)
+    {:reply, reply, [], state}
+  end
+
+  defp start_runtime(state, script) do
+    case Runtime.start_link(state.guild, state.current_user, script, self()) do
+      {:ok, pid} ->
+        monitor = Process.monitor(pid)
+        pool = Map.put(state.pool, script.id, {pid, monitor})
+        {{:ok, pid}, %{state | pool: pool}}
+
+      {:error, {:already_started, pid}} ->
+        Logger.warn("Restarting script: #{inspect(script.id)}")
+        {{^pid, monitor}, pool} = Map.pop!(state.pool, script.id)
+        Process.demonitor(monitor, [:flush, :info])
+        GenServer.stop(pid, :normal)
+        start_runtime(%{state | pool: pool}, script)
+
+      error ->
+        Logger.error("Failed to load script: #{inspect(script.id)}: #{inspect(error)}")
+        {error, state}
+    end
+  end
+
+  def stop_runtime(state, script) do
+    case state.pool[script.id] do
+      {pid, monitor} ->
+        Process.demonitor(monitor, [:flush, :info])
+        reply = GenServer.stop(pid, :normal)
+        {reply, %{state | pool: Map.delete(state.pool, script.id)}}
+
+      nil ->
+        {nil, state}
+    end
   end
 
   def handle_event({:MESSAGE_CREATE, message}, {acc, pool}) do
     channel = ChannelCache.get_channel!(message.guild_id, message.channel_id)
 
-    for {_, pid} <- pool do
+    for {_, {pid, _monitor}} <- pool do
       Runtime.message_create(pid, message, channel)
     end
 

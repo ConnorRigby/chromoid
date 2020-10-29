@@ -12,9 +12,15 @@
       class: "shadow-lg rounded border py-2 px-3 bg-red-700 text-white ml-1"
     %>
     <%= submit "Save",
-      class: "shadow-lg rounded border py-2 px-3 bg-indigo-900 text-white ml-1"
+      class: "shadow-lg rounded border py-2 px-3 bg-indigo-900 text-white ml-1",
+      name: "save"
+    %>
+    <%= submit "Reload",
+      class: "shadow-lg rounded border py-2 px-3 bg-green-700 text-white ml-1",
+      name: "reload"
     %>
   </form>
+
 
   <div class="flex pt-1">
     <div class="h-full w-full" style="height: 100vh;" id="container"></div>

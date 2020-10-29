@@ -14,13 +14,11 @@ defmodule ChromoidDiscord.FakeDiscordSource do
   def message_create(content) do
     guild = default_guild()
     channel = default_channel()
+    message_create(guild, channel, content)
+  end
 
-    message = %Nostrum.Struct.Message{
-      guild_id: guild.id,
-      content: content,
-      channel_id: channel.id
-    }
-
+  def message_create(guild, channel, content) do
+    message = default_message(guild, channel, content)
     ChromoidDiscord.Guild.EventDispatcher.dispatch(guild, {:MESSAGE_CREATE, message})
   end
 
@@ -39,14 +37,15 @@ defmodule ChromoidDiscord.FakeDiscordSource do
     config = ChromoidDiscord.NostrumConsumer.get_or_create_config(guild)
 
     case ChromoidDiscord.GuildSupervisor.start_guild(guild, config, current_user) do
-      {:ok, _pid} ->
-        :ok
+      {:ok, pid} ->
+        {:ok, pid}
 
-      {:error, {:already_started, _pid}} ->
-        :ok
+      {:error, {:already_started, pid}} ->
+        {:ok, pid}
 
       error ->
         Logger.error("Could not start guild: #{guild.name}: #{inspect(error)}")
+        error
     end
   end
 
@@ -80,6 +79,10 @@ defmodule ChromoidDiscord.FakeDiscordSource do
       username: "Chromoid",
       verified: true
     }
+  end
+
+  def default_config(guild) do
+    ChromoidDiscord.NostrumConsumer.get_or_create_config(guild)
   end
 
   def default_guild do
@@ -155,6 +158,14 @@ defmodule ChromoidDiscord.FakeDiscordSource do
       topic: nil,
       type: 0,
       user_limit: nil
+    }
+  end
+
+  def default_message(guild, channel, content) do
+    %Nostrum.Struct.Message{
+      guild_id: guild.id,
+      content: content,
+      channel_id: channel.id
     }
   end
 end

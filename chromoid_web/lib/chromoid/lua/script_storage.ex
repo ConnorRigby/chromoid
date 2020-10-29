@@ -5,12 +5,13 @@ defmodule Chromoid.Lua.ScriptStorage do
   @root_dir Application.get_env(:chromoid, __MODULE__)[:root_dir]
 
   alias Chromoid.Lua.Script
+  require Logger
 
   def new_script_for_user(user, attrs) do
     attrs =
       Map.merge(attrs, %{
         "subsystem" => "discord",
-        "path" => Path.join(@root_dir, Ecto.UUID.generate())
+        "path" => Path.join(@root_dir, [Ecto.UUID.generate(), ".lua"])
       })
 
     changeset =
@@ -51,6 +52,19 @@ defmodule Chromoid.Lua.ScriptStorage do
     end
   end
 
+  def handle_deactivation(%Script{content: nil, path: path}) do
+    raise File.Error, action: "read", reason: :einval, path: path
+  end
+
+  def handle_deactivation(script) do
+    if !script.active do
+      for {id, guild} <- ChromoidDiscord.GuildCache.list_guilds() do
+        Logger.info("Deactivating script for guild: #{id}")
+        ChromoidDiscord.Guild.LuaConsumer.deactivate_script(guild, script)
+      end
+    end
+  end
+
   def load_script(%Script{} = script) do
     content = File.read!(script.path)
     %{script | content: content}
@@ -76,9 +90,10 @@ defmodule Chromoid.Lua.ScriptStorage do
     |> Repo.update!()
   end
 
-  def default_content(%{email: email, subsystem: "discord"}, %Script{
+  def default_content(%{email: email}, %Script{
         filename: filename,
-        inserted_at: inserted_at
+        inserted_at: inserted_at,
+        subsystem: "discord"
       }) do
     """
     -- Filename: #{filename}
@@ -98,6 +113,8 @@ defmodule Chromoid.Lua.ScriptStorage do
     client:on('messageCreate', function(message)
       -- handle messages here
     end)
+
+    return client
     """
   end
 end
