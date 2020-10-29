@@ -36,7 +36,7 @@ defmodule ChromoidWeb.Router do
     live "/devices", DeviceLive, :index
     live "/devices/:id", DeviceLive, :show
     live "/recipes", RecipeLive, :index
-    live "/recipes/:id", RecipeLive, :show
+    # live "/recipes/:id", RecipeLive, :show
   end
 
   scope "/", ChromoidWeb do
