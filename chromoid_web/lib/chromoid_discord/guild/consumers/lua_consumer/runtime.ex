@@ -18,7 +18,7 @@ defmodule ChromoidDiscord.Guild.LuaConsumer.Runtime do
 
   @impl GenServer
   def init([guild, current_user, script, parent]) do
-    lua = Chromoid.Lua.init(guild, current_user)
+    lua = Chromoid.Lua.init(guild, current_user, script)
     path = to_charlist(Path.expand(script.path))
 
     case :luerl.dofile(path, lua) do

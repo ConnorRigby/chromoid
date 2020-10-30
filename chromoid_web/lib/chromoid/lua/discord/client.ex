@@ -51,7 +51,14 @@ defmodule Chromoid.Lua.Discord.Client do
   end
 
   def on([client, event, func], state) do
+    {{:userdata, script}, state} = :luerl.get_table(["_script"], state)
     state = :luerl_emul.set_table_key(client, event, func, state)
+    {lua_func, state} = :luerl_heap.get_funcdef(func, state)
+    anno = lua_func(lua_func, :anno)
+    updated_anno = :luerl_anno.set(:name, "client:on('#{event}')", anno)
+    updated_anno = :luerl_anno.set(:file, script.filename, updated_anno)
+    updated_lua_func = lua_func(lua_func, anno: updated_anno)
+    state = :luerl_heap.set_funcdef(func, updated_lua_func, state)
     {[], state}
   end
 end

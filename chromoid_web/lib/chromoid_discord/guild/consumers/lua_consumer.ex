@@ -222,24 +222,33 @@ defmodule ChromoidDiscord.Guild.LuaConsumer do
         data = [
           "\r\n",
           IO.ANSI.red(),
-          "LUA ERROR: ",
           format_reason(reason),
           IO.ANSI.normal(),
           "\r\n"
         ]
 
-        IO.puts("found matching exit")
         send(pid, {:tty_data, IO.iodata_to_binary(data)})
-      else
-        IO.puts("fail. #{inspect(subscription_id)} != #{inspect(id)}")
       end
     end
 
     %{state | exits: exits}
   end
 
-  defp format_reason({{:lua_error, error, _lua}, stacktrace}) do
-    inspect(error, limit: :infinity, pretty: true)
+  defp format_reason({{:lua_error, error, lua}, _elixir_stacktrace}) do
+    stacktrace = :new_luerl.get_stacktrace(lua)
+
+    formatted =
+      Enum.map(stacktrace, fn {name, _, meta} ->
+        "#{meta[:file]}:#{meta[:line]}: in function: #{name}"
+      end)
+
+    """
+    [Lua Error]
+    \r#{inspect(error)}
+
+    \rStack traceback:
+    \r#{Enum.join(formatted, "\r\n  ")}
+    """
   end
 
   defp format_reason(reason) do

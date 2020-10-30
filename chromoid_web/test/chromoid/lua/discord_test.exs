@@ -10,7 +10,8 @@ defmodule Chromoid.Lua.DiscordTest do
   end
 
   test "script executes", %{guild: guild, user: user} do
-    lua = Lua.init(guild, user)
+    script = %Lua.Script{filename: "test.lua"}
+    lua = Lua.init(guild, user, script)
 
     {[client], lua} =
       :luerl.do(
@@ -43,5 +44,34 @@ defmodule Chromoid.Lua.DiscordTest do
     {_, _lua} = Lua.Discord.Client.message_create(client, message, channel, lua)
 
     assert_receive {:action, {:create_message!, [^channel_id, "test test test"]}}
+  end
+
+  test "script exception", %{guild: guild, user: user} do
+    script = %Lua.Script{filename: "test.lua"}
+    lua = Lua.init(guild, user, script)
+
+    {[client], lua} =
+      :luerl.do(
+        """
+        -- Create a client connection
+        client = discord.Client()
+
+        -- 'ready' event will be emitted when the script is loaded
+        client:on('ready', function()
+        -- handle messages here
+        -- this will fail!
+          message.channel:typo()
+        end)
+
+        return client
+        """,
+        lua
+      )
+
+    assert_receive {:client, ^client}
+    assert {:lua_error, _error, lua} = catch_error(Lua.Discord.Client.ready(client, lua))
+
+    assert [{"client:on('ready')", [], [file: "test.lua", line: 8]}] ==
+             :new_luerl.get_stacktrace(lua)
   end
 end
