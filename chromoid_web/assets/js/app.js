@@ -50,8 +50,8 @@ liveSocket.connect()
 // >> liveSocket.disableLatencySim()
 window.liveSocket = liveSocket
 
-let socket = new Socket('/socket', { params: { token: window.userToken } })
+let socket = new Socket('/socket', { params: { } })
 const iex = new IEx()
-if (window.location.pathname.endsWith('console')) {
+if (document.getElementById('terminal')) {
   iex.start(socket)
 }

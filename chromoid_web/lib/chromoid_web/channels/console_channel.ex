@@ -2,9 +2,25 @@ defmodule ChromoidWeb.ConsoleChannel do
   use ChromoidWeb, :channel
   require Logger
 
+  def test do
+    IO.puts("""
+    Welcome to the Interactive Lua Scripting Shell
+    Errors will be printed here
+    """)
+
+    :ok
+  end
+
   @impl true
-  def join("user_console", _payload, socket) do
-    {:ok, tty} = ExTTY.start_link(handler: self())
+  def join("user_console", %{"location" => %{"pathname" => pathname}}, socket) do
+    ["/", "scripts", id | _] = Path.split(pathname)
+    id = String.to_integer(id)
+    {:ok, tty} = ExTTY.start_link(handler: self(), shell_opts: [[], {__MODULE__, :test, []}])
+
+    for {_guild_id, guild} <- ChromoidDiscord.GuildCache.list_guilds() do
+      ChromoidDiscord.Guild.LuaConsumer.subcribe_script(guild, id, self())
+    end
+
     {:ok, assign(socket, :tty, tty)}
   end
 

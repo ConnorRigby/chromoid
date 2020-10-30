@@ -9,6 +9,10 @@ defmodule ChromoidDiscord.Guild.LuaConsumer do
   alias ChromoidDiscord.Guild.{EventDispatcher, ChannelCache}
   alias ChromoidDiscord.Guild.LuaConsumer.Runtime
 
+  defmodule Exit do
+    defstruct [:reason, :timestamp]
+  end
+
   @doc false
   def start_link({guild, config, current_user}) do
     GenStage.start_link(__MODULE__, {guild, config, current_user}, name: via(guild, __MODULE__))
@@ -41,10 +45,23 @@ defmodule ChromoidDiscord.Guild.LuaConsumer do
     GenServer.call(via(guild, __MODULE__), {:deactivate, script})
   end
 
+  def subcribe_script(guild, id, pid) do
+    GenServer.call(via(guild, __MODULE__), {:subcribe_script, id, pid})
+  end
+
   @impl GenStage
   def init({guild, config, current_user}) do
     Process.flag(:trap_exit, true)
-    state = %{guild: guild, current_user: current_user, config: config, pool: %{}}
+
+    state = %{
+      guild: guild,
+      current_user: current_user,
+      config: config,
+      pool: %{},
+      exits: %{},
+      subscribers: []
+    }
+
     {:producer_consumer, state, subscribe_to: [via(guild, EventDispatcher)]}
   end
 
@@ -82,6 +99,8 @@ defmodule ChromoidDiscord.Guild.LuaConsumer do
           false
       end)
 
+    state = log_exit(state, id, reason)
+
     pool = Map.delete(state.pool, id)
     state = %{state | pool: pool}
 
@@ -106,6 +125,8 @@ defmodule ChromoidDiscord.Guild.LuaConsumer do
         {_id, {_pid, _monitor}} ->
           false
       end)
+
+    state = log_exit(state, id, reason)
 
     pool = Map.delete(state.pool, id)
     state = %{state | pool: pool}
@@ -136,6 +157,11 @@ defmodule ChromoidDiscord.Guild.LuaConsumer do
   def handle_call({:deactivate, script}, _from, state) do
     {reply, state} = stop_runtime(state, script)
     {:reply, reply, [], state}
+  end
+
+  def handle_call({:subcribe_script, id, pid}, _from, state) do
+    subscribers = [{id, pid} | state.subscribers]
+    {:reply, :ok, [], %{state | subscribers: subscribers}}
   end
 
   defp start_runtime(state, script) do
@@ -183,5 +209,40 @@ defmodule ChromoidDiscord.Guild.LuaConsumer do
   def handle_event(event, {actions, pool}) do
     Logger.error("Unknown event in Lua handler: #{inspect(event)}")
     {actions, pool}
+  end
+
+  defp log_exit(state, id, reason) do
+    # IO.inspect(reason, limit: :infinity)
+    exit_instance = %Exit{reason: reason, timestamp: DateTime.utc_now()}
+    exits = Map.put_new(state.exits, id, [])
+    exits = %{exits | id => [exit_instance | state.exits[id]]}
+
+    for {subscription_id, pid} <- state.subscribers do
+      if subscription_id == id do
+        data = [
+          "\r\n",
+          IO.ANSI.red(),
+          "LUA ERROR: ",
+          format_reason(reason),
+          IO.ANSI.normal(),
+          "\r\n"
+        ]
+
+        IO.puts("found matching exit")
+        send(pid, {:tty_data, IO.iodata_to_binary(data)})
+      else
+        IO.puts("fail. #{inspect(subscription_id)} != #{inspect(id)}")
+      end
+    end
+
+    %{state | exits: exits}
+  end
+
+  defp format_reason({{:lua_error, error, _lua}, stacktrace}) do
+    inspect(error, limit: :infinity, pretty: true)
+  end
+
+  defp format_reason(reason) do
+    inspect(reason, limit: :infinity, pretty: true)
   end
 end

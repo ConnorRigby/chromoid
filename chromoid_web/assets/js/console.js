@@ -22,7 +22,7 @@ export default class IEx {
 
     term.focus()
 
-    let channel = socket.channel('user_console', { })
+    let channel = socket.channel('user_console', { location: window.location })
 
     channel
       .join()
