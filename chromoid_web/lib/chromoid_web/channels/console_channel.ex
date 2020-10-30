@@ -11,11 +11,15 @@ defmodule ChromoidWeb.ConsoleChannel do
     :ok
   end
 
+  def extty_start_link do
+    GenServer.start_link(ExTTY, handler: self(), shell_opts: [[], {__MODULE__, :test, []}])
+  end
+
   @impl true
   def join("user_console", %{"location" => %{"pathname" => pathname}}, socket) do
     ["/", "scripts", id | _] = Path.split(pathname)
     id = String.to_integer(id)
-    {:ok, tty} = ExTTY.start_link(handler: self(), shell_opts: [[], {__MODULE__, :test, []}])
+    {:ok, tty} = extty_start_link()
 
     for {_guild_id, guild} <- ChromoidDiscord.GuildCache.list_guilds() do
       ChromoidDiscord.Guild.LuaConsumer.subcribe_script(guild, id, self())
