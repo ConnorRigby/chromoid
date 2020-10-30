@@ -67,6 +67,7 @@ defmodule Chromoid.MixProject do
       {:tesla, "~> 1.3.0"},
       {:timex, "~> 3.6"},
       {:luerl, github: "rvirding/luerl", branch: "develop"},
+      {:extty, "~> 0.1"},
       @nostrum
     ]
   end

@@ -48,6 +48,8 @@ defmodule ChromoidWeb.Router do
       put "/save", ScriptController, :save
       put "/update", ScriptController, :update
     end
+
+    get "/console", ConsoleController, :index
   end
 
   scope "/", ChromoidWeb do

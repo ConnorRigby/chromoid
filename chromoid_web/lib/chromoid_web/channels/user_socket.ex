@@ -4,6 +4,8 @@ defmodule ChromoidWeb.UserSocket do
   ## Channels
   # channel "room:*", ChromoidWeb.RoomChannel
 
+  channel "user_console", ChromoidWeb.ConsoleChannel
+
   # Socket params are passed from the client and can
   # be used to verify and authenticate a user. After
   # verification, you can put default assigns into

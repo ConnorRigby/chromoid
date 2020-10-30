@@ -1,0 +1,56 @@
+.console-wrapper {
+  background: black;
+  padding: 1rem;
+  border-radius: 4px;
+}
+
+.console {
+  font-family: monospace;
+  text-align: left;
+  font-size: 16px;
+  padding: 0;
+  background-color: black;
+  color: white;
+  overflow: auto;
+  height: 400px;
+  line-height: 1;
+  left: auto;
+
+  .xterm {
+    height: 100%;
+  }
+
+  .xterm-viewport {
+    overflow: auto;
+  }
+
+  .xterm-screen,
+  .xterm-text-layer,
+  .xterm-selection-layer,
+  .xterm-link-layer,
+  .xterm-cursor-layer {
+    height: 100% !important;
+  }
+}
+
+.console-active-line {
+  // Somehow fix the active input line spacing here
+  line-height: 0;
+  text-align: left;
+}
+
+.console-input {
+  color: inherit;
+  font-family: inherit;
+  border: none;
+  background-image:none;
+  background-color:transparent;
+  -webkit-box-shadow: none;
+  -moz-box-shadow: none;
+  box-shadow: none;
+  width: 75%;
+}
+
+.console-input:focus {
+  outline: none;
+}

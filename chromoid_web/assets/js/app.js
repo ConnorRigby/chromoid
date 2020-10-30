@@ -16,6 +16,7 @@ import "phoenix_html"
 import {Socket} from "phoenix"
 import LiveSocket from "phoenix_live_view"
 import 'alpinejs'
+import IEx from './console'
 
 let Hooks = {}
 Hooks.PushEvent = {
@@ -48,3 +49,9 @@ liveSocket.connect()
 // Call disableLatencySim() to disable:
 // >> liveSocket.disableLatencySim()
 window.liveSocket = liveSocket
+
+let socket = new Socket('/socket', { params: { token: window.userToken } })
+const iex = new IEx()
+if (window.location.pathname.endsWith('console')) {
+  iex.start(socket)
+}

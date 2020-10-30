@@ -1,0 +1,4 @@
+<button class="btn btn-outline-light" id="restart_button"> restart </button>
+<div class="console-wrapper">
+  <div id="terminal" class="console"></div>
+</div>
