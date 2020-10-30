@@ -106,7 +106,7 @@ defmodule Chromoid.Lua.ScriptStorage do
     -- 'ready' event will be emitted when the script is loaded
     client:on('ready', function()
       -- client.user is the path for your bot
-      print('Script started as '.. client.user.username)
+      logger.info('Script started as '.. client.user.username)
     end)
 
     -- 'messageCreate' callback will be called every time a message is sent

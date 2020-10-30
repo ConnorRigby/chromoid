@@ -71,6 +71,17 @@ defmodule ChromoidDiscord.Guild.LuaConsumer do
     {:noreply, [action], state}
   end
 
+  def handle_info({:log, id, level, message}, state) do
+    for {subscription_id, pid} <- state.subscribers do
+      if subscription_id == id do
+        data = [color_for_level(level), "\r\n[#{level}] #{message}\r\n", IO.ANSI.normal()]
+        send(pid, {:tty_data, IO.iodata_to_binary(data)})
+      end
+    end
+
+    {:noreply, [], state}
+  end
+
   def handle_info({:EXIT, pid, :normal}, state) do
     id =
       Enum.find_value(state.pool, fn
@@ -212,7 +223,6 @@ defmodule ChromoidDiscord.Guild.LuaConsumer do
   end
 
   defp log_exit(state, id, reason) do
-    # IO.inspect(reason, limit: :infinity)
     exit_instance = %Exit{reason: reason, timestamp: DateTime.utc_now()}
     exits = Map.put_new(state.exits, id, [])
     exits = %{exits | id => [exit_instance | state.exits[id]]}
@@ -254,4 +264,9 @@ defmodule ChromoidDiscord.Guild.LuaConsumer do
   defp format_reason(reason) do
     inspect(reason, limit: :infinity, pretty: true)
   end
+
+  defp color_for_level("debug"), do: IO.ANSI.normal()
+  defp color_for_level("info"), do: IO.ANSI.blue()
+  defp color_for_level("warn"), do: IO.ANSI.yellow()
+  defp color_for_level("error"), do: IO.ANSI.red()
 end

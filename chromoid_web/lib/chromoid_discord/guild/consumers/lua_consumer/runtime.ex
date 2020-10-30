@@ -42,6 +42,11 @@ defmodule ChromoidDiscord.Guild.LuaConsumer.Runtime do
     {:noreply, state}
   end
 
+  def handle_info({:log, id, level, message}, state) do
+    send(state.parent, {:log, id, level, message})
+    {:noreply, state}
+  end
+
   @impl GenServer
   def handle_call({:message_create, message, channel}, _from, state) do
     {return, lua} =

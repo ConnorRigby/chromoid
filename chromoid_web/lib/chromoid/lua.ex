@@ -1,5 +1,10 @@
 defmodule Chromoid.Lua do
-  alias Chromoid.Lua.Discord
+  alias Chromoid.Lua.{
+    Discord,
+    Regex,
+    Logger
+  }
+
   @luerl_header Application.app_dir(:luerl, ["include", "luerl.hrl"])
   import Record, only: [defrecord: 2]
   defrecord :erl_func, Record.extract(:erl_func, from: @luerl_header)
@@ -12,6 +17,9 @@ defmodule Chromoid.Lua do
     state = :luerl.set_table(["_user"], {:userdata, user}, state)
     state = :luerl.set_table(["_self"], {:userdata, self()}, state)
     state = :luerl.set_table(["_client"], {:userdata, nil}, state)
-    :luerl.load_module(["discord"], Discord, state)
+    state = :luerl.load_module(["discord"], Discord, state)
+    state = :luerl.load_module(["regex"], Regex, state)
+    state = :luerl.load_module(["logger"], Logger, state)
+    state
   end
 end
