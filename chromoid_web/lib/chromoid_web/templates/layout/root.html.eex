@@ -35,8 +35,6 @@
       </div>
 
 
-
-
       <!--Toggle button (hidden on large screens)-->
       <button
         @click="isOpen = !isOpen"

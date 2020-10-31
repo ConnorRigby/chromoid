@@ -275,4 +275,14 @@ defmodule Chromoid.Accounts do
       _ -> nil
     end
   end
+
+  def logout_user(email) when is_binary(email) do
+    get_user_by_email(email)
+    |> logout_user()
+  end
+
+  def logout_user(user) do
+    for t <- Chromoid.Repo.all(Chromoid.Accounts.UserToken.user_and_contexts_query(user, :all)),
+        do: Chromoid.Repo.delete!(t)
+  end
 end

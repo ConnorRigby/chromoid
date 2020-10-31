@@ -7,10 +7,14 @@ defmodule ChromoidWeb.DiscordOauthController do
     ChromoidWeb.UserAuth.log_out_user(conn)
   end
 
-  def oauth(conn, %{"code" => code}) do
+  def oauth(conn, %{"code" => code} = params) do
+    Logger.info("Discord Oauth: #{inspect(params)}")
+    # send_resp(conn, 200, code)
     client = OAuth.exchange_code(code)
+    IO.inspect(client, label: "CLIENT!!!")
 
-    with {:ok, me} <- OAuth.me(client) do
+    with {:ok, me} <- OAuth.me(client),
+         _ <- Logger.warn("oauth result: #{inspect(me)}") do
       case Chromoid.Accounts.get_user_by_email(me["email"]) do
         nil ->
           {:ok, user} = Chromoid.Accounts.register_user(%{"email" => me["email"]})
