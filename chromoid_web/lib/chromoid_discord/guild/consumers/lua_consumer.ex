@@ -259,6 +259,35 @@ defmodule ChromoidDiscord.Guild.LuaConsumer do
     {acc, pool}
   end
 
+  {:CHANNEL_CREATE,
+   %Nostrum.Struct.Channel{
+     application_id: nil,
+     bitrate: nil,
+     guild_id: 755_804_994_053_341_194,
+     icon: nil,
+     id: 772_519_071_525_896_223,
+     last_message_id: nil,
+     last_pin_timestamp: nil,
+     name: "test2",
+     nsfw: false,
+     owner_id: nil,
+     parent_id: 755_804_994_053_341_195,
+     permission_overwrites: [],
+     position: 3,
+     recipients: nil,
+     topic: nil,
+     type: 0,
+     user_limit: nil
+   }}
+
+  def handle_event({:CHANNEL_CREATE, channel}, {acc, pool}) do
+    for {_, {pid, _monitor}} <- pool do
+      Runtime.channel_create(pid, channel)
+    end
+
+    {acc, pool}
+  end
+
   def handle_event(event, {actions, pool}) do
     Logger.error("Unknown event in Lua handler: #{inspect(event)}")
     {actions, pool}

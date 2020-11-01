@@ -23,6 +23,13 @@ defmodule ChromoidDiscord.Guild.LuaConsumer.Runtime do
       {error, reason}
   end
 
+  def channel_create(pid, channel) do
+    GenServer.call(pid, {:channel_create, channel})
+  catch
+    error, reason ->
+      {error, reason}
+  end
+
   @impl GenServer
   def init([guild, current_user, script, parent]) do
     lua = Chromoid.Lua.init(guild, current_user, script)
@@ -72,6 +79,11 @@ defmodule ChromoidDiscord.Guild.LuaConsumer.Runtime do
         state.lua
       )
 
+    {:reply, return, %{state | lua: lua}}
+  end
+
+  def handle_call({:channel_create, channel}, _from, state) do
+    {return, lua} = Chromoid.Lua.Discord.Client.channel_create(state.client, channel, state.lua)
     {:reply, return, %{state | lua: lua}}
   end
 end
