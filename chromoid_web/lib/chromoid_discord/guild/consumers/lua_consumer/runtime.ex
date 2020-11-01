@@ -16,6 +16,13 @@ defmodule ChromoidDiscord.Guild.LuaConsumer.Runtime do
       {error, reason}
   end
 
+  def typing_start(pid, user_id, channel_id, timestamp) do
+    GenServer.call(pid, {:typing_start, user_id, channel_id, timestamp})
+  catch
+    error, reason ->
+      {error, reason}
+  end
+
   @impl GenServer
   def init([guild, current_user, script, parent]) do
     lua = Chromoid.Lua.init(guild, current_user, script)
@@ -51,6 +58,19 @@ defmodule ChromoidDiscord.Guild.LuaConsumer.Runtime do
   def handle_call({:message_create, message, channel}, _from, state) do
     {return, lua} =
       Chromoid.Lua.Discord.Client.message_create(state.client, message, channel, state.lua)
+
+    {:reply, return, %{state | lua: lua}}
+  end
+
+  def handle_call({:typing_start, user_id, channel_id, timestamp}, _from, state) do
+    {return, lua} =
+      Chromoid.Lua.Discord.Client.typing_start(
+        state.client,
+        user_id,
+        channel_id,
+        timestamp,
+        state.lua
+      )
 
     {:reply, return, %{state | lua: lua}}
   end

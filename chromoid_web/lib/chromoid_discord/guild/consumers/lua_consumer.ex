@@ -217,6 +217,48 @@ defmodule ChromoidDiscord.Guild.LuaConsumer do
     {acc, pool}
   end
 
+  {:TYPING_START,
+   %{
+     channel_id: 643_947_340_453_118_019,
+     guild_id: 643_947_339_895_013_416,
+     member: %{
+       deaf: false,
+       hoisted_role: nil,
+       is_pending: false,
+       joined_at: "2019-11-12T22:56:49.924000+00:00",
+       mute: false,
+       nick: "cone",
+       premium_since: nil,
+       roles: [
+         643_956_497_184_718_887,
+         643_958_189_460_553_729,
+         656_921_490_268_094_472,
+         700_924_023_084_810_311,
+         700_953_507_104_292_915,
+         700_959_510_529_048_657,
+         700_961_345_054_572_555
+       ],
+       user: %{
+         avatar: "1b6c2844223661b82ded23c8987c11e1",
+         discriminator: "0690",
+         id: 316_741_621_498_511_363,
+         public_flags: 256,
+         username: "PressY4Pie"
+       }
+     },
+     timestamp: 1_604_251_200,
+     user_id: 316_741_621_498_511_363
+   }}
+
+  def handle_event({:TYPING_START, typing}, {acc, pool}) do
+    # return client:emit('typingStart', d.user_id, d.channel_id, d.timestamp)
+    for {_, {pid, _monitor}} <- pool do
+      Runtime.typing_start(pid, typing.user_id, typing.channel_id, typing.timestamp)
+    end
+
+    {acc, pool}
+  end
+
   def handle_event(event, {actions, pool}) do
     Logger.error("Unknown event in Lua handler: #{inspect(event)}")
     {actions, pool}

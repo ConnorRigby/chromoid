@@ -31,6 +31,17 @@ defmodule Chromoid.Lua.Discord.Client do
     end
   end
 
+  def typing_start(client, user_id, channel_id, timestamp, state) do
+    case :luerl_emul.get_table_key(client, "typingStart", state) do
+      {nil, state} ->
+        Logger.error("typingStart function not defined by script")
+        {[], state}
+
+      {func, state} ->
+        :luerl_emul.call(func, [user_id, channel_id, timestamp], state)
+    end
+  end
+
   def alloc(user, state) do
     {client, state} = :luerl_heap.alloc_table(table(user), state)
     state = :luerl_emul.set_global_key(["_client"], client, state)
