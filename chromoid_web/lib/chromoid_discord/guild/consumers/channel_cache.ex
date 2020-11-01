@@ -31,6 +31,9 @@ defmodule ChromoidDiscord.Guild.ChannelCache do
         {:CHANNEL_CREATE, channel}, channels ->
           Map.put(channels, channel.id, channel)
 
+        {:CHANNEL_UPDATE, {_old, new}}, channels ->
+          Map.put(channels, new.id, new)
+
         {:CHANNEL_DELETE, channel}, channels ->
           Map.delete(channels, channel.id)
 

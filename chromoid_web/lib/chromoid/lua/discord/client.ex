@@ -45,7 +45,19 @@ defmodule Chromoid.Lua.Discord.Client do
   def channel_create(client, channel, state) do
     case :luerl_emul.get_table_key(client, "channelCreate", state) do
       {nil, state} ->
-        Logger.error("typingStart function not defined by script")
+        Logger.error("channelCreate function not defined by script")
+        {[], state}
+
+      {func, state} ->
+        {channel, state} = Channel.alloc(channel, state)
+        :luerl_emul.call(func, [channel], state)
+    end
+  end
+
+  def channel_update(client, channel, state) do
+    case :luerl_emul.get_table_key(client, "channelUpdate", state) do
+      {nil, state} ->
+        Logger.error("channelCreate function not defined by script")
         {[], state}
 
       {func, state} ->

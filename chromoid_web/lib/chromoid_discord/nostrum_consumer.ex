@@ -76,6 +76,18 @@ defmodule ChromoidDiscord.NostrumConsumer do
     ChromoidDiscord.Guild.EventDispatcher.dispatch(guild, {:CHANNEL_CREATE, channel_create})
   end
 
+  def handle_event(
+        {:CHANNEL_UPDATE,
+         {%{guild_id: guild_id} = old_channel, %{guild_id: guild_id} = new_update}, _ws_state}
+      ) do
+    guild = %Nostrum.Struct.Guild{id: guild_id}
+
+    ChromoidDiscord.Guild.EventDispatcher.dispatch(
+      guild,
+      {:CHANNEL_UPDATE, {old_channel, new_update}}
+    )
+  end
+
   def handle_event({:CHANNEL_DELETE, %{guild_id: guild_id} = channel_delete, _ws_state}) do
     guild = %Nostrum.Struct.Guild{id: guild_id}
     ChromoidDiscord.Guild.EventDispatcher.dispatch(guild, {:CHANNEL_DELETE, channel_delete})

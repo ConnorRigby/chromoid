@@ -288,6 +288,14 @@ defmodule ChromoidDiscord.Guild.LuaConsumer do
     {acc, pool}
   end
 
+  def handle_event({:CHANNEL_UPDATE, {_old, channel}}, {acc, pool}) do
+    for {_, {pid, _monitor}} <- pool do
+      Runtime.channel_update(pid, channel)
+    end
+
+    {acc, pool}
+  end
+
   def handle_event(event, {actions, pool}) do
     Logger.error("Unknown event in Lua handler: #{inspect(event)}")
     {actions, pool}
