@@ -15,9 +15,9 @@ defmodule ChromoidDiscord.OAuth do
   plug Tesla.Middleware.FollowRedirects
 
   if Mix.env() == :prod do
-  @url "https://chromo.id/discord/oauth"
+    @url "https://chromo.id/discord/oauth"
   else
-  @url "http://localhost:4000/discord/oauth"
+    @url "http://localhost:4000/discord/oauth"
   end
 
   # @url "https://discord.com/api/oauth2/authorize?client_id=755805360123805987&redirect_uri=https%3A%2F%2Fchromo.id%2Fdiscord%2Foauth&response_type=code&scope=identify%20email%20connections%20guilds%20gdm.join%20guilds.join%20activities.read%20activities.write"

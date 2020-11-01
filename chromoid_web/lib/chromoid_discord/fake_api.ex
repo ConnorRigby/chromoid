@@ -1,6 +1,6 @@
 defmodule ChromoidDiscord.FakeAPI do
   def create_message!(channel_id, content) do
-    {:ok, %Nostrum.Struct.Message{}}
+    {:ok, %Nostrum.Struct.Message{channel_id: channel_id, content: content}}
   end
 
   def get_channel!(channel_id) do

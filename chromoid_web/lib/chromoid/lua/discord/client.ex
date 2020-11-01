@@ -34,9 +34,6 @@ defmodule Chromoid.Lua.Discord.Client do
   def alloc(user, state) do
     {client, state} = :luerl_heap.alloc_table(table(user), state)
     state = :luerl_emul.set_global_key(["_client"], client, state)
-
-    # tell the calling process this is the client table
-    # this is super hacky idk
     {{:userdata, pid}, state} = :luerl.get_table(["_self"], state)
     send(pid, {:client, client})
 

@@ -38,8 +38,6 @@ if discord_client_secret = System.get_env("DISCORD_CLIENT_SECRET") do
   config :nostrum, client_secret: discord_client_secret
 end
 
-config :oauth2, debug: true
-
 # Import environment specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.
 import_config "#{Mix.env()}.exs"

@@ -218,7 +218,7 @@ defmodule ChromoidDiscord.Guild.LuaConsumer do
   end
 
   def handle_event(event, {actions, pool}) do
-    # Logger.error("Unknown event in Lua handler: #{inspect(event)}")
+    Logger.error("Unknown event in Lua handler: #{inspect(event)}")
     {actions, pool}
   end
 

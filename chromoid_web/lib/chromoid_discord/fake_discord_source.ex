@@ -165,7 +165,8 @@ defmodule ChromoidDiscord.FakeDiscordSource do
     %Nostrum.Struct.Message{
       guild_id: guild.id,
       content: content,
-      channel_id: channel.id
+      channel_id: channel.id,
+      author: default_user()
     }
   end
 end

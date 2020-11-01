@@ -44,6 +44,7 @@ defmodule ChromoidWeb.ConsoleChannel do
     {:noreply, socket}
   end
 
+  @impl true
   def handle_info({:tty_data, data}, socket) do
     push(socket, "up", %{data: data})
     {:noreply, socket}
