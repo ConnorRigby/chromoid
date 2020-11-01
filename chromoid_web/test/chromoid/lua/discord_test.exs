@@ -190,4 +190,31 @@ defmodule Chromoid.Lua.DiscordTest do
     assert {_, _lua} = Lua.Discord.Client.channel_update(client, channel, lua)
     assert_receive {:action, {:create_message!, [^channel_id, "hello, world"]}}
   end
+
+  test "channelDelete", %{guild: guild, user: user} do
+    script = %Lua.Script{filename: "test.lua"}
+    lua = Lua.init(guild, user, script)
+
+    {[client], lua} =
+      :luerl.do(
+        """
+        -- Create a client connection
+        client = discord.Client()
+
+        client:on('channelDelete', function(channel)
+          channel:send("hello, world")
+        end)
+
+        return client
+        """,
+        lua
+      )
+
+    assert_receive {:client, ^client}
+
+    {_, lua} = Lua.Discord.Client.ready(client, lua)
+    %{id: channel_id} = channel = ChromoidDiscord.FakeDiscordSource.default_channel()
+    assert {_, _lua} = Lua.Discord.Client.channel_delete(client, channel, lua)
+    assert_receive {:action, {:create_message!, [^channel_id, "hello, world"]}}
+  end
 end
