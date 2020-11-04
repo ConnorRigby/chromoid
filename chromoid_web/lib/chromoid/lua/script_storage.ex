@@ -7,6 +7,13 @@ defmodule Chromoid.Lua.ScriptStorage do
   alias Chromoid.Lua.Script
   require Logger
 
+  def list_scripts(subsystem \\ "discord") do
+    Repo.all(
+      from s in Script,
+        where: s.subsystem == ^subsystem and is_nil(s.deleted_at)
+    )
+  end
+
   def new_script_for_user(user, attrs) do
     attrs =
       Map.merge(attrs, %{
@@ -63,6 +70,10 @@ defmodule Chromoid.Lua.ScriptStorage do
         ChromoidDiscord.Guild.LuaConsumer.deactivate_script(guild, script)
       end
     end
+  end
+
+  def get_script(id) do
+    Repo.get(Script, id)
   end
 
   def load_script(%Script{} = script) do

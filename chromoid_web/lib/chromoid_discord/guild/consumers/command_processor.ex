@@ -40,11 +40,19 @@ defmodule ChromoidDiscord.Guild.CommandProcessor do
     {:noreply, actions, state}
   end
 
+  @scripts_regex ~r/-script\s{0,1}info\s{0,1}(?<id>[0-9]+)/
+
   @doc false
   def handle_message(message, {actions, state}) do
     cond do
       String.contains?(message.content, "-help") ->
         handle_help(message, {actions, state})
+
+      Regex.match?(@scripts_regex, message.content) ->
+        handle_scripts_info(message, {actions, state})
+
+      String.contains?(message.content, "-scripts") ->
+        handle_scripts(message, {actions, state})
 
       true ->
         {actions, state}
@@ -114,6 +122,45 @@ defmodule ChromoidDiscord.Guild.CommandProcessor do
       |> put_field("**Help Commands**", @help_help)
       |> put_field("**Device Commands**", @device_help)
       |> put_field("**Color Commands**", @color_help)
+
+    {actions ++ [{:create_message!, [message.channel_id, [embed: embed]]}], state}
+  end
+
+  def handle_scripts_info(message, {actions, state}) do
+    %{"id" => id} = Regex.named_captures(@scripts_regex, message.content)
+
+    with %Chromoid.Lua.Script{} = script <- Chromoid.Lua.ScriptStorage.get_script(id),
+         %Chromoid.Lua.Script{} = script <- Chromoid.Lua.ScriptStorage.load_script(script) do
+      content = """
+      ```lua
+      #{script.content}
+      ```
+      """
+
+      {actions ++ [{:create_message!, [message.channel_id, content]}], state}
+    else
+      nil ->
+        {actions ++ [{:create_message!, [message.channel_id, "Could not find that script!"]}],
+         state}
+    end
+  end
+
+  def handle_scripts(message, {actions, state}) do
+    embed =
+      %Nostrum.Struct.Embed{}
+      |> put_title("Help")
+      |> put_description("All active scripts for this server")
+      |> put_color(0xFF69FF)
+
+    scripts = Chromoid.Lua.ScriptStorage.list_scripts()
+
+    embed =
+      Enum.reduce(scripts, embed, fn script, embed ->
+        embed
+        |> put_field(script.filename, """
+        **id**: #{script.id}
+        """)
+      end)
 
     {actions ++ [{:create_message!, [message.channel_id, [embed: embed]]}], state}
   end
