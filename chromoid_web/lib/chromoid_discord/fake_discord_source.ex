@@ -166,7 +166,10 @@ defmodule ChromoidDiscord.FakeDiscordSource do
       guild_id: guild.id,
       content: content,
       channel_id: channel.id,
-      author: default_user()
+      author: default_user(),
+      member: %Nostrum.Struct.Guild.Member{
+        nick: "asdf"
+      }
     }
   end
 end

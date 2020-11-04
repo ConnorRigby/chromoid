@@ -217,4 +217,35 @@ defmodule Chromoid.Lua.DiscordTest do
     assert {_, _lua} = Lua.Discord.Client.channel_delete(client, channel, lua)
     assert_receive {:action, {:create_message!, [^channel_id, "hello, world"]}}
   end
+
+  test "messageCreate message.member:addRole()", %{guild: guild, user: user} do
+    script = %Lua.Script{filename: "test.lua"}
+    lua = Lua.init(guild, user, script)
+
+    {[client], lua} =
+      :luerl.do(
+        """
+        -- Create a client connection
+        client = discord.Client()
+
+        client:on('messageCreate', function(message)
+          message.member:addRole(12334)
+        end)
+
+        return client
+        """,
+        lua
+      )
+
+    assert_receive {:client, ^client}
+
+    {_, lua} = Lua.Discord.Client.ready(client, lua)
+    %{id: _channel_id} = channel = ChromoidDiscord.FakeDiscordSource.default_channel()
+    message = ChromoidDiscord.FakeDiscordSource.default_message(guild, channel, "test test test")
+    {_, _lua} = Lua.Discord.Client.message_create(client, message, channel, lua)
+
+    assert_receive {:action,
+                    {:add_guile_member_role,
+                     [643_947_339_895_013_416, 755_805_360_123_805_987, 12334]}}
+  end
 end
