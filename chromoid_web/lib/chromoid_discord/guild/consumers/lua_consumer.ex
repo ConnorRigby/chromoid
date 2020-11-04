@@ -154,7 +154,13 @@ defmodule ChromoidDiscord.Guild.LuaConsumer do
   end
 
   @impl GenStage
-  def handle_events(events, _from, state) do
+  def handle_events(events, _from, %{current_user: %{id: id}} = state) do
+    events =
+      Enum.filter(events, fn
+        {:MESSAGE_CREATE, %{author: %{id: ^id}}} -> false
+        _ -> true
+      end)
+
     {actions, pool} = Enum.reduce(events, {[], state.pool}, &handle_event/2)
     {:noreply, actions, %{state | pool: pool}}
   end

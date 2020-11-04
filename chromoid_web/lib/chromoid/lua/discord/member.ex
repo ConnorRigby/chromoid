@@ -17,6 +17,6 @@ defmodule Chromoid.Lua.Discord.Member do
     {user, state} = :luerl_emul.get_table_key(self, "user", state)
     {user_id, state} = :luerl_emul.get_table_key(user, "id", state)
     {{:userdata, guild}, state} = :luerl.get_table(["_guild"], state)
-    schedule_action({:add_guile_member_role, [guild.id, user_id, role_id]}, state)
+    schedule_action({:add_guild_member_role, [guild.id, user_id, role_id]}, state)
   end
 end
