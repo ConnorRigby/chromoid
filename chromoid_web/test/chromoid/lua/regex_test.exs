@@ -38,14 +38,15 @@ defmodule Chromoid.Lua.RegexTest do
     script = %Script{filename: "test.lua"}
     lua = Lua.init(nil, nil, script)
 
-    {[value], _lua} =
+    {[value], lua} =
       :luerl.do(
         """
-        return regex.named_captures("c(?<foo>d)", "abcd")
+        local captures = regex.named_captures("c(?<foo>d)", "abcd")
+        return captures.foo == "d"
         """,
         lua
       )
 
-    assert value == %{"foo" => "d"}
+    assert value == true
   end
 end

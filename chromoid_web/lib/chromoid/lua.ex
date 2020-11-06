@@ -17,6 +17,7 @@ defmodule Chromoid.Lua do
     state = :luerl.set_table(["_user"], {:userdata, user}, state)
     state = :luerl.set_table(["_self"], {:userdata, self()}, state)
     state = :luerl.set_table(["_client"], nil, state)
+
     state = :luerl.load_module(["discord"], Discord, state)
     state = :luerl.load_module(["regex"], Regex, state)
     state = :luerl.load_module(["logger"], Logger, state)
