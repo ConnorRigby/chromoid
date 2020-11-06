@@ -36,6 +36,8 @@ defmodule ChromoidWeb.Router do
     live "/devices", DeviceLive, :index
     live "/devices/:id", DeviceLive, :show
     live "/recipes", RecipeLive, :index
+    get "/devices/:id/stream", DeviceController, :stream
+    get "/devices/:id/live.mjpg", DeviceController, :live
     # live "/recipes/:id", RecipeLive, :show
   end
 
