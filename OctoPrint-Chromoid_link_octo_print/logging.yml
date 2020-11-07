@@ -1,0 +1,26 @@
+loggers:
+  octoprint.events:
+    level: ERROR
+  octoprint.filemanager:
+    level: ERROR
+  octoprint.plugins:
+    level: ERROR
+  octoprint.plugins.pluginmanager:
+    level: ERROR
+  octoprint.plugin.core:
+    level: ERROR
+  octoprint.slicing:
+    level: ERROR
+  octoprint.util.pip:
+    level: ERROR
+  octoprint.server:
+    level: ERROR
+  octoprint.util.connectivity.connectivity_checker:
+    level: ERROR
+  octoprint.environment:
+    level: ERROR
+  octoprint.startup:
+    level: ERROR
+  octoprint.plugins.chromoid_link:
+    level: DEBUG
+
