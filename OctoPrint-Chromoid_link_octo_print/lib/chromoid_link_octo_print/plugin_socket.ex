@@ -31,8 +31,12 @@ defmodule ChromoidLinkOctoPrint.PluginSocket do
 
     @impl :gen_event
     def handle_event({level, _group_leader, message}, state) do
+      # IO.inspect(elem(message, 1))
+      content = elem(message, 1)
+      content = IO.iodata_to_binary(content)
+
       if state.socket do
-        :gen_tcp.send(state.socket, :erlang.term_to_binary({:logger, level, message}))
+        :gen_tcp.send(state.socket, :erlang.term_to_binary({:logger, level, content}))
       end
 
       {:ok, state}
@@ -71,15 +75,26 @@ defmodule ChromoidLinkOctoPrint.PluginSocket do
 
   @impl GenServer
   def init(_args) do
+    send(self(), :plugin_connect)
     phoenix_socket_opts = Application.get_env(:chromoid_link_octo_print, :socket, [])
+    {:ok, %{socket: nil, phoenix_socket_opts: phoenix_socket_opts, phoenix_socket: nil}}
+  end
 
+  def handle_info(:plugin_connect, state) do
     {:ok, hostname} = :inet.gethostname()
-    {:ok, sock} = :gen_tcp.connect(hostname, 42069, [{:active, true}, :binary, {:packet, 4}])
-    Logger.add_backend(SocketLogger, socket: sock)
-    Logger.configure_backend(SocketLogger, socket: sock)
-    # send self(), :test
-    send(self(), :ping)
-    {:ok, %{socket: sock, phoenix_socket_opts: phoenix_socket_opts, phoenix_socket: nil}}
+
+    case :gen_tcp.connect(hostname, 42069, [{:active, true}, :binary, {:packet, 4}]) do
+      {:ok, sock} ->
+        Logger.add_backend(SocketLogger, socket: sock)
+        Logger.configure_backend(SocketLogger, socket: sock)
+        send(self(), :ping)
+        {:noreply, %{state | socket: sock}}
+
+      error ->
+        Logger.error("Failed to connect to socket: #{inspect(error)}")
+        Process.send_after(self(), :plugin_connect, 1500)
+        {:noreply, state}
+    end
   end
 
   def handle_info(:ping, state) do
@@ -99,9 +114,30 @@ defmodule ChromoidLinkOctoPrint.PluginSocket do
     {:noreply, state}
   end
 
+  def handle_info({:tcp_closed, socket}, %{socket: socket} = state) do
+    Logger.remove_backend(SocketLogger)
+    Logger.error("Socket disconnected")
+    send(self(), :plugin_connect)
+    {:noreply, %{state | socket: nil}}
+  end
+
   def handle_info({:tcp, socket, data}, %{socket: socket} = state) do
-    event = :erlang.binary_to_term(data)
-    handle_event(event, state)
+    event =
+      try do
+        {:ok, :erlang.binary_to_term(data)}
+      catch
+        _, _ ->
+          {:error, "failed to decode data"}
+      end
+
+    case event do
+      {:ok, event} ->
+        handle_event(event, state)
+
+      {:error, reason} ->
+        Logger.error(reason)
+        {:noreply, state}
+    end
   end
 
   @impl GenServer

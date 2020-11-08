@@ -27,7 +27,6 @@ class ChromoidLinkPlugin(octoprint.plugin.StartupPlugin,
 
     def get_template_configs(self):
         return [
-            # dict(type="navbar", custom_bindings=False),
             dict(type="settings", custom_bindings=False)
         ]
 
@@ -88,16 +87,13 @@ class ChromoidLinkPlugin(octoprint.plugin.StartupPlugin,
                 break
             data = self.queue.get()
             self.send(data, self.connection)
+            # self.connection.close()
 
-    def handle_erlang_log(self, level, message):
-        # content = message[1][0].value
-        content = message[1]
+    def handle_erlang_log(self, level, content):
         if not isinstance(content, erlang.OtpErlangBinary):
             self._logger.error("unexpected content "+str(content))
             return
 
-        # self._logger.debug("level=" + str(level))
-        # self._logger.debug("message[1]=" + str(message[1]))
         if level == erlang.OtpErlangAtom(b'debug'):
             self._logger.debug(content.value.decode())
         elif level == erlang.OtpErlangAtom(b'info'):
@@ -114,29 +110,30 @@ class ChromoidLinkPlugin(octoprint.plugin.StartupPlugin,
         self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.bind((socket.gethostname(), 42069))
         self.sock.listen()
-        self._logger.info("Waiting for connection")
         self.sock.settimeout(None)
-        connection, _client_address = self.sock.accept()
-        connection.settimeout(None)
-        self.connection = connection
-        self._logger.info("Connection established")
-        url = self._settings.get(["url"])
-        if url:
-            self._logger.info("URL Configured")
-            term = (erlang.OtpErlangAtom(bytes("url", "utf-8")),
-                    erlang.OtpErlangBinary(bytes(url, "utf-8")))
-            self.queue.put(term)
+        while True:
+            self._logger.info("Waiting for connection")
+            connection, _client_address = self.sock.accept()
+            connection.settimeout(None)
+            self.connection = connection
+            self._logger.info("Connection established")
+            url = self._settings.get(["url"])
+            if url:
+                self._logger.info("URL Configured")
+                term = (erlang.OtpErlangAtom(bytes("url", "utf-8")),
+                        erlang.OtpErlangBinary(bytes(url, "utf-8")))
+                self.queue.put(term)
 
-        for data in self.recv_loop(connection):
-            if data[0] == erlang.OtpErlangAtom(bytes("logger", "utf-8")):
-                # self._logger.info("handling log level="+str(message[1]) + " message=" + str(message[2]))
-                self.handle_erlang_log(data[1], data[2])
-            elif data[0] == erlang.OtpErlangAtom(b'ping'):
-                self.send(erlang.OtpErlangAtom(b'pong'), connection)
-            else:
-                self._logger.error("unhandled message="+str(data))
-
-            # self.send(message, connection)  # echo the message back
+            try:
+                for data in self.recv_loop(connection):
+                    if data[0] == erlang.OtpErlangAtom(bytes("logger", "utf-8")):
+                        self.handle_erlang_log(data[1], data[2])
+                    elif data[0] == erlang.OtpErlangAtom(b'ping'):
+                        self.send(erlang.OtpErlangAtom(b'pong'), connection)
+                    else:
+                        self._logger.error("unhandled message="+str(data))
+            except (OSError):
+                pass
 
     def on_after_startup(self):
         self._logger.info("Booting Erlang")

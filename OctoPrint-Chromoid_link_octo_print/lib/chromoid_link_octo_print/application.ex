@@ -6,6 +6,10 @@ defmodule ChromoidLinkOctoPrint.Application do
   end
 
   def init(_args) do
+    :os.cmd('epmd -d')
+    {:ok, _} = Node.start(:octoprint_plugin, :shortnames)
+    Node.set_cookie(:democookie)
+
     children = [
       ChromoidLinkOctoPrint.PluginSocket,
       ChromoidLinkOctoPrint.DeviceChannel
