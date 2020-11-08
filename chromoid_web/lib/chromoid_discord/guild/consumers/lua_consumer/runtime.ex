@@ -50,8 +50,9 @@ defmodule ChromoidDiscord.Guild.LuaConsumer.Runtime do
     path = to_charlist(Path.expand(script.path))
 
     case :luerl.dofile(path, lua) do
-      {[client], lua} ->
-        {:ok, %{script: script, parent: parent, client: client, lua: lua}}
+      {[tref], lua} ->
+        {_, lua} = Chromoid.Lua.Discord.Client.ready(tref, lua)
+        {:ok, %{script: script, parent: parent, client: tref, lua: lua, tref: tref}}
 
       {error, _lua} ->
         Logger.error("Failed to start lua script: #{inspect(script.id)}")

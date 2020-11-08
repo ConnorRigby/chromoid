@@ -1,0 +1,4 @@
+include README.md
+recursive-include octoprint_chromoid_link_octo_print/templates *
+recursive-include octoprint_chromoid_link_octo_print/translations *
+recursive-include octoprint_chromoid_link_octo_print/static *

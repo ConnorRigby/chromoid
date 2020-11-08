@@ -1,11 +1,42 @@
 defmodule Chromoid.Lua.Discord.Client do
   require Logger
-  use Chromoid.Lua.Class
+  use Chromoid.Lua.Class, :new
 
   alias Chromoid.Lua.Discord.{
     Message,
     Channel
   }
+
+  defstruct []
+  alloc properties: [
+    on: &on/2,
+    user: Chromoid.Lua.Discord.User
+  ]
+
+  # def alloc(user, state) do
+  #   {client, state} = :luerl_heap.alloc_table(table(user), state)
+  #   state = :luerl_emul.set_global_key(["_client"], client, state)
+  #   {{:userdata, pid}, state} = :luerl.get_table(["_self"], state)
+  #   send(pid, {:client, client})
+
+  #   {client, state}
+  # end
+
+  # def table(user) do
+  #   [
+  #     {"on", erl_func(code: &on/2)},
+  #     {"user", user}
+  #   ]
+  # end
+
+  defimpl Chromoid.Lua.Object do
+    def to_lua(_data, properties) do
+      [
+        {"user", properties[:user]},
+        {"on", properties[:on]}
+      ]
+    end
+  end
 
   def ready(client, state) do
     case :luerl_emul.get_table_key(client, "ready", state) do
@@ -19,14 +50,15 @@ defmodule Chromoid.Lua.Discord.Client do
   end
 
   def message_create(client, message, channel, state) do
+    IO.inspect(client, label: "???")
     case :luerl_emul.get_table_key(client, "messageCreate", state) do
       {nil, state} ->
         Logger.error("messageCreate function not defined by script")
         {[], state}
 
       {func, state} ->
-        {channel, state} = Channel.alloc(channel, state)
-        {message, state} = Message.alloc(message, channel, state)
+        {channel, state} = Channel.alloc(channel, %{}, state)
+        {message, state} = Message.alloc(message, %{channel: channel}, state)
         :luerl_emul.call(func, [message], state)
     end
   end
@@ -49,7 +81,7 @@ defmodule Chromoid.Lua.Discord.Client do
         {[], state}
 
       {func, state} ->
-        {channel, state} = Channel.alloc(channel, state)
+        {channel, state} = Channel.alloc(channel, %{}, state)
         :luerl_emul.call(func, [channel], state)
     end
   end
@@ -61,7 +93,7 @@ defmodule Chromoid.Lua.Discord.Client do
         {[], state}
 
       {func, state} ->
-        {channel, state} = Channel.alloc(channel, state)
+        {channel, state} = Channel.alloc(channel, %{}, state)
         :luerl_emul.call(func, [channel], state)
     end
   end
@@ -73,28 +105,13 @@ defmodule Chromoid.Lua.Discord.Client do
         {[], state}
 
       {func, state} ->
-        {channel, state} = Channel.alloc(channel, state)
+        {channel, state} = Channel.alloc(channel, %{}, state)
         :luerl_emul.call(func, [channel], state)
     end
   end
 
-  def alloc(user, state) do
-    {client, state} = :luerl_heap.alloc_table(table(user), state)
-    state = :luerl_emul.set_global_key(["_client"], client, state)
-    {{:userdata, pid}, state} = :luerl.get_table(["_self"], state)
-    send(pid, {:client, client})
-
-    {client, state}
-  end
-
-  def table(user) do
-    [
-      {"on", erl_func(code: &on/2)},
-      {"user", user}
-    ]
-  end
-
   def on([client, event, func], state) do
+    IO.puts("client:on #{inspect(client)}")
     {{:userdata, script}, state} = :luerl.get_table(["_script"], state)
     state = :luerl_emul.set_table_key(client, event, func, state)
     {lua_func, state} = :luerl_heap.get_funcdef(func, state)
@@ -103,6 +120,6 @@ defmodule Chromoid.Lua.Discord.Client do
     updated_anno = :luerl_anno.set(:file, script.filename, updated_anno)
     updated_lua_func = lua_func(lua_func, anno: updated_anno)
     state = :luerl_heap.set_funcdef(func, updated_lua_func, state)
-    {[], state}
+    {[client], state}
   end
 end

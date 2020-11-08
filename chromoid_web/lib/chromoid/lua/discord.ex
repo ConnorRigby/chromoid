@@ -21,8 +21,8 @@ defmodule Chromoid.Lua.Discord do
   def client([], state) do
     {{:userdata, _guild}, state} = :luerl.get_table(["_guild"], state)
     {{:userdata, current_user}, state} = :luerl.get_table(["_user"], state)
-    {user, state} = User.alloc(current_user, state)
-    {client, state} = Client.alloc(user, state)
+    {user, state} = User.alloc(current_user, %{}, state)
+    {client, state} = Client.alloc(%Client{}, %{user: user}, state)
     {[client], state}
   end
 end

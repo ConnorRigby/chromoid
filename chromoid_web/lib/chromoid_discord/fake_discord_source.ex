@@ -81,6 +81,11 @@ defmodule ChromoidDiscord.FakeDiscordSource do
     }
   end
 
+  def default_author do
+    user = default_user()
+    %{user | id: 805_755_805_360_123_987}
+  end
+
   def default_config(guild) do
     ChromoidDiscord.NostrumConsumer.get_or_create_config(guild)
   end
@@ -166,9 +171,10 @@ defmodule ChromoidDiscord.FakeDiscordSource do
       guild_id: guild.id,
       content: content,
       channel_id: channel.id,
-      author: default_user(),
+      author: default_author(),
       member: %Nostrum.Struct.Guild.Member{
-        nick: "asdf"
+        nick: "asdf",
+        user: default_user()
       }
     }
   end

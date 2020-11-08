@@ -42,6 +42,7 @@ defmodule ChromoidDiscord.Guild.LuaConsumerTest do
       | content: """
         -- Create a client connection
         client = discord.Client()
+        print(client)
 
         -- 'ready' event will be emitted when the script is loaded
         client:on('ready', function()
@@ -55,6 +56,7 @@ defmodule ChromoidDiscord.Guild.LuaConsumerTest do
           logger.info("received message: "..message.content)
         end)
 
+        print(client)
         return client
         """
     })
@@ -63,6 +65,7 @@ defmodule ChromoidDiscord.Guild.LuaConsumerTest do
     {:ok, _runtime} = ChromoidDiscord.Guild.LuaConsumer.activate_script(guild, script)
     ChromoidDiscord.Guild.LuaConsumer.subcribe_script(guild, script.id, self())
     ChromoidDiscord.FakeDiscordSource.message_create(guild, channel, "hello, world")
-    assert_receive {:tty_data, "\r\n[info] received message: hello, world\r\n"}
+    assert_receive {:tty_data, "\e[34m\r\n[info] received message: hello, world\r\n\e[22m"}
+
   end
 end
