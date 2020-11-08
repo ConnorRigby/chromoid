@@ -66,6 +66,5 @@ defmodule ChromoidDiscord.Guild.LuaConsumerTest do
     ChromoidDiscord.Guild.LuaConsumer.subcribe_script(guild, script.id, self())
     ChromoidDiscord.FakeDiscordSource.message_create(guild, channel, "hello, world")
     assert_receive {:tty_data, "\e[34m\r\n[info] received message: hello, world\r\n\e[22m"}
-
   end
 end

@@ -26,7 +26,18 @@ defmodule Chromoid.Devices.Presence do
 
   def fetch(_, entries), do: entries
 
-  @allowed_fields [:online_at, :last_communication, :status, :device_id, :serial, :color, :error]
+  @allowed_fields [
+    :online_at,
+    :last_communication,
+    :status,
+    :device_id,
+    :serial,
+    :color,
+    :error,
+    :storage,
+    :path,
+    :progress
+  ]
 
   defp merge_device_metas(%{metas: metas}) do
     # The most current meta is head of the list so we

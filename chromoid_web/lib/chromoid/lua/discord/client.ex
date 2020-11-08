@@ -8,10 +8,11 @@ defmodule Chromoid.Lua.Discord.Client do
   }
 
   defstruct []
+
   alloc properties: [
-    on: &on/2,
-    user: Chromoid.Lua.Discord.User
-  ]
+          on: &on/2,
+          user: Chromoid.Lua.Discord.User
+        ]
 
   # def alloc(user, state) do
   #   {client, state} = :luerl_heap.alloc_table(table(user), state)
@@ -51,6 +52,7 @@ defmodule Chromoid.Lua.Discord.Client do
 
   def message_create(client, message, channel, state) do
     IO.inspect(client, label: "???")
+
     case :luerl_emul.get_table_key(client, "messageCreate", state) do
       {nil, state} ->
         Logger.error("messageCreate function not defined by script")

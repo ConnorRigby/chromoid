@@ -91,7 +91,32 @@ defmodule ChromoidDiscord.Guild.DeviceStatusChannel do
     {:noreply, join_events, state}
   end
 
-  def handle_info(%Broadcast{}, state) do
+  def handle_info(
+        %Broadcast{
+          event: "progress_report",
+          payload: %{storage: storage, path: path, progress: progress},
+          topic: "devices:" <> device_id
+        },
+        state
+      ) do
+    Logger.info("Processing progress report for discord")
+    device = Repo.get!(Chromoid.Devices.Device, device_id)
+    channel_id = state.config.device_status_channel_id
+    progress_report_action = progress_report_action(channel_id, device, storage, path, progress)
+    {:noreply, [progress_report_action], state}
+
+    # case Chromoid.Devices.Photo.request_photo(device.id) do
+    #   {:ok, photo_response} ->
+    #     photo_action = photo_action(channel_id, photo_response)
+    #     {:noreply, [progress_report_action, photo_action], state}
+
+    #   _error ->
+    #     {:noreply, [progress_report_action], state}
+    # end
+  end
+
+  def handle_info(%Broadcast{} = unknown, state) do
+    Logger.error("Unknown event: #{inspect(unknown)}")
     {:noreply, [], state}
   end
 

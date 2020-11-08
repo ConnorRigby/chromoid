@@ -22,7 +22,10 @@ defmodule ChromoidWeb.DeviceChannel do
       Presence.track(self(), "devices", "#{socket.assigns.device.id}", %{
         online_at: DateTime.utc_now(),
         last_communication: DateTime.utc_now(),
-        status: "connected"
+        status: "connected",
+        storage: nil,
+        path: nil,
+        progress: nil
       })
 
     {:noreply, socket}
@@ -44,6 +47,31 @@ defmodule ChromoidWeb.DeviceChannel do
         socket
       ) do
     socket.endpoint.broadcast("devices:#{socket.assigns.device.id}", "photo_response", response)
+    {:reply, {:ok, %{}}, socket}
+  end
+
+  def handle_in(
+        "progress_report",
+        %{"storage" => storage, "path" => path, "progress" => progress},
+        socket
+      ) do
+    Logger.info("received progress report: #{storage} #{path} #{progress}")
+
+    socket.endpoint.broadcast("devices:#{socket.assigns.device.id}", "progress_report", %{
+      storage: storage,
+      path: path,
+      progress: progress
+    })
+
+    # Presence.update(
+    #   self(),
+    #   "devices",
+    #   "#{socket.assigns.device.id}",
+    #   fn old ->
+    #     %{old | storage: storage, path: path, progress: progress}
+    #   end
+    # )
+
     {:reply, {:ok, %{}}, socket}
   end
 end

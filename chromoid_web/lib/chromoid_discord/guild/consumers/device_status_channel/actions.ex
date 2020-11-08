@@ -1,5 +1,6 @@
 defmodule ChromoidDiscord.Guild.DeviceStatusChannel.Actions do
   import Nostrum.Struct.Embed
+  alias Nostrum.Struct.Embed
   @endpoint ChromoidWeb.Endpoint
   import ChromoidWeb.Router.Helpers, only: [device_url: 3]
   import Chromoid.Devices.Ble.Utils
@@ -83,6 +84,36 @@ defmodule ChromoidDiscord.Guild.DeviceStatusChannel.Actions do
   def ble_device_join_action(channel_id, device, address, meta) do
     embed = embed_for_ble_connection(device, address, meta)
     {:create_message!, [channel_id || 755_850_677_548_220_468, [embed: embed]]}
+  end
+
+  def photo_action(channel_id, photo_response) do
+    {:create_message!,
+     [
+       channel_id || 755_850_677_548_220_468,
+       [file: %{name: photo_response["name"], body: photo_response["content"]}]
+     ]}
+  end
+
+  def progress_report_action(channel_id, device, storage, path, progress) do
+    embed = embed_for_progress_report(device, storage, path, progress)
+    {:create_message!, [channel_id || 755_850_677_548_220_468, [embed: embed]]}
+  end
+
+  def embed_for_progress_report(device, _storage, path, progress) do
+    %Embed{}
+    |> put_color(0x99CCFF)
+    |> put_title("OctoPrint Progress Report")
+    |> put_author(
+      device.serial,
+      device_url(@endpoint, :show, device),
+      device.avatar_url
+    )
+    |> put_field("**Path**", path)
+    |> (fn
+          embed when progress == 69 -> put_field(embed, "**Progress**", "#{progress}% (nice)")
+          embed -> put_field(embed, "**Progress**", "#{progress}%")
+        end).()
+    |> put_timestamp(DateTime.utc_now() |> to_string())
   end
 
   def embed_for_ble_connection(device, address, %{error: message} = meta)
