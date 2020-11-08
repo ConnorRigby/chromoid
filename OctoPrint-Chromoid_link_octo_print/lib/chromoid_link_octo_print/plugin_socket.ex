@@ -1,6 +1,7 @@
 defmodule ChromoidLinkOctoPrint.PluginSocket do
   use GenServer
   require Logger
+  alias ChromoidLinkOctoPrint.DeviceChannel
   @socket_name ChromoidLinkOctoPrint.PhoenixSocket
 
   defmodule SocketLogger do
@@ -33,6 +34,7 @@ defmodule ChromoidLinkOctoPrint.PluginSocket do
       if state.socket do
         :gen_tcp.send(state.socket, :erlang.term_to_binary({:logger, level, message}))
       end
+
       {:ok, state}
     end
 
@@ -73,14 +75,26 @@ defmodule ChromoidLinkOctoPrint.PluginSocket do
 
     {:ok, hostname} = :inet.gethostname()
     {:ok, sock} = :gen_tcp.connect(hostname, 42069, [{:active, true}, :binary, {:packet, 4}])
-    Logger.add_backend(SocketLogger, [socket: sock])
-    Logger.configure_backend(SocketLogger, [socket: sock])
+    Logger.add_backend(SocketLogger, socket: sock)
+    Logger.configure_backend(SocketLogger, socket: sock)
     # send self(), :test
+    send(self(), :ping)
     {:ok, %{socket: sock, phoenix_socket_opts: phoenix_socket_opts, phoenix_socket: nil}}
   end
 
+  def handle_info(:ping, state) do
+    :gen_tcp.send(state.socket, :erlang.term_to_binary({:ping}))
+    {:noreply, state, 6000}
+  end
+
+  def handle_info(:timeout, state) do
+    Logger.error("ping failed")
+    send(self(), :ping)
+    {:noreply, state}
+  end
+
   def handle_info(:test, state) do
-    IO.puts "idk what's going on"
+    IO.puts("idk what's going on")
     Process.send_after(self(), :test, 1500)
     {:noreply, state}
   end
@@ -119,6 +133,17 @@ defmodule ChromoidLinkOctoPrint.PluginSocket do
         Logger.error("Failed to create phoenix socket: #{inspect(error)}")
         {:noreply, state}
     end
+  end
+
+  def handle_event(:pong, state) do
+    Logger.info("got pong")
+    Process.send_after(self(), :ping, 5000)
+    {:noreply, state}
+  end
+
+  def handle_event({:progress, storage, path, progress}, state) do
+    DeviceChannel.progress_report(storage, path, progress)
+    {:noreply, state}
   end
 
   def handle_event(event, state) do

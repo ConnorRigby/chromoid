@@ -12,6 +12,10 @@ defmodule ChromoidLinkOctoPrint.DeviceChannel do
     GenServer.start_link(__MODULE__, args, name: __MODULE__)
   end
 
+  def progress_report(storage, path, progress) do
+    GenServer.call(__MODULE__, {:progress, storage, path, progress})
+  end
+
   @impl GenServer
   def init(_args) do
     send(self(), :join_channel)
@@ -57,6 +61,24 @@ defmodule ChromoidLinkOctoPrint.DeviceChannel do
 
   def handle_info(%Message{}, state) do
     {:noreply, state}
+  end
+
+  @impl true
+  def handle_call({:progress, _storage, _path, _progress}, _from, %{chhannel: nil} = state) do
+    Logger.error("Channel not connected. Not sending progress report")
+    {:noreply, state}
+  end
+
+  def handle_call({:progress, storage, path, progress}, _from, state) do
+    Logger.debug("sending progress report: #{storage} #{path} #{progress}")
+
+    Channel.push(state.channel, "progress_report", %{
+      storage: storage,
+      path: path,
+      progress: progress
+    })
+
+    {:reply, :ok, state}
   end
 
   def jpeg do

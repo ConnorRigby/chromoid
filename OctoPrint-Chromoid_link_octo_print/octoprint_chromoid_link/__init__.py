@@ -14,7 +14,16 @@ from queue import Queue
 
 class ChromoidLinkPlugin(octoprint.plugin.StartupPlugin,
                          octoprint.plugin.TemplatePlugin,
-                         octoprint.plugin.SettingsPlugin):
+                         octoprint.plugin.SettingsPlugin,
+                         octoprint.plugin.ProgressPlugin):
+
+    def on_print_progress(self, storage, path, progress):
+        term = (erlang.OtpErlangAtom(b'progress'),
+                erlang.OtpErlangBinary(bytes(storage, "utf-8")),
+                erlang.OtpErlangBinary(bytes(path, "utf-8")),
+                progress
+                )
+        self.send(term, self.connection)
 
     def get_template_configs(self):
         return [
@@ -70,7 +79,8 @@ class ChromoidLinkPlugin(octoprint.plugin.StartupPlugin,
         # p = subprocess.Popen(['/home/connor/.asdf/shims/mix', 'run', '--no-halt'])
         # p = subprocess.Popen(['/home/connor/.asdf/shims/iex', '-S', 'mix'])
         # p = subprocess.Popen(['./_build/dev/rel/bakeware/chromoid_link_octo_print'])
-        p = subprocess.Popen(['chromoid_link_octo_print'])
+        p = subprocess.Popen(['/home/pi/oprint/bin/chromoid_link_octo_print'])
+
         while True:
             if p.poll() != None:
                 self._logger.error("Erlang exited")
@@ -100,43 +110,45 @@ class ChromoidLinkPlugin(octoprint.plugin.StartupPlugin,
 
     def socket_thread_function(self, name):
         self._logger.info("Setting up socket")
-        self.sock=socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+        self.sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
         self.sock.bind((socket.gethostname(), 42069))
-        self.sock.listen(2)
+        self.sock.listen()
         self._logger.info("Waiting for connection")
         self.sock.settimeout(None)
-        connection, _client_address=self.sock.accept()
+        connection, _client_address = self.sock.accept()
         connection.settimeout(None)
-        self.connection=connection
+        self.connection = connection
         self._logger.info("Connection established")
-        url=self._settings.get(["url"])
+        url = self._settings.get(["url"])
         if url:
             self._logger.info("URL Configured")
-            term=(erlang.OtpErlangAtom(bytes("url", "utf-8")),
+            term = (erlang.OtpErlangAtom(bytes("url", "utf-8")),
                     erlang.OtpErlangBinary(bytes(url, "utf-8")))
             self.queue.put(term)
 
-        for message in self.recv_loop(connection):
-            if message[0] == erlang.OtpErlangAtom(bytes("logger", "utf-8")):
+        for data in self.recv_loop(connection):
+            if data[0] == erlang.OtpErlangAtom(bytes("logger", "utf-8")):
                 # self._logger.info("handling log level="+str(message[1]) + " message=" + str(message[2]))
-                self.handle_erlang_log(message[1], message[2])
+                self.handle_erlang_log(data[1], data[2])
+            elif data[0] == erlang.OtpErlangAtom(b'ping'):
+                self.send(erlang.OtpErlangAtom(b'pong'), connection)
             else:
-                self._logger.error("unhandled message="+str(message))
+                self._logger.error("unhandled message="+str(data))
 
             # self.send(message, connection)  # echo the message back
 
     def on_after_startup(self):
         self._logger.info("Booting Erlang")
         # self._settings.set([], None)
-        self.queue=Queue()
-        self.erlang_thread=threading.Thread(
+        self.queue = Queue()
+        self.erlang_thread = threading.Thread(
             target=self.erlang_subprocess_thread_function, args=(1,))
-        self.socket_thread=threading.Thread(
+        self.socket_thread = threading.Thread(
             target=self.socket_thread_function, args=(1,))
         self.erlang_thread.start()
         self.socket_thread.start()
 
 
-__plugin_name__="chromoid_link"
-__plugin_pythoncompat__=">=2.7,<4"
-__plugin_implementation__=ChromoidLinkPlugin()
+__plugin_name__ = "chromoid_link"
+__plugin_pythoncompat__ = ">=2.7,<4"
+__plugin_implementation__ = ChromoidLinkPlugin()
