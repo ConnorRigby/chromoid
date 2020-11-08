@@ -126,8 +126,8 @@ defmodule ChromoidLinkOctoPrint.PluginSocket do
       try do
         {:ok, :erlang.binary_to_term(data)}
       catch
-        _, _ ->
-          {:error, "failed to decode data"}
+        _, error ->
+          {:error, "failed to decode data: #{inspect(error)}"}
       end
 
     case event do
@@ -155,6 +155,8 @@ defmodule ChromoidLinkOctoPrint.PluginSocket do
   end
 
   def handle_event({:url, url}, state) do
+    Logger.info("Got URL from plugin")
+
     phoenix_socket_opts =
       Keyword.put(state.phoenix_socket_opts, :event_handler_pid, self())
       |> Keyword.put(:url, url)

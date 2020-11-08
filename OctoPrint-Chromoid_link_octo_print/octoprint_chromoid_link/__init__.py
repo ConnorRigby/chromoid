@@ -53,7 +53,6 @@ class ChromoidLinkPlugin(octoprint.plugin.StartupPlugin,
         header = struct.pack('!I', len(payload))
         stream.send(header)
         stream.send(payload)
-        # stream.flush()
 
     def recv(self, stream):
         """Read an Erlang term from an input stream."""
@@ -87,7 +86,6 @@ class ChromoidLinkPlugin(octoprint.plugin.StartupPlugin,
                 break
             data = self.queue.get()
             self.send(data, self.connection)
-            # self.connection.close()
 
     def handle_erlang_log(self, level, content):
         if not isinstance(content, erlang.OtpErlangBinary):

@@ -7,7 +7,8 @@ defmodule ChromoidLinkOctoPrint.Application do
 
   def init(_args) do
     :os.cmd('epmd -d')
-    {:ok, _} = Node.start(:octoprint_plugin, :shortnames)
+    {:ok, hostname} = :inet.gethostname()
+    Node.start(:"#{hostname}", :shortnames)
     Node.set_cookie(:democookie)
 
     children = [
