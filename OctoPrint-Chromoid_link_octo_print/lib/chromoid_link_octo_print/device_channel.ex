@@ -15,7 +15,7 @@ defmodule ChromoidLinkOctoPrint.DeviceChannel do
   @impl GenServer
   def init(_args) do
     send(self(), :join_channel)
-    {:ok, %{channel: nil, connected?: false, photo_index: 0}}
+    {:ok, %{channel: nil, connected?: false, photo_index: 0, last_error: nil}}
   end
 
   @impl GenServer
@@ -26,12 +26,15 @@ defmodule ChromoidLinkOctoPrint.DeviceChannel do
       {:ok, response, channel} ->
         Logger.info("Connected to channel: #{inspect(response)}")
         true = Process.link(channel)
-        {:noreply, %{state | channel: channel, connected?: true}}
+        {:noreply, %{state | channel: channel, connected?: true, last_error: nil}}
 
       error ->
-        Logger.error("Failed to connect to channel: #{inspect(error)}")
+        if state.last_error != error do
+          Logger.error("Failed to connect to channel: #{inspect(error)}")
+        end
+
         send(self(), :join_channel)
-        {:noreply, %{state | channel: nil, connected?: false}}
+        {:noreply, %{state | channel: nil, connected?: false, last_error: error}}
     end
   end
 
