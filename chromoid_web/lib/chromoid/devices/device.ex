@@ -6,6 +6,10 @@ defmodule Chromoid.Devices.Device do
     field :serial, :string
     field :avatar_url, :string
     has_one :device_token, Chromoid.Devices.DeviceToken
+
+    many_to_many :guild_devices, Chromoid.Devices.GuildDevice,
+      join_through: Chromoid.Devices.GuildDevice
+
     timestamps()
   end
 

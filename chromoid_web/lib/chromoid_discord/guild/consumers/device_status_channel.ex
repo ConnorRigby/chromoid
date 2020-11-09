@@ -140,6 +140,7 @@ defmodule ChromoidDiscord.Guild.DeviceStatusChannel do
   @device_list_regex ~r/-device(?:\s{1,})list/
   @device_info_regex ~r/-device(?:\s{1,})info(?:\s{1,})(?<serial>[a-z_0-9\-]+)/
   @device_photo_regex ~r/-device(?:\s{1,})photo(?:\s{1,})(?<serial>[a-z_0-9\-]+)/
+  @device_nick_regex ~r/-device(?:\s{1,})nick(?:\s{1,})(?<serial>[a-z_0-9\-]+)(?:\s{1,})(?<nickname>.+)/
   @color_hex_regex ~r/-color(?:\s{1,})(?<address>(?:[[:xdigit:]]{2}\:?){6})(?:\s{1,})(?<color>\#[[:xdigit:]]{6})/
   @color_friendly_regex ~r/-color(?:\s{1,})(?<address>(?:[[:xdigit:]]{2}\:?){6})(?:\s{1,})(?<color>(white)|(silver)|(gray)|(black)|(red)|(maroon)|(yellow)|(olive)|(lime)|(green)|(aqua)|(teal)|(blue)|(navy)|(fuchsia)|(purple))/
 
@@ -163,6 +164,13 @@ defmodule ChromoidDiscord.Guild.DeviceStatusChannel do
         handle_device_info(
           message,
           Regex.named_captures(@device_info_regex, message.content),
+          {actions, state}
+        )
+
+      String.match?(message.content, @device_nick_regex) ->
+        handle_device_nick(
+          message,
+          Regex.named_captures(@device_nick_regex, message.content),
           {actions, state}
         )
 
@@ -207,7 +215,7 @@ defmodule ChromoidDiscord.Guild.DeviceStatusChannel do
   end
 
   def handle_device_photo(message, %{"serial" => serial}, {actions, state}) do
-    case Repo.get_by(Chromoid.Devices.Device, serial: serial) do
+    case find_device(state.config, serial) do
       nil ->
         {actions ++
            [error_action(message, "Could not find device by that serial number: `#{serial}`")],
@@ -225,7 +233,7 @@ defmodule ChromoidDiscord.Guild.DeviceStatusChannel do
   end
 
   def handle_device_info(message, %{"serial" => serial}, {actions, state}) do
-    case Repo.get_by(Chromoid.Devices.Device, serial: serial) do
+    case find_device(state.config, serial) do
       nil ->
         {actions ++
            [error_action(message, "Could not find device by that serial number: `#{serial}`")],
@@ -234,6 +242,26 @@ defmodule ChromoidDiscord.Guild.DeviceStatusChannel do
       device ->
         meta = Chromoid.Devices.Presence.list("devices")["#{device.id}"]
         {actions ++ [device_info_action(message, device, meta)], state}
+    end
+  end
+
+  def handle_device_nick(message, %{"nickname" => nickname, "serial" => serial}, {actions, state}) do
+    case find_device(state.config, serial) do
+      nil ->
+        {actions ++
+           [error_action(message, "Could not find device by that serial number: `#{serial}`")],
+         state}
+
+      device ->
+        case Chromoid.Devices.set_nickname(state.config, device, nickname) do
+          {:error, changeset} ->
+            {actions ++
+               [error_action(message, "Failed to set nickname: #{inspect(changeset.errors)}")],
+             state}
+
+          _ ->
+            handle_device_info(message, %{"serial" => serial}, {actions, state})
+        end
     end
   end
 
@@ -263,6 +291,11 @@ defmodule ChromoidDiscord.Guild.DeviceStatusChannel do
       error = error_action(message, error_message)
       {actions ++ [error], state}
     end
+  end
+
+  def find_device(guild_config, serial_or_nickname) do
+    Chromoid.Devices.find_device_by_nickname(guild_config, serial_or_nickname) ||
+      Repo.get_by(Chromoid.Devices.Device, serial: serial_or_nickname)
   end
 
   defp decode_color_arg("#" <> hex_str) do

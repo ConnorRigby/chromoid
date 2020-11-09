@@ -47,6 +47,10 @@ defmodule ChromoidDiscord.Guild.DeviceStatusChannel.Actions do
     {:create_message!, [message.channel_id, [embed: embed]]}
   end
 
+  def maybe_add_print_progress(embed, %{path: nil}) do
+    embed
+  end
+
   def maybe_add_print_progress(embed, %{path: path, progress: progress}) do
     embed
     |> put_field("**Current Print**", path)
