@@ -25,7 +25,7 @@ defmodule ChromoidWeb.DeviceController do
   end
 
   def do_livestream(conn, device) do
-    case Chromoid.Devices.Photo.request_photo(device) do
+    case request_photo(device) do
       {:ok, %{"content" => jpeg}} ->
         content = [
           """
@@ -41,13 +41,25 @@ defmodule ChromoidWeb.DeviceController do
             do_livestream(conn, device)
 
           {:error, :closed} ->
-            Logger.error("livestream socket cloesed")
+            Logger.error("livestream connection cloesed")
+
             conn
+            |> halt()
         end
 
-      error ->
+      {:error, error} ->
         Logger.error("error getting frame: #{inspect(error)}")
+
         conn
+        |> put_flash(:error, error)
+        |> halt()
     end
+  end
+
+  def request_photo(device) do
+    Chromoid.Devices.Photo.request_photo(device)
+  catch
+    :exit, {:noproc, _} ->
+      {:error, "device not connected"}
   end
 end

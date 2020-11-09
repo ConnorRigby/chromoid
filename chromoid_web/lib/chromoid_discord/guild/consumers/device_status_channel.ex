@@ -222,13 +222,18 @@ defmodule ChromoidDiscord.Guild.DeviceStatusChannel do
          state}
 
       device ->
-        {:ok, data} = Chromoid.Devices.Photo.request_photo(device)
+        case Chromoid.Devices.Photo.request_photo(device) do
+          {:ok, data} ->
+            action =
+              {:create_message!,
+               [message.channel_id, [file: %{name: data["name"], body: data["content"]}]]}
 
-        action =
-          {:create_message!,
-           [message.channel_id, [file: %{name: data["name"], body: data["content"]}]]}
+            {actions ++ [action], state}
 
-        {actions ++ [action], state}
+          {:error, reason} ->
+            {actions ++
+               [error_action(message, "Could not get photo: #{reason}")], state}
+        end
     end
   end
 

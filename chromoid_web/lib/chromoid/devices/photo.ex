@@ -26,13 +26,14 @@ defmodule Chromoid.Devices.Photo do
   def init(device_id) do
     @endpoint.subscribe("devices:#{device_id}")
     Logger.metadata(device_id: device_id)
-    {:ok, %{device_id: device_id, caller: nil}}
+    {:ok, %{device_id: device_id, caller: nil, timer: nil}}
   end
 
   @impl GenServer
   def handle_call(:request_photo, from, state) do
     @endpoint.broadcast("devices:#{state.device_id}", "photo_request", %{})
-    {:noreply, %{state | caller: from}}
+    timer = Process.send_after(self(), :timeout, 3000)
+    {:noreply, %{state | caller: from, timer: timer}}
   end
 
   @impl GenServer
@@ -44,11 +45,17 @@ defmodule Chromoid.Devices.Photo do
         %Broadcast{event: "photo_response", payload: %{"content" => jpeg_base64} = payload},
         state
       ) do
+    if state.timer, do: Process.cancel_timer(state.timer)
     GenServer.reply(state.caller, {:ok, %{payload | "content" => Base.decode64!(jpeg_base64)}})
-    {:noreply, %{state | caller: nil}}
+    {:noreply, %{state | caller: nil, timer: nil}}
   end
 
   def handle_info(%Broadcast{}, state) do
     {:noreply, state}
+  end
+
+  def handle_info(:timeout, state) do
+    GenServer.reply(state.caller, {:error, "timeout"})
+    {:noreply, %{state | caller: nil, timer: nil}}
   end
 end
