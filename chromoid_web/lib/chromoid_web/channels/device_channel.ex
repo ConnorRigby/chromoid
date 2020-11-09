@@ -3,6 +3,7 @@ defmodule ChromoidWeb.DeviceChannel do
   require Logger
   alias Chromoid.Devices.Presence
   alias Phoenix.Socket.Broadcast
+  alias Chromoid.Devices.Job
 
   def join(_topic, _params, socket) do
     send(self(), :after_join)
@@ -25,7 +26,8 @@ defmodule ChromoidWeb.DeviceChannel do
         status: "connected",
         storage: nil,
         path: nil,
-        progress: nil
+        progress: nil,
+        job: nil
       })
 
     {:noreply, socket}
@@ -63,15 +65,32 @@ defmodule ChromoidWeb.DeviceChannel do
       progress: progress
     })
 
-    # Presence.update(
-    #   self(),
-    #   "devices",
-    #   "#{socket.assigns.device.id}",
-    #   fn old ->
-    #     %{old | storage: storage, path: path, progress: progress}
-    #   end
-    # )
+    Presence.update(
+      self(),
+      "devices",
+      "#{socket.assigns.device.id}",
+      fn old ->
+        %{old | storage: storage, path: path, progress: progress}
+      end
+    )
 
     {:reply, {:ok, %{}}, socket}
+  end
+
+  def handle_in("job", attrs, socket) do
+    job =
+      Job.changeset(%Job{}, attrs)
+      |> Ecto.Changeset.apply_changes()
+
+    Presence.update(
+      self(),
+      "devices",
+      "#{socket.assigns.device.id}",
+      fn old ->
+        %{old | job: job}
+      end
+    )
+
+    {:noreply, socket}
   end
 end

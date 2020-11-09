@@ -43,6 +43,10 @@ defmodule ChromoidDiscord.Guild.Responder do
     reply
   end
 
+  def handle_event(:noop, _from) do
+    :noop
+  end
+
   def handle_event({function, args}, _from) when is_atom(function) and is_list(args) do
     apply(@api, function, args)
   catch

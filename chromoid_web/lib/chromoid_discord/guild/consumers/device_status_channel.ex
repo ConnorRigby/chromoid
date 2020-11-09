@@ -24,8 +24,13 @@ defmodule ChromoidDiscord.Guild.DeviceStatusChannel do
   def init({guild, config, current_user}) do
     @endpoint.subscribe("devices")
 
-    {:producer_consumer, %{guild: guild, current_user: current_user, config: config},
-     subscribe_to: [via(guild, EventDispatcher)]}
+    state = %{
+      guild: guild,
+      current_user: current_user,
+      config: config
+    }
+
+    {:producer_consumer, state, subscribe_to: [via(guild, EventDispatcher)]}
   end
 
   @impl GenStage
@@ -60,14 +65,26 @@ defmodule ChromoidDiscord.Guild.DeviceStatusChannel do
       for {id, meta} <- joins do
         @endpoint.subscribe("devices:#{id}")
         device = Repo.get!(Chromoid.Devices.Device, id)
-        device_join_action(state.config.device_status_channel_id, device, meta)
+
+        if leaves[id] do
+          # update, not join
+          :noop
+        else
+          device_join_action(state.config.device_status_channel_id, device, meta)
+        end
       end
 
     leave_events =
       for {id, meta} <- leaves do
         device = Repo.get!(Chromoid.Devices.Device, id)
         @endpoint.unsubscribe("devices:#{id}")
-        device_leave_action(state.config.device_status_channel_id, device, meta)
+
+        if joins[id] do
+          # update, not leave
+          :noop
+        else
+          device_leave_action(state.config.device_status_channel_id, device, meta)
+        end
       end
 
     {:noreply, join_events ++ leave_events, state}

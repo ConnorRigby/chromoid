@@ -115,7 +115,8 @@ defmodule ChromoidWeb.DeviceLive do
           fields = [
             :last_communication,
             :online_at,
-            :status
+            :status,
+            :job
           ]
 
           updates = Map.take(meta, fields)

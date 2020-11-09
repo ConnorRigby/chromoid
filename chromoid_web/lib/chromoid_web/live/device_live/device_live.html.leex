@@ -38,9 +38,12 @@
       <div class="border-r border-b border-l border-gray-400 lg:border-l-0 lg:border-t lg:border-gray-400 bg-white rounded-b lg:rounded-b-none lg:rounded-r p-4 flex flex-col justify-between leading-normal">
 
         <div class="flex items-center">
-          <img class="w-10 h-10 rounded-full mr-4" src="<%= device.avatar_url %>" alt="<%= device.serial %> avatar">
+          <img class="w-10 h-10 rounded-full mr-4" src="<%= device.avatar_url %>">
           <div class="text-sm">
             <p class="text-gray-900 leading-none"><%= device.serial %> </p>
+            <%= if device.job do %>
+              <%= device.job.job.file.name %>
+            <% end %>
 
             <%= if device.last_communication do %>
               <p class="text-gray-700"> last communication <%= Timex.from_now(device.last_communication) %> </p>

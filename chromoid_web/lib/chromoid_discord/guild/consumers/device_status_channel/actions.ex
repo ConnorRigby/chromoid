@@ -42,8 +42,18 @@ defmodule ChromoidDiscord.Guild.DeviceStatusChannel.Actions do
           )
       end)
 
+    embed = maybe_add_print_progress(embed, meta)
+
     {:create_message!, [message.channel_id, [embed: embed]]}
   end
+
+  def maybe_add_print_progress(embed, %{path: path, progress: progress}) do
+    embed
+    |> put_field("**Current Print**", path)
+    |> put_field("**Progress**", "#{progress}%")
+  end
+
+  def maybe_add_print_progress(embed, _), do: embed
 
   def device_join_action(channel_id, device, meta) do
     embed =
