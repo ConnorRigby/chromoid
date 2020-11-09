@@ -6,6 +6,14 @@ defmodule Chromoid.Devices.Photo do
   @endpoint ChromoidWeb.Endpoint
   alias Phoenix.Socket.Broadcast
 
+  def request_photo(%Chromoid.Devices.Device{camera_differ_id: nil, id: id}) do
+    request_photo(id)
+  end
+
+  def request_photo(%Chromoid.Devices.Device{camera_differ_id: id}) do
+    request_photo(id)
+  end
+
   def request_photo(device_id) do
     GenServer.call(via({__MODULE__, device_id}), :request_photo)
   end

@@ -6,6 +6,7 @@ defmodule Chromoid.Devices.Device do
     field :serial, :string
     field :avatar_url, :string
     has_one :device_token, Chromoid.Devices.DeviceToken
+    belongs_to :camera_differ, Chromoid.Devices.Device
 
     many_to_many :guild_devices, Chromoid.Devices.GuildDevice,
       join_through: Chromoid.Devices.GuildDevice

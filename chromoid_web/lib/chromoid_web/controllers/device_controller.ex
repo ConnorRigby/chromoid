@@ -25,7 +25,7 @@ defmodule ChromoidWeb.DeviceController do
   end
 
   def do_livestream(conn, device) do
-    case Chromoid.Devices.Photo.request_photo(device.id) do
+    case Chromoid.Devices.Photo.request_photo(device) do
       {:ok, %{"content" => jpeg}} ->
         content = [
           """

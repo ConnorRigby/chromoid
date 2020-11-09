@@ -122,14 +122,14 @@ defmodule ChromoidDiscord.Guild.DeviceStatusChannel do
     progress_report_action = progress_report_action(channel_id, device, storage, path, progress)
     {:noreply, [progress_report_action], state}
 
-    # case Chromoid.Devices.Photo.request_photo(device.id) do
-    #   {:ok, photo_response} ->
-    #     photo_action = photo_action(channel_id, photo_response)
-    #     {:noreply, [progress_report_action, photo_action], state}
+    case Chromoid.Devices.Photo.request_photo(device) do
+      {:ok, photo_response} ->
+        photo_action = photo_action(channel_id, photo_response)
+        {:noreply, [progress_report_action, photo_action], state}
 
-    #   _error ->
-    #     {:noreply, [progress_report_action], state}
-    # end
+      _error ->
+        {:noreply, [progress_report_action], state}
+    end
   end
 
   def handle_info(%Broadcast{} = unknown, state) do
@@ -222,7 +222,7 @@ defmodule ChromoidDiscord.Guild.DeviceStatusChannel do
          state}
 
       device ->
-        {:ok, data} = Chromoid.Devices.Photo.request_photo(device.id)
+        {:ok, data} = Chromoid.Devices.Photo.request_photo(device)
 
         action =
           {:create_message!,
