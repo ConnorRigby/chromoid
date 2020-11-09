@@ -3,7 +3,7 @@ defmodule Chromoid.MixProject do
 
   @app :chromoid
   @version "0.1.0"
-  @all_targets [:rpi0]
+  @all_targets [:rpi0, :rpi3]
 
   def project do
     [
@@ -77,8 +77,8 @@ defmodule Chromoid.MixProject do
 
       # Dependencies for specific targets
       {:nerves_system_rpi0, "~> 1.12", runtime: false, targets: :rpi0},
-      # {:nerves_system_rpi0, "~> 1.6.0", runtime: false, targets: :rpi0},
-      {:picam, "~> 0.4.1", targets: :rpi0}
+      {:nerves_system_rpi3, "~> 1.12", runtime: false, targets: :rpi3},
+      {:picam, "~> 0.4.1", targets: @all_targets}
     ]
   end
 

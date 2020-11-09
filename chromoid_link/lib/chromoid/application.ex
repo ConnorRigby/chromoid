@@ -12,13 +12,11 @@ defmodule Chromoid.Application do
     socket_opts = Application.get_env(:chromoid, :socket, [])
 
     children =
-      [
-        Chromoid.BLEConnection.Registry,
-        Chromoid.BLEConnectionSupervisor,
-        Chromoid.BLECtx,
-        {Chromoid.SocketMonitor, socket_opts},
-        Chromoid.DeviceChannel
-      ] ++ children(target())
+      children(target()) ++
+        [
+          {Chromoid.SocketMonitor, socket_opts},
+          Chromoid.DeviceChannel
+        ]
 
     Supervisor.start_link(children, opts)
   end
@@ -32,12 +30,18 @@ defmodule Chromoid.Application do
     ]
   end
 
-  def children(:rpi0) do
+  def children(:rpi3) do
     [
       Picam.Camera
-      # Children for all targets except host
-      # Starts a worker by calling: Chromoid.Worker.start_link(arg)
-      # {Chromoid.Worker, arg},
+    ]
+  end
+
+  def children(:rpi0) do
+    [
+      Chromoid.BLEConnection.Registry,
+      Chromoid.BLEConnectionSupervisor,
+      Chromoid.BLECtx,
+      Picam.Camera
     ]
   end
 
