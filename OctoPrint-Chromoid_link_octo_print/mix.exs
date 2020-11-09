@@ -29,7 +29,9 @@ defmodule ChromoidLinkOctoPrint.MixProject do
       {:jason, "~> 1.2"},
       {:bakeware, "~> 0.1.3"},
       {:ring_logger, "~> 0.8.1"},
-      {:tesla, "~> 1.3"}
+      {:tesla, "~> 1.3"},
+      {:mime, "~> 1.4"},
+      {:hackney, "~> 1.16"}
     ]
   end
 
