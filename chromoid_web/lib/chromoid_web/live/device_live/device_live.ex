@@ -131,11 +131,13 @@ defmodule ChromoidWeb.DeviceLive do
           device
           |> Map.put(:last_communication, disconnect_time)
           |> Map.put(:status, "offline")
+          |> Map.put(:job, nil)
 
         true ->
           device
           |> Map.put(:last_communication, nil)
           |> Map.put(:status, "offline")
+          |> Map.put(:job, nil)
       end
     end
   end
