@@ -31,10 +31,7 @@ defmodule ChromoidLinkOctoPrint.PluginSocket do
 
     @impl :gen_event
     def handle_event({level, _group_leader, message}, state) do
-      # IO.inspect(elem(message, 1))
       content = elem(message, 1)
-      content = IO.iodata_to_binary(content)
-
       if state.socket do
         :gen_tcp.send(state.socket, :erlang.term_to_binary({:logger, level, content}))
       end
@@ -73,11 +70,20 @@ defmodule ChromoidLinkOctoPrint.PluginSocket do
     GenServer.start_link(__MODULE__, args, name: __MODULE__)
   end
 
+  def async_start(url) do
+    GenServer.cast(__MODULE__, {:url, url})
+  end
+
   @impl GenServer
   def init(_args) do
     send(self(), :plugin_connect)
     phoenix_socket_opts = Application.get_env(:chromoid_link_octo_print, :socket, [])
     {:ok, %{socket: nil, phoenix_socket_opts: phoenix_socket_opts, phoenix_socket: nil}}
+  end
+
+  @impl GenServer
+  def handle_cast({:url, url}, state) do
+    handle_event({:url, url}, state)
   end
 
   def handle_info(:plugin_connect, state) do
@@ -105,12 +111,6 @@ defmodule ChromoidLinkOctoPrint.PluginSocket do
   def handle_info(:timeout, state) do
     Logger.error("ping failed")
     send(self(), :ping)
-    {:noreply, state}
-  end
-
-  def handle_info(:test, state) do
-    IO.puts("idk what's going on")
-    Process.send_after(self(), :test, 1500)
     {:noreply, state}
   end
 
@@ -143,6 +143,9 @@ defmodule ChromoidLinkOctoPrint.PluginSocket do
   @impl GenServer
   def handle_info({PhoenixClient.Socket, socket, :connected}, %{phoenix_socket: socket} = state) do
     Logger.info("Socket connected")
+    if state.socket do
+      :gen_tcp.send(state.socket, :erlang.term_to_binary({:phoenix_socket_connection, "connected"}))
+    end
     {:noreply, state}
   end
 
@@ -151,6 +154,9 @@ defmodule ChromoidLinkOctoPrint.PluginSocket do
         %{phoenix_socket: socket} = state
       ) do
     Logger.warn("Socket disconnected: #{inspect(reason)}")
+    if state.socket do
+      :gen_tcp.send(state.socket, :erlang.term_to_binary({:phoenix_socket_connection, "disconnected"}))
+    end
     {:noreply, state}
   end
 
@@ -164,7 +170,9 @@ defmodule ChromoidLinkOctoPrint.PluginSocket do
     case PhoenixClient.Socket.start_link(phoenix_socket_opts, name: @socket_name) do
       {:ok, pid} ->
         Logger.info("Creating phoenix socket")
-        :gen_tcp.send(state.socket, :erlang.term_to_binary({:url, url}))
+        if state.socket do
+          :gen_tcp.send(state.socket, :erlang.term_to_binary({:phoenix_socket_connection, "connecting"}))
+        end
         {:noreply, %{state | phoenix_socket: pid}}
 
       error ->

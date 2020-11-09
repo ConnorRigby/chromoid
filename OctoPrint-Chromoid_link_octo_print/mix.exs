@@ -28,7 +28,8 @@ defmodule ChromoidLinkOctoPrint.MixProject do
       {:phoenix_client, path: "../phoenix_client"},
       {:jason, "~> 1.2"},
       {:bakeware, "~> 0.1.3"},
-      {:ring_logger, "~> 0.8.1"}
+      {:ring_logger, "~> 0.8.1"},
+      {:tesla, "~> 1.3"}
     ]
   end
 

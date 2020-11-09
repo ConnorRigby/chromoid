@@ -10,6 +10,7 @@ import struct
 import socket
 import sys
 from queue import Queue
+import datetime
 
 
 class ChromoidLinkPlugin(octoprint.plugin.StartupPlugin,
@@ -27,14 +28,19 @@ class ChromoidLinkPlugin(octoprint.plugin.StartupPlugin,
 
     def get_template_configs(self):
         return [
-            dict(type="settings", custom_bindings=False)
+            dict(type="settings", custom_bindings=False),
+            dict(type="sidebar", custom_bindings=False, icon="fa-signal")
         ]
 
     def get_settings_defaults(self):
         return dict(url=None)
 
     def get_template_vars(self):
-        return dict(url=self._settings.get(["url"]))
+        return dict(
+            url=self._settings.get(["url"]),
+            phoenix_socket_connection=self.phoenix_socket_connection,
+            last_ping=self.last_ping
+        )
 
     def on_settings_save(self, data):
         old_url = self._settings.get(["url"])
@@ -79,10 +85,11 @@ class ChromoidLinkPlugin(octoprint.plugin.StartupPlugin,
         # p = subprocess.Popen(['./_build/dev/rel/bakeware/chromoid_link_octo_print'])
         # p = subprocess.Popen(['/home/pi/.asdf/shims/iex', '-S', 'mix'])
         p = subprocess.Popen(['/home/pi/oprint/bin/chromoid_link_octo_print'])
-
+        self.erlang_up = True
         while True:
             if p.poll() != None:
                 self._logger.error("Erlang exited")
+                self.erlang_up = False
                 break
             data = self.queue.get()
             self.send(data, self.connection)
@@ -127,7 +134,10 @@ class ChromoidLinkPlugin(octoprint.plugin.StartupPlugin,
                     if data[0] == erlang.OtpErlangAtom(bytes("logger", "utf-8")):
                         self.handle_erlang_log(data[1], data[2])
                     elif data[0] == erlang.OtpErlangAtom(b'ping'):
+                        self.last_ping = datetime.datetime.now().isoformat()
                         self.send(erlang.OtpErlangAtom(b'pong'), connection)
+                    elif data[0] == erlang.OtpErlangAtom(b'phoenix_socket_connection'):
+                        self.phoenix_socket_connection = data[1].value.decode()
                     else:
                         self._logger.error("unhandled message="+str(data))
             except (OSError):
@@ -135,6 +145,9 @@ class ChromoidLinkPlugin(octoprint.plugin.StartupPlugin,
 
     def on_after_startup(self):
         self._logger.info("Booting Erlang")
+        self.erlang_up = False
+        self.phoenix_socket_connection = "disconnected"
+        self.last_ping = None
         # self._settings.set([], None)
         self.queue = Queue()
         self.erlang_thread = threading.Thread(

@@ -16,6 +16,10 @@ defmodule ChromoidLinkOctoPrint.DeviceChannel do
     GenServer.call(__MODULE__, {:progress, storage, path, progress})
   end
 
+  def job(data) do
+    GenServer.call(__MODULE__, {:job, data})
+  end
+
   @impl GenServer
   def init(_args) do
     send(self(), :join_channel)
@@ -78,6 +82,11 @@ defmodule ChromoidLinkOctoPrint.DeviceChannel do
       progress: progress
     })
 
+    {:reply, :ok, state}
+  end
+
+  def handle_call({:job, data}, _from, state) do
+    Channel.push_async(state.channel, "job", data)
     {:reply, :ok, state}
   end
 end
