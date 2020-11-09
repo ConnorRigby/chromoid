@@ -1,7 +1,7 @@
 defmodule ChromoidLinkOctoPrint.PluginSocket do
   use GenServer
   require Logger
-  alias ChromoidLinkOctoPrint.DeviceChannel
+  alias ChromoidLinkOctoPrint.{PluginHTTP, DeviceChannel}
   @socket_name ChromoidLinkOctoPrint.PhoenixSocket
 
   defmodule SocketLogger do
@@ -32,6 +32,7 @@ defmodule ChromoidLinkOctoPrint.PluginSocket do
     @impl :gen_event
     def handle_event({level, _group_leader, message}, state) do
       content = elem(message, 1)
+
       if state.socket do
         :gen_tcp.send(state.socket, :erlang.term_to_binary({:logger, level, content}))
       end
@@ -143,9 +144,14 @@ defmodule ChromoidLinkOctoPrint.PluginSocket do
   @impl GenServer
   def handle_info({PhoenixClient.Socket, socket, :connected}, %{phoenix_socket: socket} = state) do
     Logger.info("Socket connected")
+
     if state.socket do
-      :gen_tcp.send(state.socket, :erlang.term_to_binary({:phoenix_socket_connection, "connected"}))
+      :gen_tcp.send(
+        state.socket,
+        :erlang.term_to_binary({:phoenix_socket_connection, "connected"})
+      )
     end
+
     {:noreply, state}
   end
 
@@ -154,9 +160,14 @@ defmodule ChromoidLinkOctoPrint.PluginSocket do
         %{phoenix_socket: socket} = state
       ) do
     Logger.warn("Socket disconnected: #{inspect(reason)}")
+
     if state.socket do
-      :gen_tcp.send(state.socket, :erlang.term_to_binary({:phoenix_socket_connection, "disconnected"}))
+      :gen_tcp.send(
+        state.socket,
+        :erlang.term_to_binary({:phoenix_socket_connection, "disconnected"})
+      )
     end
+
     {:noreply, state}
   end
 
@@ -170,9 +181,14 @@ defmodule ChromoidLinkOctoPrint.PluginSocket do
     case PhoenixClient.Socket.start_link(phoenix_socket_opts, name: @socket_name) do
       {:ok, pid} ->
         Logger.info("Creating phoenix socket")
+
         if state.socket do
-          :gen_tcp.send(state.socket, :erlang.term_to_binary({:phoenix_socket_connection, "connecting"}))
+          :gen_tcp.send(
+            state.socket,
+            :erlang.term_to_binary({:phoenix_socket_connection, "connecting"})
+          )
         end
+
         {:noreply, %{state | phoenix_socket: pid}}
 
       error ->
@@ -188,7 +204,19 @@ defmodule ChromoidLinkOctoPrint.PluginSocket do
   end
 
   def handle_event({:progress, storage, path, progress}, state) do
-    DeviceChannel.progress_report(storage, path, progress)
+    case PluginHTTP.get("/api/job") do
+      {:ok, %{status: 200, body: job}} ->
+        DeviceChannel.progress_report(storage, path, progress)
+        DeviceChannel.job(job)
+
+      error ->
+        Logger.error(
+          "Could not fetch current job information using fallback impl: #{inspect(error)}"
+        )
+
+        DeviceChannel.progress_report(storage, path, progress)
+    end
+
     {:noreply, state}
   end
 

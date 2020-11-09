@@ -80,11 +80,11 @@ class ChromoidLinkPlugin(octoprint.plugin.StartupPlugin,
             message = self.recv(stream)
 
     def erlang_subprocess_thread_function(self, name):
-        # p = subprocess.Popen(['/home/connor/.asdf/shims/mix', 'run', '--no-halt'])
+        p = subprocess.Popen(['/home/connor/.asdf/shims/mix', 'run', '--no-halt'])
         # p = subprocess.Popen(['/home/connor/.asdf/shims/iex', '-S', 'mix'])
         # p = subprocess.Popen(['./_build/dev/rel/bakeware/chromoid_link_octo_print'])
         # p = subprocess.Popen(['/home/pi/.asdf/shims/iex', '-S', 'mix'])
-        p = subprocess.Popen(['/home/pi/oprint/bin/chromoid_link_octo_print'])
+        # p = subprocess.Popen(['/home/pi/oprint/bin/chromoid_link_octo_print'])
         self.erlang_up = True
         while True:
             if p.poll() != None:
