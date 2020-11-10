@@ -39,6 +39,12 @@ defmodule ChromoidWeb.DeviceChannel do
     {:noreply, socket}
   end
 
+  def handle_info(%Broadcast{event: "freenect", payload: payload}, socket) do
+    Logger.info("Sending freenect ioctl")
+    push(socket, "freenect", payload)
+    {:noreply, socket}
+  end
+
   def handle_info(%Broadcast{}, socket) do
     {:noreply, socket}
   end

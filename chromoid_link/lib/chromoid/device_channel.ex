@@ -43,7 +43,8 @@ defmodule Chromoid.DeviceChannel do
   end
 
   def handle_info(%Message{event: "photo_request"}, state) do
-    {:ok, jpeg} = Chromoid.CameraProvider.Picam.jpeg()
+    # {:ok, jpeg} = Chromoid.CameraProvider.Picam.jpeg()
+    {:ok, jpeg} = Chromoid.CameraProvider.Freenect.jpeg()
 
     Channel.push(state.channel, "photo_response", %{
       content_type: "image/jpeg",
@@ -54,7 +55,20 @@ defmodule Chromoid.DeviceChannel do
     {:noreply, %{state | photo_index: state.photo_index + 1}}
   end
 
-  def handle_info(%Message{}, state) do
+  def handle_info(%Message{event: "freenect", payload: %{"command" => "mode", "value" => "rgb"}}, state) do
+    Logger.info("changing freenect mode => rgb")
+    Freenect.set_mode(:rgb)
+    {:noreply, state}
+  end
+
+  def handle_info(%Message{event: "freenect", payload: %{"command" => "mode", "value" => "depth"}}, state) do
+    Logger.info("changing freenect mode => depth")
+    Freenect.set_mode(:depth)
+    {:noreply, state}
+  end
+
+  def handle_info(%Message{} = message, state) do
+    Logger.info("unhandled message: #{inspect(message)}")
     {:noreply, state}
   end
 end

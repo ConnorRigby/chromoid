@@ -139,7 +139,8 @@ defmodule ChromoidDiscord.Guild.DeviceStatusChannel do
 
   @device_list_regex ~r/-device(?:\s{1,})list/
   @device_info_regex ~r/-device(?:\s{1,})info(?:\s{1,})(?<serial>[a-z_0-9\-]+)/
-  @device_photo_regex ~r/-device(?:\s{1,})photo(?:\s{1,})(?<serial>[a-z_0-9\-]+)/
+  @device_photo_regex ~r/-device(?:\s{1,})freenect(?:\s{1,})(?<command>[a-z\-])(?:\s{1,})(?<value>[a-z_0-9\-]+)/
+  @device_freenect_regex ~r/-device(?:\s{1,})freenect(?:\s{1,})(?<serial>[a-z_0-9\-]+)(?:\s{1,})(?<command>[a-z]+)(?:\s{1,})(?<value>[a-z]+)/
   @device_nick_regex ~r/-device(?:\s{1,})nick(?:\s{1,})(?<serial>[a-z_0-9\-]+)(?:\s{1,})(?<nickname>.+)/
   @color_hex_regex ~r/-color(?:\s{1,})(?<address>(?:[[:xdigit:]]{2}\:?){6})(?:\s{1,})(?<color>\#[[:xdigit:]]{6})/
   @color_friendly_regex ~r/-color(?:\s{1,})(?<address>(?:[[:xdigit:]]{2}\:?){6})(?:\s{1,})(?<color>(white)|(silver)|(gray)|(black)|(red)|(maroon)|(yellow)|(olive)|(lime)|(green)|(aqua)|(teal)|(blue)|(navy)|(fuchsia)|(purple))/
@@ -157,6 +158,13 @@ defmodule ChromoidDiscord.Guild.DeviceStatusChannel do
         handle_device_photo(
           message,
           Regex.named_captures(@device_photo_regex, message.content),
+          {actions, state}
+        )
+
+      String.match?(message.content, @device_freenect_regex) ->
+        handle_device_freenect(
+          message,
+          Regex.named_captures(@device_freenect_regex, message.content),
           {actions, state}
         )
 
@@ -234,6 +242,24 @@ defmodule ChromoidDiscord.Guild.DeviceStatusChannel do
             {actions ++
                [error_action(message, "Could not get photo: #{reason}")], state}
         end
+    end
+  end
+
+  def handle_device_freenect(
+        message,
+        %{"serial" => serial, "command" => command, "value" => value},
+        {actions, state}
+      ) do
+    case find_device(state.config, serial) do
+      nil ->
+        {actions ++
+           [error_action(message, "Could not find device by that serial number: `#{serial}`")],
+         state}
+
+      device ->
+        @endpoint.broadcast("devices:#{device.id}", "freenect", %{command: command, value: value})
+        actions = actions ++ [error_action(message, "Sent `#{command}` => `#{value}`")]
+        {actions, state}
     end
   end
 

@@ -24,6 +24,7 @@ defmodule Chromoid.Application do
   # List all child processes to be supervised
   def children(:host) do
     [
+      Freenect
       # Children that only run on the host
       # Starts a worker by calling: Chromoid.Worker.start_link(arg)
       # {Chromoid.Worker, arg},
@@ -32,6 +33,7 @@ defmodule Chromoid.Application do
 
   def children(:rpi3) do
     [
+      Freenect,
       Picam.Camera
     ]
   end

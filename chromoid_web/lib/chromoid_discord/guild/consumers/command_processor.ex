@@ -76,6 +76,12 @@ defmodule ChromoidDiscord.Guild.CommandProcessor do
 
   `-device` `photo` `[device]`
     Request a photo from a currently connected device
+
+  `-device` `freenect` `[device]` `[command]` `[value]`
+      Examples:
+        * `-device freenect auxcam mode depth`
+        * `-device freenect auxcam mode rgb`
+    Set a libfreenect register. Currently only `mode` is implemented
   """
 
   @color_help """

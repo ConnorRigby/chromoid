@@ -78,7 +78,8 @@ defmodule Chromoid.MixProject do
       # Dependencies for specific targets
       {:nerves_system_rpi0, "~> 1.12", runtime: false, targets: :rpi0},
       {:nerves_system_rpi3, "~> 1.12", runtime: false, targets: :rpi3},
-      {:picam, "~> 0.4.1", targets: @all_targets}
+      {:picam, "~> 0.4.1", targets: @all_targets},
+      {:freenect, path: "../freenect"}
     ]
   end
 
