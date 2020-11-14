@@ -67,6 +67,27 @@ defmodule Chromoid.DeviceChannel do
     {:noreply, state}
   end
 
+  def handle_info(%Message{event: "relay_status", payload: %{"state" => relay_state}}, state) do
+    Logger.info("changing relay state => relay_state")
+    Freenect.set_mode(:depth)
+
+    case Chromoid.RelayProvider.Circuits.set_state(relay_state) do
+      :ok ->
+        Channel.push_async(state.channel, "relay_status", %{
+          state: "error",
+          at: DateTime.utc_now() |> to_string()
+        })
+
+      {:error, _} ->
+        Channel.push_async(state.channel, "relay_status", %{
+          state: "error",
+          at: DateTime.utc_now() |> to_string()
+        })
+    end
+
+    {:noreply, state}
+  end
+
   def handle_info(%Message{} = message, state) do
     Logger.info("unhandled message: #{inspect(message)}")
     {:noreply, state}

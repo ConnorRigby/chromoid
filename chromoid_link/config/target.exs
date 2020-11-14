@@ -5,7 +5,7 @@ import Config
 # involved with firmware updates.
 
 config :shoehorn,
-  init: [:nerves_runtime, :nerves_pack],
+  init: [:nerves_runtime, :nerves_pack, :vintage_net],
   app: Mix.Project.config()[:app],
   handler: Chromoid.ShoehornHandler
 

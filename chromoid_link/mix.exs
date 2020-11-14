@@ -3,7 +3,16 @@ defmodule Chromoid.MixProject do
 
   @app :chromoid
   @version "0.1.0"
-  @all_targets [:rpi0, :rpi3]
+  @all_targets [
+    :ble_link_rpi0,
+    :kinect_link_rpi3,
+    :relay_link_rpi0,
+    :relay_link_rpi3
+  ]
+
+  if Mix.target() not in @all_targets do
+    Mix.raise("are you trying to do right now anyway: #{Mix.target()}")
+  end
 
   def project do
     [
@@ -76,10 +85,11 @@ defmodule Chromoid.MixProject do
       {:nerves_pack, "~> 0.2", targets: @all_targets},
 
       # Dependencies for specific targets
-      {:nerves_system_rpi0, "~> 1.12", runtime: false, targets: :rpi0},
-      {:nerves_system_rpi3, "~> 1.12", runtime: false, targets: :rpi3},
+      {:nerves_system_rpi0, "~> 1.12", runtime: false, targets: [:ble_link_rpi0, :relay_link_rpi0]},
+      {:nerves_system_rpi3, "~> 1.12", runtime: false, targets: [:kinect_link_rpi3, :relay_link_rpi3]},
       {:picam, "~> 0.4.1", targets: @all_targets},
-      {:freenect, path: "../freenect"}
+      {:freenect, path: "../freenect"},
+      {:circuits_gpio, "~> 0.4.6", targets: @all_targets}
     ]
   end
 

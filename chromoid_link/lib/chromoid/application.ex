@@ -31,18 +31,32 @@ defmodule Chromoid.Application do
     ]
   end
 
-  def children(:rpi3) do
+  def children(:freenect_link_rpi3) do
     [
-      Freenect,
-      Picam.Camera
+      Freenect
+      # Picam.Camera
     ]
   end
 
-  def children(:rpi0) do
+  def children(:ble_link_rpi0) do
     [
       Chromoid.BLEConnection.Registry,
       Chromoid.BLEConnectionSupervisor,
       Chromoid.BLECtx,
+      Picam.Camera
+    ]
+  end
+
+  def children(:relay_link_rpi0) do
+    [
+      Picam.Camera,
+      Chromoid.RelayProvider.Circuits
+    ]
+  end
+
+  def children(:relay_link_rpi3) do
+    [
+      Chromoid.RelayProvider.Circuits,
       Picam.Camera
     ]
   end
