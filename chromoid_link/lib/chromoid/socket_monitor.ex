@@ -19,9 +19,9 @@ defmodule Chromoid.SocketMonitor do
   def handle_info({PhoenixClient.Socket, socket, :connected}, %{socket: socket} = state) do
     Logger.info("Socket connected")
 
-    if Code.ensure_loaded(Nerves.Runtime) do
-      Nerves.Runtime.validate_firmware()
-    end
+    # if Code.ensure_loaded(Nerves.Runtime) do
+    #   Nerves.Runtime.validate_firmware()
+    # end
 
     {:noreply, state}
   end

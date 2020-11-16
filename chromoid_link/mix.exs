@@ -10,7 +10,7 @@ defmodule Chromoid.MixProject do
     :relay_link_rpi3
   ]
 
-  if Mix.target() not in @all_targets do
+  if Mix.target() != :host and Mix.target() not in @all_targets do
     Mix.raise("are you trying to do right now anyway: #{Mix.target()}")
   end
 

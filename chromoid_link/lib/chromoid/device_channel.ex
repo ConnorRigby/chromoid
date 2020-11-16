@@ -26,6 +26,7 @@ defmodule Chromoid.DeviceChannel do
       {:ok, response, channel} ->
         Logger.info("Connected to channel: #{inspect(response)}")
         true = Process.link(channel)
+        maybe_bc_relay_state(%{state | channel: channel, connected?: true})
         {:noreply, %{state | channel: channel, connected?: true}}
 
       error ->
@@ -69,12 +70,11 @@ defmodule Chromoid.DeviceChannel do
 
   def handle_info(%Message{event: "relay_status", payload: %{"state" => relay_state}}, state) do
     Logger.info("changing relay state => relay_state")
-    Freenect.set_mode(:depth)
 
     case Chromoid.RelayProvider.Circuits.set_state(relay_state) do
       :ok ->
         Channel.push_async(state.channel, "relay_status", %{
-          state: "error",
+          state: relay_state,
           at: DateTime.utc_now() |> to_string()
         })
 
@@ -91,5 +91,27 @@ defmodule Chromoid.DeviceChannel do
   def handle_info(%Message{} = message, state) do
     Logger.info("unhandled message: #{inspect(message)}")
     {:noreply, state}
+  end
+
+  if Mix.target() == :host do
+    defp maybe_bc_relay_state(state) do
+      Channel.push_async(state.channel, "relay_status", %{
+        state: "off",
+        at: DateTime.utc_now() |> to_string()
+      })
+    end
+
+    def set_relay_state(state) do
+      send(__MODULE__, %Message{event: "relay_status", payload: %{"state" => state}})
+    end
+  else
+    defp maybe_bc_relay_state(state) do
+      if Process.whereis(Chromoid.RelayProvider.Circuits) do
+        Channel.push_async(state.channel, "relay_status", %{
+          state: "off",
+          at: DateTime.utc_now() |> to_string()
+        })
+      end
+    end
   end
 end
