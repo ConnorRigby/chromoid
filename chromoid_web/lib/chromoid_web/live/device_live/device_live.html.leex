@@ -45,6 +45,13 @@
               <%= device.job.job.file.name %>
             <% end %>
 
+            <%= if device.relay_status do %>
+              <div>
+                <span> Relay </span>
+                <%= device.relay_status.state %>
+              </div>
+            <% end %>
+
             <%= if device.last_communication do %>
               <p class="text-gray-700"> last communication <%= Timex.from_now(device.last_communication) %> </p>
             <% else %>
@@ -88,6 +95,17 @@
             </svg>
           </div>
         </div>
+
+        <%= if @modal_device.relay_status do %>
+          <div>
+            <span> Relay </span>
+            <input type="checkbox"
+                  phx-hook="PushEvent"
+                  @click="pushEventHook.pushEvent('toggle_relay', '{}')"
+            >
+            <%= @modal_device.relay_status.state %>
+          </div>
+        <% end %>
 
         <div>
           <%= for {addr_str, _ble} <- @ble do%>

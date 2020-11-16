@@ -37,7 +37,8 @@ defmodule Chromoid.Devices.Presence do
     :storage,
     :path,
     :progress,
-    :job
+    :job,
+    :relay_status
   ]
 
   defp merge_device_metas(%{metas: metas}) do

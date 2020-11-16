@@ -42,7 +42,9 @@ defmodule ChromoidDiscord.Guild.DeviceStatusChannel.Actions do
           )
       end)
 
-    embed = maybe_add_print_progress(embed, meta)
+    embed =
+      maybe_add_print_progress(embed, meta)
+      |> maybe_add_relay_status(meta)
 
     {:create_message!, [message.channel_id, [embed: embed]]}
   end
@@ -58,6 +60,15 @@ defmodule ChromoidDiscord.Guild.DeviceStatusChannel.Actions do
   end
 
   def maybe_add_print_progress(embed, _), do: embed
+
+  def maybe_add_relay_status(embed, %{relay_status: nil}), do: embed
+
+  def maybe_add_relay_status(embed, %{relay_status: status}) do
+    embed
+    |> put_field("**Relay status**", status.state)
+  end
+
+  def maybe_add_relay_status(embed, _meta), do: embed
 
   def device_join_action(channel_id, device, meta) do
     embed =

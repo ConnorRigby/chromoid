@@ -18,7 +18,18 @@ defmodule ChromoidWeb.DeviceLive do
 
     modal_device =
       if params["id"] do
-        Devices.get_device(params["id"])
+        device = Devices.get_device(params["id"])
+
+        meta =
+          Chromoid.Devices.Presence.list("devices")[params["id"]] ||
+            %{
+              last_communication: nil,
+              status: "offline",
+              job: nil,
+              relay_status: nil
+            }
+
+        Map.merge(device, meta)
       end
 
     {:ok,
@@ -43,9 +54,27 @@ defmodule ChromoidWeb.DeviceLive do
   def handle_info(%Broadcast{event: "presence_diff", topic: "devices", payload: diff}, socket) do
     devices = sync_devices(Chromoid.Repo.all(Devices.Device), diff)
 
+    modal_device =
+      if socket.assigns.modal_device do
+        meta =
+          Chromoid.Devices.Presence.list("devices")[to_string(socket.assigns.modal_device.id)] ||
+            %{
+              last_communication: nil,
+              status: "offline",
+              job: nil,
+              relay_status: nil
+            }
+
+        Map.merge(socket.assigns.modal_device, meta)
+      end
+
+    Logger.info("modal_device: #{inspect(modal_device)}")
+
     {:noreply,
      socket
-     |> assign(:devices, devices)}
+     |> assign(:devices, devices)
+     |> assign(:modal_device_id, modal_device.id)
+     |> assign(:modal_device, modal_device)}
   end
 
   def handle_info(
@@ -71,16 +100,32 @@ defmodule ChromoidWeb.DeviceLive do
      |> assign(:ble, ble)}
   end
 
+  def handle_info(
+        %Broadcast{event: "relay_status"},
+        socket
+      ) do
+    {:noreply, socket}
+  end
+
   @impl true
   def handle_event("show_modal", %{"device_id" => device_id}, socket) do
     ble_devices = Chromoid.Devices.Presence.list("devices:#{device_id}")
     :ok = socket.endpoint.subscribe("devices:#{device_id}")
     device = Chromoid.Devices.get_device(device_id)
 
+    meta =
+      Chromoid.Devices.Presence.list("devices")[to_string(device_id)] ||
+        %{
+          last_communication: nil,
+          status: "offline",
+          job: nil,
+          relay_status: nil
+        }
+
     {:noreply,
      socket
      |> assign(:modal_device_id, device_id)
-     |> assign(:modal_device, device)
+     |> assign(:modal_device, Map.merge(device, meta))
      |> assign(:ble, ble_devices)}
   end
 
@@ -106,6 +151,40 @@ defmodule ChromoidWeb.DeviceLive do
     {:noreply, socket}
   end
 
+  def handle_event("toggle_relay", _, socket) do
+    device_id = socket.assigns.modal_device_id
+
+    meta =
+      Chromoid.Devices.Presence.list("devices")[to_string(device_id)] ||
+        %{
+          last_communication: nil,
+          status: "offline",
+          job: nil,
+          relay_status: nil
+        }
+
+    if meta.relay_status do
+      case meta.relay_status.state do
+        "on" ->
+          socket.endpoint.broadcast!("devices:#{device_id}", "relay_status", %{state: "off"})
+          {:noreply, socket}
+
+        "off" ->
+          socket.endpoint.broadcast!("devices:#{device_id}", "relay_status", %{state: "on"})
+          {:noreply, socket}
+
+        error ->
+          {:noreply,
+           socket
+           |> put_flash(:error, "unknown relay state: #{error}")}
+      end
+    else
+      {:noreply,
+       socket
+       |> put_flash(:error, "Device doesn't have a relay?")}
+    end
+  end
+
   defp sync_devices(devices, %{joins: joins, leaves: leaves}) do
     for device <- devices do
       id = to_string(device.id)
@@ -116,7 +195,8 @@ defmodule ChromoidWeb.DeviceLive do
             :last_communication,
             :online_at,
             :status,
-            :job
+            :job,
+            :relay_status
           ]
 
           updates = Map.take(meta, fields)
@@ -132,12 +212,14 @@ defmodule ChromoidWeb.DeviceLive do
           |> Map.put(:last_communication, disconnect_time)
           |> Map.put(:status, "offline")
           |> Map.put(:job, nil)
+          |> Map.put(:relay_status, nil)
 
         true ->
           device
           |> Map.put(:last_communication, nil)
           |> Map.put(:status, "offline")
           |> Map.put(:job, nil)
+          |> Map.put(:relay_status, nil)
       end
     end
   end

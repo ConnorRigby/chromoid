@@ -140,6 +140,7 @@ defmodule ChromoidDiscord.Guild.DeviceStatusChannel do
   @device_list_regex ~r/-device(?:\s{1,})list/
   @device_info_regex ~r/-device(?:\s{1,})info(?:\s{1,})(?<serial>[a-z_0-9\-]+)/
   @device_photo_regex ~r/-device(?:\s{1,})freenect(?:\s{1,})(?<command>[a-z\-])(?:\s{1,})(?<value>[a-z_0-9\-]+)/
+  @device_relay_regex ~r/-device(?:\s{1,})relay(?:\s{1,})(?<serial>[a-z_0-9\-]+)(?:\s{1,})(?<state>.+)/
   @device_freenect_regex ~r/-device(?:\s{1,})freenect(?:\s{1,})(?<serial>[a-z_0-9\-]+)(?:\s{1,})(?<command>[a-z]+)(?:\s{1,})(?<value>[a-z]+)/
   @device_nick_regex ~r/-device(?:\s{1,})nick(?:\s{1,})(?<serial>[a-z_0-9\-]+)(?:\s{1,})(?<nickname>.+)/
   @color_hex_regex ~r/-color(?:\s{1,})(?<address>(?:[[:xdigit:]]{2}\:?){6})(?:\s{1,})(?<color>\#[[:xdigit:]]{6})/
@@ -151,6 +152,13 @@ defmodule ChromoidDiscord.Guild.DeviceStatusChannel do
         handle_device_list(
           message,
           Regex.named_captures(@device_list_regex, message.content),
+          {actions, state}
+        )
+
+      String.match?(message.content, @device_relay_regex) ->
+        handle_device_relay(
+          message,
+          Regex.named_captures(@device_relay_regex, message.content),
           {actions, state}
         )
 
@@ -220,6 +228,42 @@ defmodule ChromoidDiscord.Guild.DeviceStatusChannel do
 
   def handle_device_list(message, _, {actions, state}) do
     {actions ++ device_list_action(message), state}
+  end
+
+  def handle_device_relay(
+        message,
+        %{"serial" => serial, "state" => relay_state},
+        {actions, state}
+      )
+      when relay_state in [
+             "on",
+             "off"
+           ] do
+    case find_device(state.config, serial) do
+      nil ->
+        {actions ++
+           [error_action(message, "Could not find device by that serial number: `#{serial}`")],
+         state}
+
+      device ->
+        @endpoint.broadcast!("devices:#{device.id}", "relay_status", %{state: relay_state})
+
+        {actions ++
+           [error_action(message, "ok")], state}
+    end
+  end
+
+  def handle_device_relay(
+        message,
+        %{"serial" => _serial, "state" => relay_state},
+        {actions, state}
+      )
+      when relay_state not in [
+             "on",
+             "off"
+           ] do
+    {actions ++
+       [error_action(message, "#{relay_state} is not a valid relay state")], state}
   end
 
   def handle_device_photo(message, %{"serial" => serial}, {actions, state}) do
