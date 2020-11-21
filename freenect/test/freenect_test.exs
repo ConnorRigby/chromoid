@@ -3,6 +3,9 @@ defmodule FreenectTest do
   doctest Freenect
 
   test "greets the world" do
-    assert Freenect.hello() == :world
+    {:ok, pid} = Freenect.start_link([])
+    :ok = Freenect.set_depth_mode(pid, :freenect_depth_registered)
+    {:ok, buffer} = Freenect.get_buffer_depth(pid)
+
   end
 end

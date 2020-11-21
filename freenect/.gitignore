@@ -26,3 +26,4 @@ freenect-*.tar
 .elixir_ls
 *.zip
 test.sh
+*.jpg
