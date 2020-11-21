@@ -139,7 +139,7 @@ defmodule ChromoidDiscord.Guild.DeviceStatusChannel do
 
   @device_list_regex ~r/-device(?:\s{1,})list/
   @device_info_regex ~r/-device(?:\s{1,})info(?:\s{1,})(?<serial>[a-z_0-9\-]+)/
-  @device_photo_regex ~r/-device(?:\s{1,})freenect(?:\s{1,})(?<command>[a-z\-])(?:\s{1,})(?<value>[a-z_0-9\-]+)/
+  @device_photo_regex ~r/-device(?:\s{1,})photo(?:\s{1,})(?<serial>[a-z_0-9\-]+)/
   @device_relay_regex ~r/-device(?:\s{1,})relay(?:\s{1,})(?<serial>[a-z_0-9\-]+)(?:\s{1,})(?<state>.+)/
   @device_freenect_regex ~r/-device(?:\s{1,})freenect(?:\s{1,})(?<serial>[a-z_0-9\-]+)(?:\s{1,})(?<command>[a-z]+)(?:\s{1,})(?<value>[a-z]+)/
   @device_nick_regex ~r/-device(?:\s{1,})nick(?:\s{1,})(?<serial>[a-z_0-9\-]+)(?:\s{1,})(?<nickname>.+)/
