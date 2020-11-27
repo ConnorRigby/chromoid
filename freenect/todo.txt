@@ -2,7 +2,7 @@ freenect <-> elixir set resolution command
 elixir <-> ObjectDetect resolution info
 
 ObjectDetect <-> detected data from elixir
-ObjectDetect <-> ^ but with visualization image 
+ObjectDetect <-> ^ but with visualization image
 
 elixir <-> ObjectDetect depth data
 ObjectDetect <-> depth map distance
@@ -10,3 +10,5 @@ ObjectDetect <-> depth map distance
 handle IR camera in ObjectDetect
 
 refactor image pipeline to not need to request each time
+
+build system is broken becuase priv_dir nonsense again

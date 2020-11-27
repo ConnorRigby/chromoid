@@ -27,7 +27,9 @@ defmodule ObjectDetect do
   end
 
   def handle_info(:open_freenect, state) do
-    case Freenect.start_link([]) do
+    # args = [buffer_rgb_pid: self()]
+    args = []
+    case Freenect.start_link(args) do
       {:ok, pid} ->
         Process.send_after self(), :get_buffer_rgb, 3000
         {:noreply, %{state | freenect: pid}}
@@ -37,18 +39,22 @@ defmodule ObjectDetect do
     end
   end
 
+  def handle_info({pid, {:buffer_rgb, rgb}}, %{freenect: pid} = state) do
+    true = Port.command(state.port, :erlang.term_to_binary({:buffer_depth, rgb}))
+    {:noreply, state}
+  end
+
   def handle_info(:get_buffer_rgb, state) do
     {:ok, rgb} = Freenect.get_buffer_rgb(state.freenect)
-    # IO.inspect(rgb)
-    # File.write('test.rgb', rgb)
-    true = Port.command(state.port, :erlang.term_to_binary({:buffer_depth, rgb}))
+    {:ok, depth} = Freenect.get_buffer_depth(state.freenect)
+
+    true = Port.command(state.port, :erlang.term_to_binary({:buffer_both, rgb, depth}))
     {:noreply, state}
   end
 
   def handle_info({port, {:data, data}}, %{port: port} = state) do
     jpeg = :erlang.binary_to_term(data)
-    # File.write("test.jpg", jpeg)
-    send self(), :get_buffer_rgb
+    Process.send_after(self(), :get_buffer_rgb, 33)
     {:noreply, %{state | jpeg: jpeg}}
   end
 

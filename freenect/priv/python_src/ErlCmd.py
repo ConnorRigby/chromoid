@@ -1,6 +1,6 @@
 import erlang, os, struct
 
-ATOM_DEPTH_IMAGE = erlang.OtpErlangAtom(b'buffer_depth')
+ATOM_BUFFER_BOTH = erlang.OtpErlangAtom(b'buffer_both')
 
 def send(term, stream):
     """Write an Erlang term to an output stream."""

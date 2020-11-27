@@ -27,3 +27,9 @@ freenect-*.tar
 *.zip
 test.sh
 *.jpg
+priv/bin
+priv/include
+priv/lib
+priv/lib64
+priv/share
+priv/freenect_port

@@ -24,7 +24,7 @@ defmodule Freenect do
   @freenect_led_blink_red_yellow 6
 
   @freenect_depth_11bit 0
-  @freenect_depth_10bit1
+  @freenect_depth_10bit1 1
   @freenect_depth_registered 4
   @freenect_depth_mm 5
 
@@ -50,6 +50,9 @@ defmodule Freenect do
 
   @command_set_video_mode 0x30
   @command_set_depth_mode 0x31
+
+  @command_subscribe_buffer_rgb 0x40
+  @command_subscribe_buffer_depth 0x41
 
   defmodule TiltState do
     defstruct accelerometer_x: 0,
@@ -111,31 +114,58 @@ defmodule Freenect do
     GenServer.call(pid, {:set_depth_mode, mode})
   end
 
+  def subscribe_buffer_rgb(pid \\ __MODULE__) do
+    GenServer.call(pid, :subscribe_buffer_rgb)
+  end
+
+  def subscribe_buffer_depth(pid \\ __MODULE__) do
+    GenServer.call(pid, :subscribe_buffer_depth)
+  end
+
   def start_link(args) do
     GenServer.start_link(__MODULE__, args, name: __MODULE__)
   end
 
-  def init(_args) do
+  def init(args) do
     port = start_port()
-    {:ok, %{port: port, caller: nil, ready: false, tilt: %TiltState{}, led: :off}}
+
+    state = %{
+      port: port,
+      caller: nil,
+      ready: false,
+      tilt: %TiltState{},
+      led: :off,
+      buffer_rgb_pid: args[:buffer_rgb_pid],
+      buffer_depth_pid: args[:buffer_depth_pid]
+    }
+
+    {:ok, state}
   end
 
   def handle_info({port, {:data, <<@event_buffer_rgb, rgb::binary>>}}, %{port: port} = state) do
     if state.caller, do: GenServer.reply(state.caller, {:ok, rgb})
+    if state.buffer_rgb_pid, do: send(state.buffer_rgb_pid, {self(), {:buffer_rgb, rgb}})
     {:noreply, %{state | caller: nil}}
   end
 
   def handle_info({port, {:data, <<@event_buffer_depth, rgb::binary>>}}, %{port: port} = state) do
     if state.caller, do: GenServer.reply(state.caller, {:ok, rgb})
+    if state.buffer_depth_pid, do: send(state.bsuffer_depth_pid, {self(), {:buffer_depth, rgb}})
     {:noreply, %{state | caller: nil}}
   end
 
-  def handle_info({port, {:data, <<@event_buffer_rgb_jpeg, jpeg::binary>>}}, %{port: port} = state) do
+  def handle_info(
+        {port, {:data, <<@event_buffer_rgb_jpeg, jpeg::binary>>}},
+        %{port: port} = state
+      ) do
     if state.caller, do: GenServer.reply(state.caller, {:ok, jpeg})
     {:noreply, %{state | caller: nil}}
   end
 
-  def handle_info({port, {:data, <<@event_buffer_depth_jpeg, jpeg::binary>>}}, %{port: port} = state) do
+  def handle_info(
+        {port, {:data, <<@event_buffer_depth_jpeg, jpeg::binary>>}},
+        %{port: port} = state
+      ) do
     if state.caller, do: GenServer.reply(state.caller, {:ok, jpeg})
     {:noreply, %{state | caller: nil}}
   end
@@ -231,6 +261,16 @@ defmodule Freenect do
 
   def handle_call({:set_depth_mode, mode}, from, state) do
     Port.command(state.port, <<@command_set_depth_mode::8, atom_to_depth_mode(mode)::8>>)
+    {:noreply, %{state | caller: from}, 1000}
+  end
+
+  def handle_call(:subscribe_buffer_rgb, from, state) do
+    Port.command(state.port, <<@command_subscribe_buffer_rgb::8>>)
+    {:noreply, %{state | caller: from}, 1000}
+  end
+
+  def handle_call(:subscribe_buffer_depth, from, state) do
+    Port.command(state.port, <<@command_subscribe_buffer_depth::8>>)
     {:noreply, %{state | caller: from}, 1000}
   end
 

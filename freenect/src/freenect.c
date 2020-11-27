@@ -55,16 +55,22 @@ freenect_device *f_dev;
 int freenect_angle = 0;
 int freenect_led = LED_RED;
 
+bool buffer_rgb_subscribe = false;
+bool buffer_depth_subscribe  = true;
+
 // freenect_video_format requested_video_format = FREENECT_VIDEO_YUV_RGB;
 // freenect_video_format current_video_format = FREENECT_VIDEO_YUV_RGB;
-// freenect_video_format requested_video_format = FREENECT_VIDEO_RGB;
-// freenect_video_format current_video_format = FREENECT_VIDEO_RGB;
+freenect_video_format requested_video_format = FREENECT_VIDEO_RGB;
+freenect_video_format current_video_format = FREENECT_VIDEO_RGB;
 
-freenect_video_format requested_video_format = FREENECT_VIDEO_IR_8BIT;
-freenect_video_format current_video_format = FREENECT_VIDEO_IR_8BIT;
+// freenect_video_format requested_video_format = FREENECT_VIDEO_IR_8BIT;
+// freenect_video_format current_video_format = FREENECT_VIDEO_IR_8BIT;
 
-freenect_depth_format requested_depth_format = FREENECT_DEPTH_11BIT;
-freenect_depth_format current_depth_format = FREENECT_DEPTH_11BIT;
+freenect_depth_format requested_depth_format = FREENECT_DEPTH_REGISTERED;
+freenect_depth_format current_depth_format = FREENECT_DEPTH_REGISTERED;
+
+// freenect_depth_format requested_depth_format = FREENECT_DEPTH_11BIT;
+// freenect_depth_format current_depth_format = FREENECT_DEPTH_11BIT;
 
 freenect_frame_mode video_mode;
 freenect_frame_mode depth_mode;
@@ -153,7 +159,7 @@ void dispatch_led_state(freenect_led_options led_options)
 	free(erlcmdBuf);
 }
 
-void dispatch_rgb_jpeg(uint8_t* rgb) 
+void dispatch_rgb_jpeg(uint8_t* rgb)
 {
 	unsigned long jpegSize = 0;
 	unsigned char* jpegBuf = encode_jpeg(TJSAMP_411, rgb, &jpegSize, NULL);
@@ -177,7 +183,7 @@ void dispatch_rgb_jpeg(uint8_t* rgb)
 	free(erlcmdBuf);
 }
 
-void dispatch_depth_jpeg(uint8_t* depth) 
+void dispatch_depth_jpeg(uint8_t* depth)
 {
 	unsigned long jpegSize = 0;
 	unsigned char* jpegBuf = encode_jpeg(TJSAMP_GRAY, depth, &jpegSize, NULL);
@@ -248,6 +254,8 @@ void rgb_cb(freenect_device *dev, void *rgb, uint32_t timestamp)
 	rgb_back = rgb_mid;
 	freenect_set_video_buffer(dev, rgb_back);
 	rgb_mid = (uint8_t*)rgb;
+	// if(buffer_rgb_subscribe)
+		// dispatch_rgb(rgb_mid);
 }
 
 void depth_cb(freenect_device *dev, void *v_depth, uint32_t timestamp)
@@ -295,6 +303,8 @@ void depth_cb(freenect_device *dev, void *v_depth, uint32_t timestamp)
 				break;
 		}
 	}
+	// if(buffer_depth_subscribe)
+		// dispatch_rgb(depth_mid);
 }
 
 static void handle_from_elixir(const uint8_t *buffer, size_t length, void *cookie)
@@ -353,6 +363,16 @@ static void handle_from_elixir(const uint8_t *buffer, size_t length, void *cooki
 	case ERLCMD_SET_DEPTH_FORMAT:
 		debug("Setting Depth Format\r\n");
 		requested_depth_format = buffer[sizeof(uint32_t) + 1];
+		break;
+
+	case ERLCMD_SUBSCRIBE_BUFFER_RGB:
+		debug("Subscribe RGB\r\n");
+		buffer_rgb_subscribe = !buffer_rgb_subscribe;
+		break;
+
+	case ERLCMD_SUBSCRIBE_BUFFER_DEPTH:
+		debug("Subscribe Depth\r\n");
+		buffer_depth_subscribe = !buffer_depth_subscribe;
 		break;
 
 	default:

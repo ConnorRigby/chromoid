@@ -1,4 +1,4 @@
-#!/usr/bin/env python
+#!/usr/bin/env python3
 import os
 
 import numpy
@@ -20,17 +20,23 @@ def detectObjects(img):
   for (x,y,w,h) in faces:
       cv2.rectangle(img, (x,y), (x+w, y+h), (0,255,0), 2)
       cv2.putText(img, 'face', (x, y - 10), cv2.FONT_HERSHEY_SIMPLEX, 0.7, (0, 255, 0), 2)
+  cv2.imshow("detected", img)
+  cv2.waitKey(1)
   return img
 
 if __name__ == '__main__':
     input, output = os.fdopen(3, 'rb'), os.fdopen(4, 'wb')
     for data in ErlCmd.recv_loop(input):
-      if data[0] == ErlCmd.ATOM_DEPTH_IMAGE:
-        image = Image.frombuffer("L", (640, 480), data[1].value, 'raw', "L", 0, 1) 
+      if data[0] == ErlCmd.ATOM_BUFFER_BOTH:
+        # image = Image.frombuffer("RGB", (640, 480), data[1].value, 'raw', "RGB", 0, 1)
+        # image = Image.frombuffer("L", (640, 480), data[1].value, 'raw', "L", 0, 1)
+        image = Image.frombuffer("L", (640, 480), data[2].value, 'raw', "L", 0, 1)
+
         image = np.array(image)
         image = detectObjects(image)
-        _, image = cv2.imencode('.jpeg', image)
+        # _, image = cv2.imencode('.jpeg', image)
         # print(image)
-        term = erlang.OtpErlangBinary(image.tobytes())
+        term = erlang.OtpErlangAtom(b'test')
+        # term = erlang.OtpErlangBinary(image.tobytes())
         ErlCmd.send(term, output)
 
