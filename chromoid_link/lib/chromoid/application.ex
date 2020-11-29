@@ -67,7 +67,8 @@ defmodule Chromoid.Application do
   def children(:relay_link_rpi3) do
     [
       Chromoid.RelayProvider.Circuits,
-      Picam.Camera
+      Picam.Camera,
+      {SketchNov28a, "ttyUSB0"}
     ]
   end
 

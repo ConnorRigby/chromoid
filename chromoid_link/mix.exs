@@ -88,8 +88,9 @@ defmodule Chromoid.MixProject do
       {:nerves_system_rpi0, "~> 1.12", runtime: false, targets: [:ble_link_rpi0, :relay_link_rpi0]},
       {:nerves_system_rpi3, "~> 1.12", runtime: false, targets: [:kinect_link_rpi3, :relay_link_rpi3]},
       {:picam, "~> 0.4.1", targets: @all_targets},
-      {:freenect, path: "../freenect"},
-      {:circuits_gpio, "~> 0.4.6", targets: @all_targets}
+      {:freenect, path: "../freenect", targets: [:kinect_link_rpi3]},
+      {:circuits_gpio, "~> 0.4.6", targets: @all_targets},
+      {:circuits_uart, "~> 1.4"}
     ]
   end
 
