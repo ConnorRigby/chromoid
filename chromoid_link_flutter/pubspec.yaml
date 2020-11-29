@@ -31,6 +31,8 @@ dependencies:
 
   flutter_blue: ^0.7.3
   flutter_colorpicker: ^0.3.4
+  phoenix_wings: ^0.2.1
+  device_info: ^1.0.0
 
 dev_dependencies:
   flutter_test:
