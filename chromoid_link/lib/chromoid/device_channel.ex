@@ -27,12 +27,24 @@ defmodule Chromoid.DeviceChannel do
         Logger.info("Connected to channel: #{inspect(response)}")
         true = Process.link(channel)
         maybe_bc_relay_state(%{state | channel: channel, connected?: true})
+        send(self(), :token_refresh)
         {:noreply, %{state | channel: channel, connected?: true}}
 
       error ->
         Logger.error("Failed to connect to channel: #{inspect(error)}")
         send(self(), :join_channel)
         {:noreply, %{state | channel: nil, connected?: false}}
+    end
+  end
+
+  def handle_info(:token_refresh, state) do
+    case Channel.push(state.channel, "token_refresh", %{}) do
+      {:ok, %{"token" => new_token}} ->
+        {:noreply, state}
+
+      error ->
+        Logger.error("Failed to refresh token: #{inspect(error)}")
+        {:noreply, state}
     end
   end
 
@@ -44,14 +56,21 @@ defmodule Chromoid.DeviceChannel do
   end
 
   def handle_info(%Message{event: "photo_request"}, state) do
-    # {:ok, jpeg} = Chromoid.CameraProvider.Picam.jpeg()
-    {:ok, jpeg} = Chromoid.CameraProvider.Freenect.jpeg()
+    provider = Application.get_env(:chromoid, :camera_provider)
 
-    Channel.push(state.channel, "photo_response", %{
-      content_type: "image/jpeg",
-      content: Base.encode64(jpeg),
-      name: "camera0-#{state.photo_index}.jpg"
-    })
+    case provider.jpeg() do
+      {:ok, jpeg} ->
+        Channel.push(state.channel, "photo_response", %{
+          content_type: "image/jpeg",
+          content: Base.encode64(jpeg),
+          name: "camera0-#{state.photo_index}.jpg"
+        })
+
+      error ->
+        Channel.push(state.channel, "photo_response", %{
+          error: inspect(error)
+        })
+    end
 
     {:noreply, %{state | photo_index: state.photo_index + 1}}
   end

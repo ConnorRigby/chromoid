@@ -9,12 +9,12 @@ defmodule Chromoid.Application do
     # See https://hexdocs.pm/elixir/Supervisor.html
     # for other strategies and supported options
     opts = [strategy: :one_for_one, name: Chromoid.Supervisor]
-    socket_opts = Application.get_env(:chromoid, :socket, [])
 
     children =
       children(target()) ++
         [
-          {Chromoid.SocketMonitor, socket_opts},
+          Chromoid.Config,
+          Chromoid.SocketMonitor,
           Chromoid.DeviceChannel
         ]
 
@@ -24,7 +24,7 @@ defmodule Chromoid.Application do
   # List all child processes to be supervised
   def children(:host) do
     [
-      ObjectDetect
+      # ObjectDetect
       # Freenect
       # Children that only run on the host
       # Starts a worker by calling: Chromoid.Worker.start_link(arg)
@@ -35,7 +35,6 @@ defmodule Chromoid.Application do
   def children(:freenect_link_rpi3) do
     [
       Freenect
-      # Picam.Camera
     ]
   end
 

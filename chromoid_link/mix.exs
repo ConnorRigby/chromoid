@@ -58,27 +58,7 @@ defmodule Chromoid.MixProject do
       {:blue_heron, "~> 0.1.1"},
       {:blue_heron_transport_usb, "~> 0.1", targets: :host},
       {:blue_heron_transport_uart, "0.1.1"},
-
-      # {:blue_heron, path: "/home/connor/workspace/smartrent/bt/blue_heron/", override: true},
-      # {:blue_heron,
-      #  github: "smartrent/blue_heron",
-      #  branch: "att-client-updates",
-      #  sparse: "blue_heron",
-      #  override: true},
-
-      # {:blue_heron_transport_usb,
-      #  github: "smartrent/blue_heron",
-      #  branch: "main",
-      #  sparse: "blue_heron_transport_usb",
-      #  targets: :host},
-      # {:blue_heron_transport_uart,
-      #  github: "smartrent/blue_heron",
-      #  branch: "framing-rewrite",
-      #  sparse: "blue_heron_transport_uart",
-      #  targets: @all_targets},
-
-      # {:blue_heron_transport_uart,
-      #  path: "/home/connor/workspace/smartrent/bt/blue_heron_transport_uart/"},
+      {:cubdb, "~> 1.0.0-rc.5"},
 
       # Dependencies for all targets except :host
       {:nerves_runtime, "~> 0.6", targets: @all_targets},

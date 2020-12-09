@@ -36,7 +36,7 @@ defmodule SketchNov28a do
 
       error ->
         Logger.error("Failed to open #{state.device}: #{inspect(error)}")
-        Process.send_after(self(),:open_uart, 5000)
+        Process.send_after(self(), :open_uart, 5000)
         {:noreply, %{state | open: false}}
     end
   end
@@ -82,6 +82,7 @@ defmodule SketchNov28a do
     if(state.caller) do
       GenServer.reply(state.caller, result_code_to_atom(result))
     end
+
     {:noreply, %{state | caller: nil}}
   end
 
