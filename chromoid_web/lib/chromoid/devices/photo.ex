@@ -50,6 +50,15 @@ defmodule Chromoid.Devices.Photo do
     {:noreply, %{state | caller: nil, timer: nil}}
   end
 
+  def handle_info(
+        %Broadcast{event: "photo_response", payload: %{"error" => reason} = payload},
+        state
+      ) do
+    if state.timer, do: Process.cancel_timer(state.timer)
+    GenServer.reply(state.caller, {:error, reason})
+    {:noreply, %{state | caller: nil, timer: nil}}
+  end
+
   def handle_info(%Broadcast{}, state) do
     {:noreply, state}
   end

@@ -124,4 +124,9 @@ defmodule ChromoidWeb.DeviceChannel do
 
     {:noreply, socket}
   end
+
+  def handle_in("token_refresh", _attrs, socket) do
+    new_token = Chromoid.Devices.generate_token(socket.assigns.device)
+    {:reply, {:ok, %{"token" => new_token}}, socket}
+  end
 end
