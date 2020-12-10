@@ -56,7 +56,7 @@ defmodule Chromoid.MixProject do
       # {:phoenix_client, "~> 0.11.1"},
       {:phoenix_client, path: "../phoenix_client", override: true},
       {:jason, "~> 1.2"},
-      {:blue_heron, "~> 0.1.1"},
+      {:blue_heron, path: "../blue_heron", override: true},
       {:blue_heron_transport_usb, "~> 0.1", targets: :host},
       {:blue_heron_transport_uart, "0.1.1"},
       {:cubdb, "~> 1.0.0-rc.5"},

@@ -21,10 +21,9 @@ defmodule Chromoid.BLEConnection do
   @impl GenServer
   def init({ctx, device_info}) do
     Logger.metadata(ble_address: inspect(device_info.address, base: :hex))
-    Logger.info("BLE Channel init")
+    Logger.info("BLE Channel init: #{inspect(self())}")
     {:ok, conn} = BlueHeron.ATT.Client.start_link(ctx)
     send(self(), :join_channel)
-    send(self(), :ble_connect)
 
     {:ok,
      %{
@@ -59,9 +58,24 @@ defmodule Chromoid.BLEConnection do
 
   def handle_info(:ble_connect, %{ble_connected?: false} = state) do
     :ok = BlueHeron.ATT.Client.create_connection(state.conn, peer_address: state.device_info.address)
-
     Logger.info("Create connection request complete")
     {:noreply, state}
+  end
+
+  def handle_info(:ble_connect, %{ble_connected?: true} = state) do
+    Logger.info("Already connected?")
+    {:noreply, state, 1000}
+  end
+
+  def handle_info(:ble_disconnect, %{ble_connected?: false} = state) do
+    Logger.info("Already disconnected?")
+    {:noreply, state}
+  end
+
+  def handle_info(:ble_disconnect, %{ble_connected?: true} = state) do
+    :ok = BlueHeron.ATT.Client.disconnect(state.conn, 0x15)
+    Logger.info("Disconnect sent")
+    {:noreply, %{state | ble_connected?: false}}
   end
 
   # Sent when create_connection/2 is complete
@@ -76,6 +90,7 @@ defmodule Chromoid.BLEConnection do
       connection_handle: inspect(handle, base: :hex)
     )
 
+    send(self(), :set_color)
     {:noreply, %{state | ble_connected?: true}}
   end
 
@@ -93,14 +108,29 @@ defmodule Chromoid.BLEConnection do
 
   def handle_info({BlueHeron.ATT.Client, _, message}, state) do
     Logger.info("ATT Client message: #{inspect(message)}")
-    {:noreply, state}
+    {:noreply, state, 0}
   end
 
   def handle_info(
         %PhoenixClient.Message{event: "set_color", payload: %{"color" => rgb}},
-        %{ble_connected?: true} = state
+        state
       ) do
+    send(self(), :ble_connect)
+    {:noreply, %{state | color: rgb}}
+  end
+
+  def handle_info(%Message{}, state) do
+    {:noreply, state}
+  end
+
+  def handle_info(:set_color, %{ble_connected?: false} = state) do
+    PhoenixClient.Channel.push(state.channel, "error", %{message: "not connected"})
+    {:noreply, state}
+  end
+
+  def handle_info(:set_color, %{ble_connected?: true} = state) do
     Logger.info("Got set_color command")
+    rgb = state.color
     payload = build_payload(state, rgb)
 
     checksum = calculate_xor(payload, 0)
@@ -108,25 +138,19 @@ defmodule Chromoid.BLEConnection do
     case BlueHeron.ATT.Client.write(state.conn, 0x0015, <<payload::binary-19, checksum::8>>) do
       :ok ->
         Logger.info("Wrote payload")
-        # :ok = BlueHeron.ATT.Client.disconnect(state.conn, 0x15)
-        # Logger.info "Disconnect sent"
         PhoenixClient.Channel.push(state.channel, "color_state", %{color: rgb})
         Logger.info("Set Govee LED Color: ##{inspect(rgb, base: :hex)}")
-        {:noreply, %{state | color: rgb}}
+        {:noreply, %{state | color: rgb}, 1000}
 
       error ->
         Logger.info("Failed to set Govee LED color: #{inspect(error)}")
         PhoenixClient.Channel.push(state.channel, "error", %{message: inspect(error)})
-        {:noreply, state}
+        {:noreply, state, 1000}
     end
   end
 
-  def handle_info(%Message{}, state) do
-    {:noreply, state}
-  end
-
   def handle_info(:timeout, state) do
-    PhoenixClient.Channel.push(state.channel, "error", %{message: "Timeout"})
+    send(self(), :ble_disconnect)
     {:noreply, state}
   end
 
