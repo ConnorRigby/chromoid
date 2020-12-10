@@ -1,32 +1,33 @@
 # Chromoid
 
-**TODO: Add description**
+## Mix.target() feature matrix
 
-## Targets
+| mix target | description | features |
+|:----------:|-------------|:--------:|
+| ble_link_rpi0 | device that connects to govee ble devices | ble, picam |
+| relay_link_rpi3 | device that can control an external relay via gpio, also has a system that can connect to a UART arduino to control xmas tree | gpio, uart, picam |
+| kinect_link_rpi3 | doesn't actually exist irl yet, but use `freenect` to connect it to chromo.id | kinect, usb |
+| host | all of those things, but in a hackier way | yes |
 
-Nerves applications produce images for hardware targets based on the
-`MIX_TARGET` environment variable. If `MIX_TARGET` is unset, `mix` builds an
-image that runs on the host (e.g., your laptop). This is useful for executing
-logic tests, running utilities, and debugging. Other targets are represented by
-a short name like `rpi3` that maps to a Nerves system image for that platform.
-All of this logic is in the generated `mix.exs` and may be customized. For more
-information about targets see:
+## Provisioning
 
-https://hexdocs.pm/nerves/targets.html#content
+Step 1: On build machine:
 
-## Getting Started
+```bash
+mix nerves_hub.device create $IDENTIFIER
+mix nerves_hub.device burn $IDENTIFIER
+```
 
-To start your Nerves app:
-  * `export MIX_TARGET=my_target` or prefix every command with
-    `MIX_TARGET=my_target`. For example, `MIX_TARGET=rpi3`
-  * Install dependencies with `mix deps.get`
-  * Create firmware with `mix firmware`
-  * Burn to an SD card with `mix firmware.burn`
+Step 2: configure VintageNet wizard.
+Step 3: get a chromo.id token.
+Step 4: put chromo.id token in CubDB somehow.
+Step 5: it should connect now.
 
-## Learn more
+## Deploying
 
-  * Official docs: https://hexdocs.pm/nerves/getting-started.html
-  * Official website: https://nerves-project.org/
-  * Forum: https://elixirforum.com/c/nerves-forum
-  * Discussion Slack elixir-lang #nerves ([Invite](https://elixir-slackin.herokuapp.com/))
-  * Source: https://github.com/nerves-project/nerves
+for every active target:
+
+1) `export MIX_TARGET=ble_link_rpi0`
+2) `mix firmware`
+3) `mix nerves_hub.firmware publish --key devkey`
+4) `mix nerves_hub.deployment update $MIX_TARGET firmware $UUID_FROM_LAST_COMMAND`

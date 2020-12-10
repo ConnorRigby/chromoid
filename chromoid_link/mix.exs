@@ -18,6 +18,7 @@ defmodule Chromoid.MixProject do
     [
       app: @app,
       version: @version,
+      name: "chromoid_link",
       elixir: "~> 1.9",
       archives: [nerves_bootstrap: "~> 1.8"],
       start_permanent: Mix.env() == :prod,
@@ -53,7 +54,7 @@ defmodule Chromoid.MixProject do
       {:ring_logger, "~> 0.6"},
       {:toolshed, "~> 0.2"},
       # {:phoenix_client, "~> 0.11.1"},
-      {:phoenix_client, path: "../phoenix_client"},
+      {:phoenix_client, path: "../phoenix_client", override: true},
       {:jason, "~> 1.2"},
       {:blue_heron, "~> 0.1.1"},
       {:blue_heron_transport_usb, "~> 0.1", targets: :host},
@@ -63,6 +64,10 @@ defmodule Chromoid.MixProject do
       # Dependencies for all targets except :host
       {:nerves_runtime, "~> 0.6", targets: @all_targets},
       {:nerves_pack, "~> 0.2", targets: @all_targets},
+      {:nerves_hub_cli, "~> 0.10", runtime: false},
+      {:nerves_hub_link, "~> 0.9", targets: @all_targets},
+      {:nerves_time, "~> 0.2", targets: @all_targets},
+      {:vintage_net_wizard, "~> 0.4.0", targets: @all_targets},
 
       # Dependencies for specific targets
       {:nerves_system_rpi0, "~> 1.12", runtime: false, targets: [:ble_link_rpi0, :relay_link_rpi0]},

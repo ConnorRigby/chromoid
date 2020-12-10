@@ -11,9 +11,9 @@ defmodule Chromoid.Application do
     opts = [strategy: :one_for_one, name: Chromoid.Supervisor]
 
     children =
-      children(target()) ++
+      [Chromoid.Config] ++
+        children(target()) ++
         [
-          Chromoid.Config,
           Chromoid.SocketMonitor,
           Chromoid.DeviceChannel
         ]
@@ -24,11 +24,7 @@ defmodule Chromoid.Application do
   # List all child processes to be supervised
   def children(:host) do
     [
-      # ObjectDetect
-      # Freenect
-      # Children that only run on the host
-      # Starts a worker by calling: Chromoid.Worker.start_link(arg)
-      # {Chromoid.Worker, arg},
+      Chromoid.RelayChannel
     ]
   end
 
@@ -40,6 +36,7 @@ defmodule Chromoid.Application do
 
   def children(:rpi0) do
     [
+      Chromoid.ConfigWizard,
       Chromoid.BLEConnection.Registry,
       Chromoid.BLEConnectionSupervisor,
       Chromoid.BLECtx,
@@ -49,6 +46,7 @@ defmodule Chromoid.Application do
 
   def children(:ble_link_rpi0) do
     [
+      Chromoid.ConfigWizard,
       Chromoid.BLEConnection.Registry,
       Chromoid.BLEConnectionSupervisor,
       Chromoid.BLECtx,
@@ -58,6 +56,7 @@ defmodule Chromoid.Application do
 
   def children(:relay_link_rpi0) do
     [
+      Chromoid.ConfigWizard,
       Picam.Camera,
       Chromoid.RelayProvider.Circuits
     ]
@@ -65,9 +64,11 @@ defmodule Chromoid.Application do
 
   def children(:relay_link_rpi3) do
     [
+      Chromoid.ConfigWizard,
       Chromoid.RelayProvider.Circuits,
       Picam.Camera,
-      {SketchNov28a, "ttyUSB0"}
+      {SketchNov28a, "ttyUSB0"},
+      Chromoid.RelayChannel
     ]
   end
 

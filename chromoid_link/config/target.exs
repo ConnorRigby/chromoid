@@ -22,7 +22,8 @@ config :nerves_runtime, :kernel, use_system_registry: false
 config :nerves,
   erlinit: [
     hostname_pattern: "chromoid-link-%s"
-  ]
+  ],
+  provisioning: :nerves_hub_link
 
 # Authorize the device to receive firmware using your public key.
 # See https://hexdocs.pm/nerves_firmware_ssh/readme.html for more information
@@ -48,44 +49,18 @@ if keys == [],
 config :nerves_firmware_ssh,
   authorized_keys: Enum.map(keys, &File.read!/1)
 
-ssid =
-  System.get_env("NERVES_NETWORK_SSID") ||
-    raise """
-    environment variable NERVES_NETWORK_SSID is missing.
-    """
-
-psk =
-  System.get_env("NERVES_NETWORK_PSK") ||
-    raise """
-    environment variable NERVES_NETWORK_PSK is missing.
-    """
-
 # Configure the network using vintage_net
 # See https://github.com/nerves-networking/vintage_net for more information
 config :vintage_net,
   regulatory_domain: "US",
   config: [
     {"usb0", %{type: VintageNetDirect}},
-    {"eth0",
-     %{
-       type: VintageNetEthernet,
-       ipv4: %{method: :dhcp}
-     }},
-    {"wlan0",
-     %{
-       type: VintageNetWiFi,
-       vintage_net_wifi: %{
-         networks: [
-           %{
-             key_mgmt: :wpa_psk,
-             ssid: ssid,
-             psk: psk
-           }
-         ]
-       },
-       ipv4: %{method: :dhcp}
-     }}
+    {"eth0", %{type: VintageNetEthernet}},
+    {"wlan0", %{type: VintageNetWiFi}}
   ]
+
+config :vintage_net_wizard,
+  inactivity_timeout: 30
 
 config :mdns_lite,
   # The `host` key specifies what hostnames mdns_lite advertises.  `:hostname`
@@ -118,6 +93,13 @@ config :mdns_lite,
       port: 4369
     }
   ]
+
+config :nerves_hub_link,
+  socket: [
+    reconnect_interval: 5000
+  ],
+  fwup_public_keys: ["7Qqp8dWwD9K6B4uVRt39IzY0CSJ0xx1OUf07XxW0fC8="],
+  remote_iex: true
 
 # Import target specific config. This must remain at the bottom
 # of this file so it overrides the configuration defined above.

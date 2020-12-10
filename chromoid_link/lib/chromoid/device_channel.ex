@@ -2,6 +2,7 @@ defmodule Chromoid.DeviceChannel do
   use GenServer
   require Logger
 
+  alias Chromoid.Config
   alias PhoenixClient.{Channel, Message}
 
   @socket Chromoid.Socket
@@ -20,15 +21,13 @@ defmodule Chromoid.DeviceChannel do
 
   @impl GenServer
   def handle_info(:join_channel, %{channel: nil} = state) do
-    # uid = System.unique_integer([:positive])
-    # case Channel.join(@socket, "#{@topic}:#{uid}") do
     case Channel.join(@socket, @topic) do
       {:ok, response, channel} ->
         Logger.info("Connected to channel: #{inspect(response)}")
         true = Process.link(channel)
-        maybe_bc_relay_state(%{state | channel: channel, connected?: true})
+        state = %{state | channel: channel, connected?: true}
         send(self(), :token_refresh)
-        {:noreply, %{state | channel: channel, connected?: true}}
+        {:noreply, state}
 
       error ->
         Logger.error("Failed to connect to channel: #{inspect(error)}")
@@ -40,6 +39,7 @@ defmodule Chromoid.DeviceChannel do
   def handle_info(:token_refresh, state) do
     case Channel.push(state.channel, "token_refresh", %{}) do
       {:ok, %{"token" => new_token}} ->
+        Config.put_token_refresh(new_token)
         {:noreply, state}
 
       error ->
@@ -49,7 +49,7 @@ defmodule Chromoid.DeviceChannel do
   end
 
   def handle_info({Channel, channel, {:disconnected, reason}}, %{channel: channel} = state) do
-    Logger.error("Channel disconnected")
+    Logger.error("Channel disconnected: #{inspect(reason)}")
     Channel.leave(channel)
     send(self(), :join_channel)
     {:noreply, %{state | channel: nil}}
@@ -75,62 +75,8 @@ defmodule Chromoid.DeviceChannel do
     {:noreply, %{state | photo_index: state.photo_index + 1}}
   end
 
-  def handle_info(%Message{event: "freenect", payload: %{"command" => "mode", "value" => "rgb"}}, state) do
-    Logger.info("changing freenect mode => rgb")
-    Freenect.set_mode(:rgb)
-    {:noreply, state}
-  end
-
-  def handle_info(%Message{event: "freenect", payload: %{"command" => "mode", "value" => "depth"}}, state) do
-    Logger.info("changing freenect mode => depth")
-    Freenect.set_mode(:depth)
-    {:noreply, state}
-  end
-
-  def handle_info(%Message{event: "relay_status", payload: %{"state" => relay_state}}, state) do
-    Logger.info("changing relay state => relay_state")
-
-    case Chromoid.RelayProvider.Circuits.set_state(relay_state) do
-      :ok ->
-        Channel.push_async(state.channel, "relay_status", %{
-          state: relay_state,
-          at: DateTime.utc_now() |> to_string()
-        })
-
-      {:error, _} ->
-        Channel.push_async(state.channel, "relay_status", %{
-          state: "error",
-          at: DateTime.utc_now() |> to_string()
-        })
-    end
-
-    {:noreply, state}
-  end
-
   def handle_info(%Message{} = message, state) do
     Logger.info("unhandled message: #{inspect(message)}")
     {:noreply, state}
-  end
-
-  if Mix.target() == :host do
-    defp maybe_bc_relay_state(state) do
-      Channel.push_async(state.channel, "relay_status", %{
-        state: "off",
-        at: DateTime.utc_now() |> to_string()
-      })
-    end
-
-    def set_relay_state(state) do
-      send(__MODULE__, %Message{event: "relay_status", payload: %{"state" => state}})
-    end
-  else
-    defp maybe_bc_relay_state(state) do
-      if Process.whereis(Chromoid.RelayProvider.Circuits) do
-        Channel.push_async(state.channel, "relay_status", %{
-          state: "off",
-          at: DateTime.utc_now() |> to_string()
-        })
-      end
-    end
   end
 end

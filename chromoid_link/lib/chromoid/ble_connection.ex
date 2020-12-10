@@ -100,6 +100,7 @@ defmodule Chromoid.BLEConnection do
         %PhoenixClient.Message{event: "set_color", payload: %{"color" => rgb}},
         %{ble_connected?: true} = state
       ) do
+    Logger.info("Got set_color command")
     payload = build_payload(state, rgb)
 
     checksum = calculate_xor(payload, 0)

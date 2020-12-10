@@ -28,15 +28,7 @@ config :logger, :console,
   format: "\n$time $metadata[$level] $levelpad$message\n",
   metadata: [:ble_address]
 
-url =
-  System.get_env("CHROMOID_URL") ||
-    raise """
-    environment variable CHROMOID_URL is missing.
-    """
-
-config :chromoid, :socket,
-  url: url,
-  reconnect_interval: 5000
+config :chromoid, :socket, reconnect_interval: 5000
 
 if Mix.target() != :host do
   import_config "target.exs"

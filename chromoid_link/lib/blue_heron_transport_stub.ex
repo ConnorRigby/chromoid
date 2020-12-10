@@ -101,7 +101,7 @@ defmodule BlueHeronTransportStub do
   stub_command <<0x0B, 0x20, _::binary>>, "\x0e\x04\x02\x0b\x20\x00"
   stub_command <<0x0C, 0x20, _::binary>>, "\x0e\x04\x02\x0c\x20\x00"
 
-  def maybe_reply(:command, data, _state) do
+  def maybe_reply(:command, _data, _state) do
     # raise "Unknown command: #{inspect(data, base: :hex, limit: :infinity)}"
   end
 
