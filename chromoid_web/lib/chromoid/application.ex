@@ -17,8 +17,10 @@ defmodule Chromoid.Application do
       ChromoidDiscord.Supervisor,
       # Start the Device Name registry
       Chromoid.Devices.DeviceRegistry,
-      # Start the BLE Supervisor
+      # Start the Device BLE Supervisor
       Chromoid.Devices.BLESupervisor,
+      # Start the Device Relay Supervisor
+      Chromoid.Devices.RelaySupervisor,
       # Start the Device Presence
       Chromoid.Devices.Presence,
       # Start the Endpoint (http/https)

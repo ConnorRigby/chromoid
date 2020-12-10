@@ -38,6 +38,7 @@ defmodule ChromoidWeb.DeviceLive do
      |> assign(:modal_device_id, params["id"])
      |> assign(:modal_device, modal_device)
      |> assign(:ble, %{})
+     |> assign(:relays, %{})
      |> assign(:colors, [
        "#2196F3",
        "#009688",
@@ -82,22 +83,49 @@ defmodule ChromoidWeb.DeviceLive do
         socket
       ) do
     ble =
-      diff.joins
+      diff.leaves
       |> Enum.reduce(socket.assigns.ble, fn
-        {addr_string, ble_dev}, ble_devs ->
-          Map.put(ble_devs, addr_string, ble_dev)
+        {"ble-" <> addr, _ble_dev}, ble_devs ->
+          Map.delete(ble_devs, addr)
+
+        {"relay-" <> _, _}, ble_devs ->
+          ble_devs
       end)
 
     ble =
-      diff.leaves
+      diff.joins
       |> Enum.reduce(ble, fn
-        {addr, _ble_dev}, ble_devs ->
-          Map.delete(ble_devs, addr)
+        {"ble-" <> addr_string, ble_dev}, ble_devs ->
+          Map.put(ble_devs, addr_string, ble_dev)
+
+        {"relay-" <> _, _}, ble_devs ->
+          ble_devs
+      end)
+
+    relays =
+      diff.leaves
+      |> Enum.reduce(socket.assigns.relays, fn
+        {"relay-" <> addr, _relays_dev}, relays_devs ->
+          Map.delete(relays_devs, addr)
+
+        {"ble-" <> _, _}, relays_devs ->
+          relays_devs
+      end)
+
+    relays =
+      diff.joins
+      |> Enum.reduce(relays, fn
+        {"relay-" <> addr_string, relays_dev}, relays_devs ->
+          Map.put(relays_devs, addr_string, relays_dev)
+
+        {"ble-" <> _, _}, relays_devs ->
+          relays_devs
       end)
 
     {:noreply,
      socket
-     |> assign(:ble, ble)}
+     |> assign(:ble, ble)
+     |> assign(:relays, relays)}
   end
 
   def handle_info(
@@ -109,24 +137,25 @@ defmodule ChromoidWeb.DeviceLive do
 
   @impl true
   def handle_event("show_modal", %{"device_id" => device_id}, socket) do
-    ble_devices = Chromoid.Devices.Presence.list("devices:#{device_id}")
     :ok = socket.endpoint.subscribe("devices:#{device_id}")
     device = Chromoid.Devices.get_device(device_id)
+    ble = Chromoid.Devices.Presence.list_bles(device)
+    relays = Chromoid.Devices.Presence.list_relays(device)
 
     meta =
       Chromoid.Devices.Presence.list("devices")[to_string(device_id)] ||
         %{
           last_communication: nil,
           status: "offline",
-          job: nil,
-          relay_status: nil
+          job: nil
         }
 
     {:noreply,
      socket
      |> assign(:modal_device_id, device_id)
      |> assign(:modal_device, Map.merge(device, meta))
-     |> assign(:ble, ble_devices)}
+     |> assign(:ble, ble)
+     |> assign(:relays, relays)}
   end
 
   def handle_event("hide_modal", _, socket) do
@@ -135,7 +164,8 @@ defmodule ChromoidWeb.DeviceLive do
     {:noreply,
      socket
      |> assign(:modal_device_id, nil)
-     |> assign(:ble, %{})}
+     |> assign(:ble, %{})
+     |> assign(:relays, %{})}
   end
 
   def handle_event("color_picker", %{"address" => address, "color" => color_arg}, socket) do
@@ -145,44 +175,15 @@ defmodule ChromoidWeb.DeviceLive do
       "Sending color change command: #{format_address(address)} #{inspect(color, base: :hex)}"
     )
 
-    meta = Chromoid.Devices.Color.set_color(address, color)
-    IO.inspect(meta, label: "META")
+    _meta = Chromoid.Devices.Color.set_color(address, color)
 
     {:noreply, socket}
   end
 
-  def handle_event("toggle_relay", _, socket) do
-    device_id = socket.assigns.modal_device_id
-
-    meta =
-      Chromoid.Devices.Presence.list("devices")[to_string(device_id)] ||
-        %{
-          last_communication: nil,
-          status: "offline",
-          job: nil,
-          relay_status: nil
-        }
-
-    if meta.relay_status do
-      case meta.relay_status.state do
-        "on" ->
-          socket.endpoint.broadcast!("devices:#{device_id}", "relay_status", %{state: "off"})
-          {:noreply, socket}
-
-        "off" ->
-          socket.endpoint.broadcast!("devices:#{device_id}", "relay_status", %{state: "on"})
-          {:noreply, socket}
-
-        error ->
-          {:noreply,
-           socket
-           |> put_flash(:error, "unknown relay state: #{error}")}
-      end
-    else
-      {:noreply,
-       socket
-       |> put_flash(:error, "Device doesn't have a relay?")}
-    end
+  def handle_event("toggle_relay", %{"address" => address, "state" => state}, socket) do
+    Logger.info("Sending relay change command: #{address}")
+    _meta = Chromoid.Devices.Relay.set_state(socket.assigns.modal_device, address, state)
+    {:noreply, socket}
   end
 
   defp sync_devices(devices, %{joins: joins, leaves: leaves}) do
@@ -195,8 +196,7 @@ defmodule ChromoidWeb.DeviceLive do
             :last_communication,
             :online_at,
             :status,
-            :job,
-            :relay_status
+            :job
           ]
 
           updates = Map.take(meta, fields)
@@ -212,14 +212,12 @@ defmodule ChromoidWeb.DeviceLive do
           |> Map.put(:last_communication, disconnect_time)
           |> Map.put(:status, "offline")
           |> Map.put(:job, nil)
-          |> Map.put(:relay_status, nil)
 
         true ->
           device
           |> Map.put(:last_communication, nil)
           |> Map.put(:status, "offline")
           |> Map.put(:job, nil)
-          |> Map.put(:relay_status, nil)
       end
     end
   end

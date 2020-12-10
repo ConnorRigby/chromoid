@@ -51,7 +51,7 @@ defmodule Chromoid.Devices.Photo do
   end
 
   def handle_info(
-        %Broadcast{event: "photo_response", payload: %{"error" => reason} = payload},
+        %Broadcast{event: "photo_response", payload: %{"error" => reason}},
         state
       ) do
     if state.timer, do: Process.cancel_timer(state.timer)

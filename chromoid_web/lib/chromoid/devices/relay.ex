@@ -1,42 +1,23 @@
-defmodule Chromoid.Devices.Color do
+defmodule Chromoid.Devices.Relay do
   use GenServer
   require Logger
   import Chromoid.Devices.DeviceRegistry, only: [via: 1]
   @endpoint ChromoidWeb.Endpoint
   alias Phoenix.Socket.Broadcast
 
-  def random_color() do
-    Enum.random([
-      "white",
-      "silver",
-      "gray",
-      "black",
-      "red",
-      "maroon",
-      "yellow",
-      "olive",
-      "lime",
-      "green",
-      "aqua",
-      "teal",
-      "blue",
-      "navy",
-      "fuchsia",
-      "purple"
-    ])
+  def set_state(%{id: device_id}, addr, state) do
+    set_state(device_id, addr, state)
   end
 
-  def format_color(color) do
-    inspect(color, base: :hex)
-  end
-
-  def set_color(addr, rgb) do
-    GenServer.call(via({__MODULE__, to_string(addr)}), {:set_color, rgb})
+  def set_state(device_id, addr, state) do
+    GenServer.call(via({__MODULE__, device_id, to_string(addr)}), {:set_state, state})
   end
 
   @doc false
   def start_link({device_id, address}) do
-    GenServer.start_link(__MODULE__, {device_id, address}, name: via({__MODULE__, address}))
+    GenServer.start_link(__MODULE__, {device_id, address},
+      name: via({__MODULE__, device_id, address})
+    )
   end
 
   @impl GenServer
@@ -46,9 +27,9 @@ defmodule Chromoid.Devices.Color do
   end
 
   @impl GenServer
-  def handle_call({:set_color, rgb}, from, state) do
-    @endpoint.broadcast("devices:#{state.device_id}:ble-#{state.address}", "set_color", %{
-      color: rgb
+  def handle_call({:set_state, relay_state}, from, state) do
+    @endpoint.broadcast("devices:#{state.device_id}:relay-#{state.address}", "set_state", %{
+      state: relay_state
     })
 
     {:noreply, %{state | caller: from}}
@@ -67,12 +48,10 @@ defmodule Chromoid.Devices.Color do
         },
         %{address: address} = state
       ) do
-    IO.inspect(joins)
-
     state =
       Enum.reduce(joins, state, fn
-        {"ble-" <> ^address, meta}, state ->
-          Logger.info("Color Call complete")
+        {"relay-" <> ^address, meta}, state ->
+          Logger.info("Relay ioctl complete")
           GenServer.reply(state.caller, meta)
           %{state | caller: nil}
 

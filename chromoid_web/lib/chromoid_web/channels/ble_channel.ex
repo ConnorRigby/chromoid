@@ -1,5 +1,6 @@
 defmodule ChromoidWeb.BLEChannel do
   use ChromoidWeb, :channel
+  require Logger
   alias Chromoid.Devices.Presence
   alias Phoenix.Socket.Broadcast
 
@@ -16,7 +17,7 @@ defmodule ChromoidWeb.BLEChannel do
 
     case Chromoid.Devices.BLESupervisor.start_child({socket.assigns.device.id, addr}) do
       {:ok, pid} ->
-        socket.endpoint.subscribe("devices:#{socket.assigns.device.id}:#{addr}")
+        socket.endpoint.subscribe("devices:#{socket.assigns.device.id}:ble-#{addr}")
         {:ok, assign(socket, :address, addr) |> assign(params) |> assign(:color_pid, pid)}
 
       # hack due to hot code reload typo. Delete me one day
@@ -39,7 +40,7 @@ defmodule ChromoidWeb.BLEChannel do
       Presence.track(
         self(),
         "devices:#{socket.assigns.device.id}",
-        "#{socket.assigns.address}",
+        "ble-#{socket.assigns.address}",
         %{
           online_at: DateTime.utc_now(),
           device_id: socket.assigns.device.id,
@@ -53,6 +54,7 @@ defmodule ChromoidWeb.BLEChannel do
   end
 
   def handle_info(%Broadcast{event: "set_color", payload: payload}, socket) do
+    Logger.info("Setting color: #{socket.assigns.address} => #{inspect(payload)}")
     push(socket, "set_color", payload)
     {:noreply, socket}
   end
@@ -62,12 +64,10 @@ defmodule ChromoidWeb.BLEChannel do
   end
 
   def handle_in("color_state", %{"color" => rgb}, socket) do
-    IO.inspect(rgb, label: "handle_in")
-
     Presence.update(
       self(),
       "devices:#{socket.assigns.device.id}",
-      "#{socket.assigns.address}",
+      "ble-#{socket.assigns.address}",
       fn old ->
         %{old | color: rgb, error: nil}
       end
@@ -80,7 +80,7 @@ defmodule ChromoidWeb.BLEChannel do
     Presence.update(
       self(),
       "devices:#{socket.assigns.device.id}",
-      "#{socket.assigns.address}",
+      "ble-#{socket.assigns.address}",
       &Map.put(&1, :error, message)
     )
 

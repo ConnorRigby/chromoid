@@ -4,7 +4,6 @@ defmodule ChromoidWeb.DeviceChannel do
   alias Chromoid.Devices.Presence
   alias Phoenix.Socket.Broadcast
   alias Chromoid.Devices.Job
-  alias Chromoid.Devices.RelayStatus
 
   def join(_topic, _params, socket) do
     send(self(), :after_join)
@@ -28,8 +27,7 @@ defmodule ChromoidWeb.DeviceChannel do
         storage: nil,
         path: nil,
         progress: nil,
-        job: nil,
-        relay_status: nil
+        job: nil
       })
 
     {:noreply, socket}
@@ -44,12 +42,6 @@ defmodule ChromoidWeb.DeviceChannel do
   def handle_info(%Broadcast{event: "freenect", payload: payload}, socket) do
     Logger.info("Sending freenect ioctl")
     push(socket, "freenect", payload)
-    {:noreply, socket}
-  end
-
-  def handle_info(%Broadcast{event: "relay_status", payload: payload}, socket) do
-    Logger.info("Sending relay ioctl")
-    push(socket, "relay_status", payload)
     {:noreply, socket}
   end
 
@@ -102,23 +94,6 @@ defmodule ChromoidWeb.DeviceChannel do
       "#{socket.assigns.device.id}",
       fn old ->
         %{old | job: job}
-      end
-    )
-
-    {:noreply, socket}
-  end
-
-  def handle_in("relay_status", attrs, socket) do
-    relay_status =
-      RelayStatus.changeset(%RelayStatus{}, attrs)
-      |> Ecto.Changeset.apply_changes()
-
-    Presence.update(
-      self(),
-      "devices",
-      "#{socket.assigns.device.id}",
-      fn old ->
-        %{old | relay_status: relay_status}
       end
     )
 

@@ -101,7 +101,7 @@ defmodule ChromoidDiscord.Guild.DeviceStatusChannel do
     device = Repo.get!(Chromoid.Devices.Device, device_id)
 
     join_events =
-      for {address, meta} <- joins do
+      for {"ble-" <> address, meta} <- joins do
         ble_device_join_action(state.config.device_status_channel_id, device, address, meta)
       end
 
@@ -348,7 +348,7 @@ defmodule ChromoidDiscord.Guild.DeviceStatusChannel do
     address = String.replace(address_with_colons, ":", "") |> String.to_integer(16) |> to_string()
     color = decode_color_arg(color_arg)
 
-    device_id = Chromoid.Devices.Presence.device_id_for_address(address)
+    device_id = Chromoid.Devices.Presence.device_id_for_ble_address(address)
 
     if device_id do
       device = Repo.get!(Chromoid.Devices.Device, device_id)

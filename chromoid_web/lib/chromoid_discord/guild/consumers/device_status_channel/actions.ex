@@ -19,7 +19,7 @@ defmodule ChromoidDiscord.Guild.DeviceStatusChannel.Actions do
   end
 
   def device_info_action(message, device, meta) do
-    ble_meta = Chromoid.Devices.Presence.list("devices:#{device.id}")
+    ble_meta = Chromoid.Devices.Presence.list_bles(device)
 
     embed =
       %Nostrum.Struct.Embed{}
