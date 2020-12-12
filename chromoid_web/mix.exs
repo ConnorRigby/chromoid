@@ -69,6 +69,7 @@ defmodule Chromoid.MixProject do
       {:luerl, github: "rvirding/luerl", branch: "develop-trace"},
       {:extty, "~> 0.1"},
       {:hackney, "~> 1.16"},
+      {:crontab, "~> 1.1"},
       @nostrum
     ]
   end

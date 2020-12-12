@@ -23,6 +23,11 @@ defmodule Chromoid.Application do
       Chromoid.Devices.RelaySupervisor,
       # Start the Device Presence
       Chromoid.Devices.Presence,
+      Chromoid.Schedule.Registry,
+      # Start the schedule handler supervisor
+      Chromoid.ScheduleSupervisor,
+      # Start the Runner checkup process
+      Chromoid.Schedule.Runner,
       # Start the Endpoint (http/https)
       ChromoidWeb.Endpoint
       # Start a worker by calling: Chromoid.Worker.start_link(arg)

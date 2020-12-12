@@ -7,8 +7,10 @@ defmodule Chromoid.Accounts.User do
     field :email, :string
     field :confirmed_at, :naive_datetime
     field :admin, :boolean
+    field :discord_user_id, Snowflake
     has_many :recipes, Chromoid.Recipes.Recipe, foreign_key: :created_by_id
     has_many :scripts, Chromoid.Lua.Script, foreign_key: :created_by_id
+    has_many :schedules, Chromoid.Schedule
     timestamps()
   end
 
@@ -61,5 +63,11 @@ defmodule Chromoid.Accounts.User do
   def confirm_changeset(user) do
     now = NaiveDateTime.utc_now() |> NaiveDateTime.truncate(:second)
     change(user, confirmed_at: now)
+  end
+
+  def discord_changeset(user, attrs) do
+    user
+    |> cast(attrs, [:discord_user_id])
+    |> validate_required([:discord_user_id])
   end
 end

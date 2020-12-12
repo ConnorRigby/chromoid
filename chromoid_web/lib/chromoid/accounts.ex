@@ -285,4 +285,9 @@ defmodule Chromoid.Accounts do
     for t <- Chromoid.Repo.all(Chromoid.Accounts.UserToken.user_and_contexts_query(user, :all)),
         do: Chromoid.Repo.delete!(t)
   end
+
+  def sync_discord(%User{} = user, %{"id" => discord_snowflake}) do
+    User.discord_changeset(user, %{discord_user_id: discord_snowflake})
+    |> Repo.update()
+  end
 end

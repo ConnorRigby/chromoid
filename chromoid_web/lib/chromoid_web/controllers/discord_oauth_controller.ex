@@ -18,6 +18,7 @@ defmodule ChromoidWeb.DiscordOauthController do
       case Chromoid.Accounts.get_user_by_email(me["email"]) do
         nil ->
           {:ok, user} = Chromoid.Accounts.register_user(%{"email" => me["email"]})
+          {:ok, user} = Chromoid.Accounts.sync_discord(user, me)
           Logger.info("Created user: #{inspect(user)}")
 
           conn
@@ -25,6 +26,7 @@ defmodule ChromoidWeb.DiscordOauthController do
           |> ChromoidWeb.UserAuth.log_in_user(user, me)
 
         user ->
+          {:ok, user} = Chromoid.Accounts.sync_discord(user, me)
           Logger.info("Logged in #{inspect(user)}")
 
           conn

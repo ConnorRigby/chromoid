@@ -43,3 +43,17 @@ IO.warn(
   device_status_channel_id: 657_776_429_555_122_186
 }
 |> Repo.insert!()
+
+me = %{
+  "email" => "konnorrigby@gmail.com",
+  "id" => "316741621498511363"
+}
+
+{:ok, user} = Chromoid.Accounts.register_user(%{"email" => me["email"]})
+{:ok, user} = Chromoid.Accounts.sync_discord(user, me)
+
+{:ok, _schedule} =
+  Chromoid.Schedule.new_for(user, %{
+    crontab: "*/120 7-14 * * 1-5",
+    handler: Chromoid.DiscordNotificationSchedule
+  })
