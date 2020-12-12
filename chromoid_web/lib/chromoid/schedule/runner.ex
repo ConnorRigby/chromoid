@@ -22,8 +22,7 @@ defmodule Chromoid.Schedule.Runner do
   @impl GenServer
   def handle_info(:reindex, state) do
     Logger.info("Indexing schedules")
-    # schedules = Schedule.all()
-    schedules = []
+    schedules = Schedule.all()
     {:noreply, %{state | schedules: schedules}, {:continue, :reindex}}
   end
 
