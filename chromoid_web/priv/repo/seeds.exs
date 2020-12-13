@@ -52,8 +52,16 @@ me = %{
 {:ok, user} = Chromoid.Accounts.register_user(%{"email" => me["email"]})
 {:ok, user} = Chromoid.Accounts.sync_discord(user, me)
 
+import Crontab.CronExpression
+
+# {:ok, _schedule} =
+#   Chromoid.Schedule.new_for(user, %{
+#     crontab: "*/120 7-14 * * 1-5",
+#     handler: Chromoid.DiscordNotificationSchedule
+#   })
+
 {:ok, _schedule} =
   Chromoid.Schedule.new_for(user, %{
-    crontab: "*/120 7-14 * * 1-5",
-    handler: Chromoid.DiscordNotificationSchedule
+    crontab: ~e[* * * * * *],
+    handler: Chromoid.TestSchedule
   })

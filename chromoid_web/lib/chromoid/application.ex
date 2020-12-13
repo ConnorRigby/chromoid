@@ -23,6 +23,7 @@ defmodule Chromoid.Application do
       Chromoid.Devices.RelaySupervisor,
       # Start the Device Presence
       Chromoid.Devices.Presence,
+      Chromoid.Schedule.Presence,
       Chromoid.Schedule.Registry,
       # Start the schedule handler supervisor
       Chromoid.ScheduleSupervisor,

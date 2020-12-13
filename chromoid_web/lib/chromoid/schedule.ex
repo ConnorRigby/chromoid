@@ -30,6 +30,10 @@ defmodule Chromoid.Schedule do
 
   ### access
 
+  def get(id) do
+    Repo.get(Schedule, id)
+  end
+
   def new_for(%User{} = user, params) do
     changeset(user, params)
     |> Repo.insert()

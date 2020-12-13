@@ -26,6 +26,16 @@ defmodule Chromoid.Schedule.Runner do
     {:noreply, %{state | schedules: schedules}, {:continue, :reindex}}
   end
 
+  def handle_info({:DOWN, ref, :process, pid, reason}, state) do
+    {schedule, state} = get_crashed_schedule(ref, pid, state)
+
+    if schedule do
+      Logger.warn("Schedule container crashed: #{inspect(schedule)}, #{inspect(reason)}")
+    end
+
+    {:noreply, state}
+  end
+
   @impl GenServer
   def handle_continue(:reindex, %{schedules: [schedule | rest], monitors: mons} = state) do
     Logger.info("Reindexing: #{inspect(schedule)}")
@@ -52,5 +62,22 @@ defmodule Chromoid.Schedule.Runner do
 
   def handle_continue(:reindex, %{schedules: []} = state) do
     {:noreply, state}
+  end
+
+  defp get_crashed_schedule(ref, pid, state) do
+    schedule =
+      Enum.find_value(state.monitors, fn
+        {schedule_id, {^ref, ^pid}} -> Schedule.get(schedule_id)
+        {_, _} -> false
+      end)
+
+    monitors =
+      if schedule do
+        Map.delete(state.monitors, schedule.id)
+      else
+        state.monitors
+      end
+
+    {schedule, %{state | monitors: monitors}}
   end
 end
