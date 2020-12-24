@@ -93,7 +93,8 @@ defmodule Chromoid.MixProject do
     [
       include_executables_for: [:unix],
       applications: [runtime_tools: :permanent],
-      steps: [:assemble]
+      steps: [:assemble],
+      cookie: "aHR0cHM6Ly9kaXNjb3JkLmdnL25tOENFVDJNc1A="
     ]
   end
 end
