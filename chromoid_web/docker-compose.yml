@@ -1,7 +1,7 @@
 version: '3.2'
 services:
   db:
-    image: postgres
+    image: postgres:12
     restart: always
     volumes:
       - ./pg-data:/var/lib/postgresql/data
@@ -13,13 +13,19 @@ services:
     image: "registry.sixtyeightplus.one/chromoid"
     volumes:
       - ./scripts:/scripts
-    depends_on: 
+    depends_on:
       - 'db'
-    ports: 
-      - "4009:4009"
+    ports:
+      - "4000:4009"
+      - "4029:4369"
+      - "4229:4229"
+    hostname: "chromo.id"
     environment:
       DATABASE_URL: "ecto://${POSTGRES_USER}:${POSTGRES_PASSWORD}@db/chromoid"
       SECRET_KEY_BASE: ${SECRET_KEY_BASE}
       DISCORD_TOKEN: ${DISCORD_TOKEN}
       DISCORD_CLIENT_ID: ${DISCORD_CLIENT_ID}
       DISCORD_CLIENT_SECRET: ${DISCORD_CLIENT_SECRET}
+      RELEASE_DISTRIBUTION: "name"
+      RELEASE_NODE: "chromoid@chromo.id"
+

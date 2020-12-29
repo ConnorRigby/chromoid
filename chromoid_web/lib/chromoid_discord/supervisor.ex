@@ -2,11 +2,8 @@ defmodule ChromoidDiscord.Supervisor do
   @moduledoc false
   use Supervisor
 
-  if Mix.env() == :prod && Application.get_env(:nostrum, :token) do
-    @dispatch_source ChromoidDiscord.NostrumConsumer
-  else
-    @dispatch_source ChromoidDiscord.FakeDiscordSource
-  end
+  @dispatch_source Application.get_env(:chromoid, __MODULE__)[:dispatch_source]
+  @dispatch_source || Mix.raise("dispatch_source unconfigured")
 
   @doc false
   def start_link(args) do

@@ -34,6 +34,7 @@ npm-debug.log
 /priv/static/
 
 .elixir_ls
+.nerves_reactor
 *.env
 deploy.sh
 device_token.exs

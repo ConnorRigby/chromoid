@@ -1,5 +1,5 @@
-FROM erlang:23.0.3-alpine as build
-ENV ELIXIR_VERSION="v1.10.4-otp-23"
+FROM erlang:23.1.1-alpine as build
+ENV ELIXIR_VERSION="v1.11.1-otp-23"
 
 # # install elixir
 RUN wget https://repo.hex.pm/builds/elixir/$ELIXIR_VERSION.zip && \
@@ -20,7 +20,7 @@ ARG DATABASE_URL
 ARG DISCORD_TOKEN
 ARG DISCORD_CLIENT_ID
 ARG DISCORD_CLIENT_SECRET
-ARG PORT=4009
+ARG PORT=4000
 ARG COMMIT
 
 ENV MIX_ENV=prod

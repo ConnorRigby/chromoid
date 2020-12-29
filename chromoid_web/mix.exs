@@ -70,6 +70,7 @@ defmodule Chromoid.MixProject do
       {:extty, "~> 0.1"},
       {:hackney, "~> 1.16"},
       {:crontab, "~> 1.1"},
+      {:nerves_reactor, path: "/home/connor/workspace/reactor", only: :reactor},
       @nostrum
     ]
   end

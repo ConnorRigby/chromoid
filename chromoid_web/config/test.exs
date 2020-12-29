@@ -24,4 +24,7 @@ config :chromoid, ChromoidWeb.Endpoint,
 # Print only warnings and errors during test
 config :logger, level: :warn
 
-config :chromoid, Chromoid.Lua.ScriptStorage, root_dir: "./scripts"
+config :chromoid, Chromoid.Lua.ScriptStorage, root_dir: "./lua_scripts"
+config :chromoid, ChromoidDiscord.OAuth, url: "http://localhost:4000/discord/oauth"
+config :chromoid, ChromoidDiscord.Guild.Responder, api: ChromoidDiscord.FakeAPI
+config :chromoid, ChromoidDiscord.Supervisor, dispatch_source: ChromoidDiscord.FakeDiscordSource

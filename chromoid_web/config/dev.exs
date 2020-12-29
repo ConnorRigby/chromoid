@@ -9,7 +9,10 @@ config :chromoid, Chromoid.Repo,
   show_sensitive_data_on_connection_error: true,
   pool_size: 10
 
-config :chromoid, Chromoid.Lua.ScriptStorage, root_dir: "./scripts"
+config :chromoid, Chromoid.Lua.ScriptStorage, root_dir: "./lua_scripts"
+config :chromoid, ChromoidDiscord.OAuth, url: "http://localhost:4000/discord/oauth"
+config :chromoid, ChromoidDiscord.Guild.Responder, api: ChromoidDiscord.FakeAPI
+config :chromoid, ChromoidDiscord.Supervisor, dispatch_source: ChromoidDiscord.FakeDiscordSource
 
 # For development, we disable any cache and enable
 # debugging and code reloading.

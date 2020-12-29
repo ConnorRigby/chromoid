@@ -62,6 +62,10 @@ config :chromoid, ChromoidWeb.Endpoint,
     transport_options: [socket_opts: [:inet6]]
   ]
 
+config :chromoid, ChromoidDiscord.OAuth, url: "https://chromo.id/discord/oauth"
+config :chromoid, ChromoidDiscord.Guild.Responder, api: Nostrum.Api
+config :chromoid, ChromoidDiscord.Supervisor, dispatch_source: ChromoidDiscord.NostrumConsumer
+
 config :nostrum,
   token: discord_token,
   client_id: discord_client_id,

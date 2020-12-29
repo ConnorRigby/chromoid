@@ -3,11 +3,11 @@ defmodule ChromoidDiscord.Guild.Responder do
   use GenStage
   require Logger
 
-  if Mix.env() == :prod do
-    @api Nostrum.Api
-  else
-    @api ChromoidDiscord.FakeAPI
-  end
+  @api Application.get_env(:chromoid, __MODULE__)[:api]
+  @api ||
+    Mix.raise("""
+    No API implementation configured
+    """)
 
   import ChromoidDiscord.Guild.Registry, only: [via: 2]
 
