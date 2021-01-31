@@ -22,7 +22,7 @@ defmodule Chromoid.MixProject do
       elixir: "~> 1.9",
       archives: [nerves_bootstrap: "~> 1.8"],
       start_permanent: Mix.env() == :prod,
-      build_embedded: true,
+      build_embedded: false,
       aliases: [loadconfig: [&bootstrap/1]],
       deps: deps(),
       releases: [{@app, release()}],
@@ -41,7 +41,7 @@ defmodule Chromoid.MixProject do
   def application do
     [
       mod: {Chromoid.Application, []},
-      extra_applications: [:logger, :runtime_tools]
+      extra_applications: [:logger, :runtime_tools, :inets, :crypto, :ssl, :public_key, :asn1]
     ]
   end
 
@@ -75,7 +75,8 @@ defmodule Chromoid.MixProject do
       {:picam, "~> 0.4.1", targets: @all_targets},
       {:freenect, path: "../freenect", targets: [:kinect_link_rpi3]},
       {:circuits_gpio, "~> 0.4.6", targets: @all_targets},
-      {:circuits_uart, "~> 1.4"}
+      {:circuits_uart, "~> 1.4"},
+      {:nfc, path: "../nfc", targets: [:host, :relay_link_rpi3]}
     ]
   end
 
@@ -85,7 +86,7 @@ defmodule Chromoid.MixProject do
       cookie: "#{@app}_cookie",
       include_erts: &Nerves.Release.erts/0,
       steps: [&Nerves.Release.init/1, :assemble],
-      strip_beams: Mix.env() == :prod
+      strip_beams: false
     ]
   end
 end

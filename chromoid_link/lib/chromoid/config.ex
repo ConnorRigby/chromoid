@@ -48,6 +48,8 @@ defmodule Chromoid.Config do
     with {:ok, db} <- CubDB.start_link(data_dir: data_dir()) do
       send(self(), :put_url_from_application_env)
       {:ok, %{db: db}}
+    else
+      {:error, reason} -> {:stop, reason}
     end
   end
 

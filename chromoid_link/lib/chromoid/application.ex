@@ -24,7 +24,8 @@ defmodule Chromoid.Application do
   # List all child processes to be supervised
   def children(:host) do
     [
-      Chromoid.RelayChannel
+      Chromoid.RelayChannel,
+      Chromoid.NFCChannel
     ]
   end
 
@@ -67,12 +68,12 @@ defmodule Chromoid.Application do
       Chromoid.ConfigWizard,
       Chromoid.RelayProvider.Circuits,
       Picam.Camera,
-      {SketchNov28a, "ttyUSB0"},
-      Chromoid.RelayChannel
+      Chromoid.RelayChannel,
+      Chromoid.NFCChannel
     ]
   end
 
   def target() do
-    Application.get_env(:chromoid, :target)
+    Application.get_env(:chromoid, :target) || raise "Unconfigured target not good"
   end
 end

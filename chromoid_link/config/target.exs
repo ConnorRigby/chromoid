@@ -21,7 +21,8 @@ config :nerves_runtime, :kernel, use_system_registry: false
 
 config :nerves,
   erlinit: [
-    hostname_pattern: "chromoid-link-%s"
+    hostname_pattern: "chromoid-link-%s",
+    env: "LD_LIBRARY_PATH=/srv/erlang/lib/nfc-0.1.0/priv/lib"
   ],
   provisioning: :nerves_hub_link
 

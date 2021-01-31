@@ -10,7 +10,7 @@
   "cowlib": {:hex, :cowlib, "2.9.1", "61a6c7c50cf07fdd24b2f45b89500bb93b6686579b069a89f88cb211e1125c78", [:rebar3], [], "hexpm", "e4175dc240a70d996156160891e1c62238ede1729e45740bdd38064dad476170"},
   "cubdb": {:hex, :cubdb, "1.0.0-rc.5", "dcf0d32090e079723577f3588d78427d0326732994c7d427907b5184f208ddf3", [:mix], [], "hexpm", "4ad4dadcdcf56c9c5549d86489210e207e0ad0b2a59080418cf1fdf637c428db"},
   "dns": {:hex, :dns, "2.1.2", "81c46d39f7934f0e73368355126e4266762cf227ba61d5889635d83b2d64a493", [:mix], [{:socket, "~> 0.3.13", [hex: :socket, repo: "hexpm", optional: false]}], "hexpm", "6818589d8e59c03a2c73001e5cd7a957f99c30a796021aa32445ea14d0f3356b"},
-  "elixir_make": {:hex, :elixir_make, "0.6.1", "8faa29a5597faba999aeeb72bbb9c91694ef8068f0131192fb199f98d32994ef", [:mix], [], "hexpm", "35d33270680f8d839a4003c3e9f43afb595310a592405a00afc12de4c7f55a18"},
+  "elixir_make": {:hex, :elixir_make, "0.6.2", "7dffacd77dec4c37b39af867cedaabb0b59f6a871f89722c25b28fcd4bd70530", [:mix], [], "hexpm", "03e49eadda22526a7e5279d53321d1cced6552f344ba4e03e619063de75348d9"},
   "ex_bin": {:hex, :ex_bin, "0.4.0", "c86513598a6fd35f018966607f3e8996e6b16324094e8939d163e671ab7c184e", [:mix], [], "hexpm", "223ae53e25ac2874f1b8f469d11a75926bb068a35e8008603c2ede4277cece6c"},
   "extty": {:hex, :extty, "0.2.0", "65c233182d7cda0ea4f2e6069a08bc47379c8d38cd7cc9f30a4a380e72bf4148", [:mix], [], "hexpm", "bb47b4ff4eb0253d19a26818cfd4ebd759153aa67e7a43b8130ab8a930cce018"},
   "fwup": {:hex, :fwup, "0.4.0", "c9f599748f52d13972e0471b789b74de90e451cf071bd9cdbbbf29e280efd9c7", [:mix], [], "hexpm", "88cdf2c2c46ed582b5ddf882b4928f1b9d99a7324ea3dfe1e9db59e5441b5894"},

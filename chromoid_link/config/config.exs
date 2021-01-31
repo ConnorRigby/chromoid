@@ -5,7 +5,7 @@
 # is restricted to this project.
 import Config
 
-config :chromoid, target: Mix.target()
+config :chromoid, target: Mix.target() || :host
 
 # Customize non-Elixir parts of the firmware. See
 # https://hexdocs.pm/nerves/advanced-configuration.html for details.
@@ -22,7 +22,7 @@ config :nerves, source_date_epoch: "1600265789"
 # configuring ring_logger.
 
 config :logger, backends: [:console, RingLogger, BlueHeron.HCIDump.Logger]
-config :logger, handle_otp_reports: true, handle_sasl_reports: true
+# config :logger, handle_otp_reports: true, handle_sasl_reports: true
 
 config :logger, :console,
   format: "\n$time $metadata[$level] $levelpad$message\n",
