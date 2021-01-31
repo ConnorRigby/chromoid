@@ -7,6 +7,16 @@ defmodule ChromoidDiscord.Guild.DeviceStatusChannel.Actions do
   alias Chromoid.Devices.Color
   alias Chromoid.Repo
 
+  def nfc_scan_action(channel_id, uid) do
+    embed =
+      %Nostrum.Struct.Embed{}
+      |> put_color(0x00FF00)
+      |> put_title("NFC card scanned")
+      |> put_field("**UID**", uid)
+
+    {:create_message!, [channel_id, [embed: embed]]}
+  end
+
   def device_list_action(message) do
     for {id, meta} <- Chromoid.Devices.Presence.list("devices") do
       device = Repo.get!(Chromoid.Devices.Device, id)

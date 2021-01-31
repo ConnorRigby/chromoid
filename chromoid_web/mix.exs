@@ -23,7 +23,7 @@ defmodule Chromoid.MixProject do
   def application do
     [
       extra_applications: [:logger, :runtime_tools, :os_mon, :ssl, :asn1, :public_key],
-      mod: {Chromoid.Application, []},
+      mod: {Chromoid.Application, []}
     ]
   end
 
@@ -94,7 +94,7 @@ defmodule Chromoid.MixProject do
     [
       include_executables_for: [:unix],
       applications: [runtime_tools: :permanent],
-      steps: [:assemble, &render_ssl_conf/1,],
+      steps: [:assemble, &render_ssl_conf/1],
       cookie: "aHR0cHM6Ly9kaXNjb3JkLmdnL25tOENFVDJNc1A="
     ]
   end
@@ -111,9 +111,10 @@ defmodule Chromoid.MixProject do
      ]}
     ].
     """
+
     certfile = System.get_env("DIST_CERTFILE") || Mix.raise("DIST_CERTFILE required")
     password = System.get_env("DIST_PASSWORD") || Mix.raise("DIST_PASSWORD required")
-    keyfile  = System.get_env("DIST_KEYFILE") || Mix.raise("DIST_KEYFILE required")
+    keyfile = System.get_env("DIST_KEYFILE") || Mix.raise("DIST_KEYFILE required")
     bindings = [certfile: certfile, password: password, keyfile: keyfile]
     ssl_conf = EEx.eval_string(template, bindings)
     :ok = File.write!(Path.join(path, "ssl.conf"), ssl_conf)
