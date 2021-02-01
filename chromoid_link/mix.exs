@@ -7,7 +7,8 @@ defmodule Chromoid.MixProject do
     :ble_link_rpi0,
     :kinect_link_rpi3,
     :relay_link_rpi0,
-    :relay_link_rpi3
+    :relay_link_rpi3,
+    :nfc_link_rpi0
   ]
 
   if Mix.target() != :host and Mix.target() not in @all_targets do
@@ -70,13 +71,13 @@ defmodule Chromoid.MixProject do
       {:vintage_net_wizard, "~> 0.4.0", targets: @all_targets},
 
       # Dependencies for specific targets
-      {:nerves_system_rpi0, "~> 1.12", runtime: false, targets: [:ble_link_rpi0, :relay_link_rpi0]},
+      {:nerves_system_rpi0, "~> 1.12", runtime: false, targets: [:ble_link_rpi0, :relay_link_rpi0, :nfc_link_rpi0]},
       {:nerves_system_rpi3, "~> 1.12", runtime: false, targets: [:kinect_link_rpi3, :relay_link_rpi3]},
       {:picam, "~> 0.4.1", targets: @all_targets},
       {:freenect, path: "../freenect", targets: [:kinect_link_rpi3]},
       {:circuits_gpio, "~> 0.4.6", targets: @all_targets},
       {:circuits_uart, "~> 1.4"},
-      {:nfc, path: "../nfc", targets: [:host, :relay_link_rpi3]}
+      {:nfc, path: "../nfc", targets: [:host, :nfc_link_rpi0]}
     ]
   end
 

@@ -68,7 +68,14 @@ defmodule Chromoid.Application do
       Chromoid.ConfigWizard,
       Chromoid.RelayProvider.Circuits,
       Picam.Camera,
-      Chromoid.RelayChannel,
+      Chromoid.RelayChannel
+    ]
+  end
+
+  def children(:nfc_link_rpi0) do
+    [
+      Chromoid.ConfigWizard,
+      Picam.Camera,
       Chromoid.NFCChannel
     ]
   end

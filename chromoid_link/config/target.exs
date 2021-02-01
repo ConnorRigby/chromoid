@@ -30,25 +30,13 @@ config :nerves,
 # See https://hexdocs.pm/nerves_firmware_ssh/readme.html for more information
 # on configuring nerves_firmware_ssh.
 
-keys =
-  [
-    Path.join([System.user_home!(), ".ssh", "id_rsa.pub"]),
-    Path.join([System.user_home!(), ".ssh", "id_ecdsa.pub"]),
-    Path.join([System.user_home!(), ".ssh", "id_ed25519.pub"]),
-    Path.join([__DIR__, "id_rsa.pub"])
-  ]
-  |> Enum.filter(&File.exists?/1)
-
-if keys == [],
-  do:
-    Mix.raise("""
-    No SSH public keys found in ~/.ssh. An ssh authorized key is needed to
-    log into the Nerves device and update firmware on it using ssh.
-    See your project's config.exs for this error message.
-    """)
+keys = [
+  "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQCtTSUeHLIUtkYAT9Cw8e+lE8iFsVFa20AtKjXovZesQoRg2F347ivuyFXaI+91O1qi067KPn+j3jw42gdlnqX0R4DhyW0qYH69biZTQjQfq8tLT7c7VPyxOsDxXXceORnx9s0dRsy4ZiHB56/Ffz+eAzsbOEfwlwdJDkn1oiSbHSFv5HW1/agzlzV6M+nfD6As6ZIwAysw5PROfF6ikbG+UwcOAgG+d1RZDR2BTzedQrKEwYM5SiFYyqt7bQFj7BHKtkB9T4CsyU+Y1ORptFNoVyluQkaY9bTptTkj/PpWt2sntd8zKfwRHa7ysRTCWzN4XWIUWfOJsbe577ghN6Lh connor@connor-mini-pc",
+  "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAABAQDV74EGCzSYUdlChm1ToKWjQptVw49ufQ43UQK7x/tkqo2+b+if9TrUk0RwwDjYfmvKdTAKQCmKpBgbjdVvMBBuPjQ4G3pU3O4vZ8ai3ykJ6KtaMqLu2zju1nTmZyOXgkFigHPuy1F+DyNsEAKfBqjWa9jNbvi6rCLIU9uHpcDsbgHULgCRlxfRYouHUstISSppBNEjCDWV8tDcrk6c3OCfoWbY8zxX11iGtVe9oMIL+PU40RBiul4REEXiB1Mj/8q3W+a4BvqrfPCx+7pNWALvBiImV1n5IFzBEYsLPacT2qf/YjmUoujLErg5IU52K+8TszUGnRUU2I467Lci5Let connor@ConnorLaptop"
+]
 
 config :nerves_firmware_ssh,
-  authorized_keys: Enum.map(keys, &File.read!/1)
+  authorized_keys: keys
 
 # Configure the network using vintage_net
 # See https://github.com/nerves-networking/vintage_net for more information
@@ -99,7 +87,10 @@ config :nerves_hub_link,
   socket: [
     reconnect_interval: 5000
   ],
-  fwup_public_keys: ["7Qqp8dWwD9K6B4uVRt39IzY0CSJ0xx1OUf07XxW0fC8="],
+  fwup_public_keys: [
+    "7Qqp8dWwD9K6B4uVRt39IzY0CSJ0xx1OUf07XxW0fC8=",
+    "pF9zswWUAblM0JDmGqo+71xGDifrpfOacbkVoPOc/E0="
+  ],
   remote_iex: true
 
 # Import target specific config. This must remain at the bottom
