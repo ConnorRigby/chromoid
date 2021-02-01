@@ -26,7 +26,10 @@ defmodule ChromoidWeb.NFCChannel do
     socket.endpoint.broadcast("devices:#{socket.assigns.device.id}:nfc", "iso14443a", attrs)
 
     if iso14443a = NFC.get_iso14443a_by_uid(socket.assigns.device.id, attrs["abtUid"]) do
-      socket.endpoint.broadcast("nfc", "iso14443a", iso14443a)
+      Logger.info("found iso14443a")
+      socket.endpoint.broadcast("nfc", "iso14443a", %{id: iso14443a.id})
+    else
+      Logger.info("unknown iso14443a")
     end
 
     {:noreply, socket}

@@ -93,12 +93,15 @@ defmodule ChromoidWeb.DeviceNFCLive do
   end
 
   def handle_info(
-        %Broadcast{event: "iso14443a", payload: _attrs},
+        %Broadcast{event: "iso14443a", payload: attrs},
         %{assigns: %{register_mode: false}} = socket
       ) do
     {:noreply,
      socket
-     |> put_flash("info", "Card scanned but not registering. ignoring.")}
+     |> put_flash(
+       "info",
+       "Card with uid of #{attrs["abtUid"]} scanned but not registering. ignoring."
+     )}
   end
 
   def handle_info(%Broadcast{event: "iso14443a", payload: attrs}, socket) do

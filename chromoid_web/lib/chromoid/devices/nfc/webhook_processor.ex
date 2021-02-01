@@ -29,9 +29,12 @@ defmodule Chromoid.Devices.NFC.WebHookProcessor do
 
   @impl true
   def handle_info(
-        %Broadcast{topic: @nfc_topic, event: @nfc_event, payload: %ISO14443a{} = nfc},
+        %Broadcast{topic: @nfc_topic, event: @nfc_event, payload: %{id: iso14443a_id}},
         state
       ) do
+    %ISO14443a{} = nfc = NFC.get_iso14443a(iso14443a_id)
+    Logger.info("Processing NFC event: #{inspect(nfc)}")
+
     for webhook <- NFC.load_webhooks(nfc) do
       response = WebHook.execute(webhook, nfc)
       Logger.info("Executed Webhook: #{inspect(webhook)} response: #{inspect(response)}")

@@ -8,6 +8,17 @@ defmodule Chromoid.Devices.NFC do
     Repo.one(from nfc in ISO14443a, where: nfc.device_id == ^device_id and nfc.abtUid == ^uid)
   end
 
+  def get_iso14443a(id) do
+    Repo.one!(from nfc in ISO14443a, where: nfc.id == ^id)
+  end
+
+  def delete_webhook(%ISO14443a{id: nfc_id}, id) do
+    Repo.one!(
+      from webhook in WebHook, where: webhook.nfc_iso14443a_id == ^nfc_id and webhook.id == ^id
+    )
+    |> Repo.delete()
+  end
+
   def load_webhooks(%ISO14443a{id: nfc_id}) do
     # Repo.preload(nfc, [:webhooks])
     Repo.all(from webhook in WebHook, where: webhook.nfc_iso14443a_id == ^nfc_id)
@@ -16,5 +27,9 @@ defmodule Chromoid.Devices.NFC do
   def new_webhook(%ISO14443a{id: id}, attrs) do
     WebHook.changeset(%WebHook{nfc_iso14443a_id: id}, attrs)
     |> Repo.insert()
+  end
+
+  def change_webhook(%ISO14443a{id: id}, attrs) do
+    WebHook.changeset(%WebHook{nfc_iso14443a_id: id}, attrs)
   end
 end

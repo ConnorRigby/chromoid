@@ -15,9 +15,28 @@ defmodule Chromoid.Devices.NFC.WebHook do
   def changeset(webhook, attrs) do
     webhook
     |> cast(attrs, [:url])
+    |> validate_required([:url])
+    |> validate_url()
     |> generate_secret()
-    |> validate_required([:url, :secret])
     |> unique_constraint([:nfc_iso14443a_id, :url], message: "Webhook already exists for that URL")
+  end
+
+  def validate_url(%Ecto.Changeset{valid?: false} = changeset) do
+    changeset
+  end
+
+  def validate_url(changeset) do
+    case URI.parse(get_field(changeset, :url)) do
+      %URI{scheme: scheme} when scheme in ["http", "https"] ->
+        changeset
+
+      error ->
+        add_error(changeset, :url, "does not seem to be a valid URL: #{inspect(error)}")
+    end
+  end
+
+  def generate_secret(%Ecto.Changeset{valid?: false} = changeset) do
+    changeset
   end
 
   def generate_secret(changeset) do

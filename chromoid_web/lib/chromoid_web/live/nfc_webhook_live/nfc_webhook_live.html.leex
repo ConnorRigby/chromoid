@@ -1,0 +1,29 @@
+<div class="mx-4 my-1 w-max">
+    <%= f = form_for @changeset, "#", phx_change: :validate, phx_submit: :save, class: "max-w-sm w-full lg:max-w-full py-1" %>
+      <div
+        class="border-r border-b border-l border-gray-400 lg:border-l-0 lg:border-t lg:border-gray-400 bg-white rounded-b lg:rounded-b-none lg:rounded-r p-4 leading-normal"
+      >
+        <span class="text-xl font-bold w-full pb-2"> New Webhook </span>
+        <%= error_tag f, :nfc_iso14443a_id, class: "text-red-600" %>
+        <%= error_tag f, :url, class: "text-red-600" %>
+        <%= label f, :url, class: "font-bold text-xl" %>
+        <%= text_input f, :url, class: "bg-gray-100 w-full pl-2" %>
+
+        <%= error_tag f, :secret, class: "text-red-600" %>
+        <%= label f, :secret, class: "font-bold text-xl pb-2" %>
+        <%= text_input f, :secret, class: "bg-gray-100 w-full pl-2", disabled: true, placeholder: "Will be auto generated" %>
+        <%= submit "Save", class: "rounded text-gray-800 rounded bg-green-500 shadow-xl p-2" %>
+    </div>
+
+  <%= for webhook <- @webhooks do %>
+    <div class="max-w-sm w-full lg:max-w-full py-1">
+      <div class="border-r border-b border-l border-gray-400 lg:border-l-0 lg:border-t lg:border-gray-400 bg-white rounded-b lg:rounded-b-none lg:rounded-r p-4 flex flex-col justify-between leading-normal">
+        <div class="flex justify-left">
+          <p class="text-sm"> <%= webhook.url %> </p>
+          <p class="text-sm pl-4 pr-4"> <p class="text-sm font-bold pr-4"> SECRET: </p> <%= webhook.secret %> </p>
+          <button class="bg-red-800 rounded shadow-xl pr-2 pl-2 mr-2" type="button" phx-click="delete" phx-value-webhook_id="<%= webhook.id %>"> Delete </button>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>
