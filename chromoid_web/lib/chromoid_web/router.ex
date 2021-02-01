@@ -35,6 +35,7 @@ defmodule ChromoidWeb.Router do
     get "/logout", DiscordOauthController, :logout
     live "/devices", DeviceLive, :index
     live "/devices/:id", DeviceLive, :show
+    live "/devices/:id/nfc", DeviceNFCLive, :show
     live "/recipes", RecipeLive, :index
     get "/devices/:id/stream", DeviceController, :stream
     get "/devices/:id/live.mjpg", DeviceController, :live

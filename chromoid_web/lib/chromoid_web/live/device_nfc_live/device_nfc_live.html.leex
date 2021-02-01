@@ -1,0 +1,57 @@
+<div class="mx-4 my-1 w-max">
+  <div class="max-w-sm w-full lg:max-w-full py-1">
+    <div class="border-r border-b border-l border-gray-400 lg:border-l-0 lg:border-t lg:border-gray-400 bg-white rounded-b lg:rounded-b-none lg:rounded-r p-4 flex flex-col justify-between leading-normal">
+      <div class="flex justify-between">
+        <%= if @register_mode do %>
+          <button
+          class="border-l shadow-xl bg-yellow-500 rounded p-2"
+          phx-click="cancel-register"
+          >
+            Cancel Registration
+          </button>
+        <% else %>
+          <button
+          class="border-l shadow-xl bg-green-500 rounded p-2"
+          phx-click="register"
+          >
+            Register new card
+          </button>
+        <% end %>
+      </div>
+    </div>
+  </div>
+
+  <%# hide the changeset when not in registration mode %>
+  <%= if @changeset do %>
+    <%= f = form_for @changeset, "#", phx_change: :validate, phx_submit: :save, class: "max-w-sm w-full lg:max-w-full py-1" %>
+      <div
+        class="border-r border-b border-l border-gray-400 lg:border-l-0 lg:border-t lg:border-gray-400 bg-white rounded-b lg:rounded-b-none lg:rounded-r p-4 flex justify-between leading-normal"
+      >
+        <span class="text-xl"> New Card </span>
+        <div><%= error_tag f, :device_id, class: "text-red-600" %></div>
+        <div>
+          <%= error_tag f, :type, class: "text-red-600" %>
+          <%= label f, :type, class: "" %>
+          <%= text_input f, :type, class: "bg-gray-100", disabled: true %>
+        </div>
+        <div>
+          <%= error_tag f, :uid, class: "text-red-600" %>
+          <%= label f, :uid, class: "" %>
+          <%= text_input f, :uid, class: "bg-gray-100", disabled: true %>
+        </div>
+        <%= submit "Save", class: "rounded text-gray-800 rounded bg-green-500 shadow-xl p-2" %>
+    </div>
+  <% end %>
+
+  <%= for nfc <- @nfc do %>
+    <div class="max-w-sm w-full lg:max-w-full py-1">
+      <div class="border-r border-b border-l border-gray-400 lg:border-l-0 lg:border-t lg:border-gray-400 bg-white rounded-b lg:rounded-b-none lg:rounded-r p-4 flex flex-col justify-between leading-normal">
+        <div class="flex items-center">
+          <div class="text-sm">
+            <p class="text-gray-900 leading-none"> **<%= nfc.uid %>** </p>
+          </div>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>
