@@ -79,6 +79,7 @@ defmodule ChromoidDiscord.Guild.DeviceStatusChannel do
       for {id, meta} <- leaves do
         device = Repo.get!(Chromoid.Devices.Device, id)
         @endpoint.unsubscribe("devices:#{id}")
+        @endpoint.subscribe("devices:#{id}:nfc")
 
         if joins[id] do
           # update, not leave
