@@ -11,9 +11,11 @@
 # and so on) as they will fail if something goes wrong.
 
 alias Chromoid.Repo
+alias Chromoid.Devices.Device
+alias Chromoid.Devices.NFC
 
 device =
-  %Chromoid.Devices.Device{
+  %Device{
     serial: "00000001",
     avatar_url: "https://api.adorable.io/avatars/285/00000001.png"
   }
@@ -31,6 +33,8 @@ IO.warn(
   """,
   []
 )
+
+%NFC{device_id: device.id} |> NFC.changeset(%{type: "iso14443a", uid: "FEEDFF"}) |> Repo.insert!()
 
 %ChromoidDiscord.Guild.Config{
   guild_id: 755_804_994_053_341_194,
