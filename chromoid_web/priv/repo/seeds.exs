@@ -12,7 +12,8 @@
 
 alias Chromoid.Repo
 alias Chromoid.Devices.Device
-alias Chromoid.Devices.NFC.ISO14443a
+alias Chromoid.Devices.NFC
+alias Chromoid.Devices.{NFC.ISO14443a, NFC.WebHook}
 
 device =
   %Device{
@@ -34,14 +35,17 @@ IO.warn(
   []
 )
 
-%ISO14443a{device_id: device.id}
-|> ISO14443a.changeset(%{
-  abtAtq: Base.encode16(<<0, 4>>),
-  abtAts: "",
-  abtUid: Base.encode16(<<9, 83, 42, 178>>),
-  btSak: 8
-})
-|> Repo.insert!()
+nfc =
+  %ISO14443a{device_id: device.id}
+  |> ISO14443a.changeset(%{
+    abtAtq: Base.encode16(<<0, 4>>),
+    abtAts: "",
+    abtUid: Base.encode16(<<9, 83, 42, 178>>),
+    btSak: 8
+  })
+  |> Repo.insert!()
+
+{:ok, %WebHook{}} = NFC.new_webhook(nfc, %{url: "https://httpbin.org/post"})
 
 %ChromoidDiscord.Guild.Config{
   guild_id: 755_804_994_053_341_194,

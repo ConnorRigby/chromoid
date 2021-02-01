@@ -30,9 +30,9 @@ defmodule Chromoid.Application do
       # Start the Runner checkup process
       Chromoid.Schedule.Runner,
       # Start the Endpoint (http/https)
-      ChromoidWeb.Endpoint
-      # Start a worker by calling: Chromoid.Worker.start_link(arg)
-      # {Chromoid.Worker, arg}
+      ChromoidWeb.Endpoint,
+      # Start the NFC/RFID WebHook processor
+      Chromoid.Devices.NFC.WebHookProcessor
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
