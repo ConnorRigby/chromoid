@@ -1,4 +1,3 @@
--proto_dist inet_tls -ssl_dist_optfile <%= System.get_env("DIST_OPTFILE") || Mix.raise("DIST_OPTFILE is required") %>
 +C multi_time_warp
 -kernel shell_history enabled inet_dist_listen_min 4229 inet_dist_listen_max 4229
 -elixir ansi_enabled true

@@ -7,7 +7,8 @@ defmodule ChromoidWeb.DeviceNFCLive do
 
   alias Chromoid.Devices.{
     Device,
-    NFC
+    NFC,
+    NFC.ISO14443a
   }
 
   alias Phoenix.Socket.Broadcast
@@ -31,7 +32,7 @@ defmodule ChromoidWeb.DeviceNFCLive do
   @impl true
   def handle_event("register", _params, socket) do
     timer = Process.send_after(self(), :register_cancel, @registration_timeout_ms)
-    changeset = NFC.changeset(%NFC{device_id: socket.assigns.device.id}, %{})
+    changeset = ISO14443a.changeset(%ISO14443a{device_id: socket.assigns.device.id}, %{})
 
     {:noreply,
      socket
@@ -51,7 +52,7 @@ defmodule ChromoidWeb.DeviceNFCLive do
   end
 
   def handle_event("validate", attrs, socket) do
-    changeset = NFC.changeset(%NFC{device_id: socket.assigns.device.id, type: "iso14443a"}, attrs)
+    changeset = ISO14443a.changeset(%ISO14443a{device_id: socket.assigns.device.id}, attrs)
 
     {:noreply,
      socket
@@ -59,8 +60,8 @@ defmodule ChromoidWeb.DeviceNFCLive do
   end
 
   def handle_event("save", _attrs, socket) do
-    # changeset = NFC.changeset(%NFC{device_id: socket.assigns.device.id, type: "iso14443a"}, attrs)
-    new_changeset = NFC.changeset(%NFC{device_id: socket.assigns.device.id}, %{})
+    # changeset = ISO14443a.changeset(%ISO14443a{device_id: socket.assigns.device.id}, attrs)
+    new_changeset = ISO14443a.changeset(%ISO14443a{device_id: socket.assigns.device.id}, %{})
 
     case Repo.insert(socket.assigns.changeset) do
       {:ok, _nfc} ->
@@ -101,7 +102,7 @@ defmodule ChromoidWeb.DeviceNFCLive do
   end
 
   def handle_info(%Broadcast{event: "iso14443a", payload: attrs}, socket) do
-    changeset = NFC.changeset(%NFC{device_id: socket.assigns.device.id, type: "iso14443a"}, attrs)
+    changeset = ISO14443a.changeset(%ISO14443a{device_id: socket.assigns.device.id}, attrs)
 
     {:noreply,
      socket
@@ -110,7 +111,7 @@ defmodule ChromoidWeb.DeviceNFCLive do
 
   def load_nfc(socket) do
     device_id = socket.assigns.device.id
-    nfc = Repo.all(from nfc in NFC, where: nfc.device_id == ^device_id)
+    nfc = Repo.all(from nfc in ISO14443a, where: nfc.device_id == ^device_id)
     assign(socket, :nfc, nfc)
   end
 end

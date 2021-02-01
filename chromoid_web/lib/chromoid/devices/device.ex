@@ -7,7 +7,7 @@ defmodule Chromoid.Devices.Device do
     field :avatar_url, :string
     has_one :device_token, Chromoid.Devices.DeviceToken
     belongs_to :camera_differ, Chromoid.Devices.Device
-    has_many :nfc, Chromoid.Devices.NFC
+    has_many :nfc_iso14443a, Chromoid.Devices.NFC.ISO14443a
     # has_many :schedules, Chromoid.Devices.Schedule
 
     many_to_many :guild_devices, Chromoid.Devices.GuildDevice,

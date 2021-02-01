@@ -33,7 +33,6 @@ defmodule ChromoidWeb.NFCChannel do
   def handle_in("iso14443a", attrs, socket) do
     Logger.info("iso14443a scan: #{inspect(attrs)}")
     socket.endpoint.broadcast("devices:#{socket.assigns.device.id}:nfc", "iso14443a", attrs)
-    # {:reply, :ok, socket}
     {:noreply, socket}
   end
 end

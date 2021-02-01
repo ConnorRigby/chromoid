@@ -12,7 +12,7 @@
 
 alias Chromoid.Repo
 alias Chromoid.Devices.Device
-alias Chromoid.Devices.NFC
+alias Chromoid.Devices.NFC.ISO14443a
 
 device =
   %Device{
@@ -34,7 +34,14 @@ IO.warn(
   []
 )
 
-%NFC{device_id: device.id} |> NFC.changeset(%{type: "iso14443a", uid: "FEEDFF"}) |> Repo.insert!()
+%ISO14443a{device_id: device.id}
+|> ISO14443a.changeset(%{
+  abtAtq: Base.encode16(<<0, 4>>),
+  abtAts: "",
+  abtUid: Base.encode16(<<9, 83, 42, 178>>),
+  btSak: 8
+})
+|> Repo.insert!()
 
 %ChromoidDiscord.Guild.Config{
   guild_id: 755_804_994_053_341_194,

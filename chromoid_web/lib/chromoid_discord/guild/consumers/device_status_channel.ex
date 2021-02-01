@@ -64,7 +64,6 @@ defmodule ChromoidDiscord.Guild.DeviceStatusChannel do
     join_events =
       for {id, meta} <- joins do
         @endpoint.subscribe("devices:#{id}")
-        @endpoint.subscribe("devices:#{id}:nfc")
         device = Repo.get!(Chromoid.Devices.Device, id)
 
         if leaves[id] do
@@ -79,7 +78,6 @@ defmodule ChromoidDiscord.Guild.DeviceStatusChannel do
       for {id, meta} <- leaves do
         device = Repo.get!(Chromoid.Devices.Device, id)
         @endpoint.unsubscribe("devices:#{id}")
-        @endpoint.subscribe("devices:#{id}:nfc")
 
         if joins[id] do
           # update, not leave
@@ -134,11 +132,11 @@ defmodule ChromoidDiscord.Guild.DeviceStatusChannel do
     end
   end
 
-  def handle_info(%Broadcast{event: "iso14443a", payload: %{"abtUid" => uid}}, state) do
-    channel_id = state.config.device_status_channel_id
-    actions = if channel_id, do: [nfc_scan_action(channel_id, uid)], else: []
-    {:noreply, actions, state}
-  end
+  # def handle_info(%Broadcast{event: "iso14443a", payload: %{"abtUid" => uid}}, state) do
+  #   channel_id = state.config.device_status_channel_id
+  #   actions = if channel_id, do: [nfc_scan_action(channel_id, uid)], else: []
+  #   {:noreply, actions, state}
+  # end
 
   def handle_info(%Broadcast{} = unknown, state) do
     Logger.error("Unknown event: #{inspect(unknown)}")
