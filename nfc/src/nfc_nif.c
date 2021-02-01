@@ -143,6 +143,7 @@ void send_iso14443a(ErlNifEnv *env, ErlNifPid* pid, nfc_iso14443a_info* info)
   ERL_NIF_TERM abtAts;
   ERL_NIF_TERM btSak;
   ERL_NIF_TERM type;
+  ERL_NIF_TERM module;
   ERL_NIF_TERM payload;
   ERL_NIF_TERM msg;
 
@@ -182,8 +183,10 @@ void send_iso14443a(ErlNifEnv *env, ErlNifPid* pid, nfc_iso14443a_info* info)
   abtAts = enif_make_binary(env, &abtAts_bin);
   // abtAts
 
+  module = enif_make_atom(env, "Elixir.NFC.ISO14443a");
   type = enif_make_atom(env, "iso14443a");
   payload = enif_make_new_map(env);
+  map_put(env, &payload, "__struct__", module);
   map_put(env, &payload, "abtAtq", abtAtq);
   map_put(env, &payload, "abtUid", abtUid);
   map_put(env, &payload, "abtAts", abtAts);

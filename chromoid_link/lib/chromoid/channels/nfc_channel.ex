@@ -60,11 +60,27 @@ defmodule Chromoid.NFCChannel do
     {:noreply, state}
   end
 
-  def handle_info({:iso14443a, %{abtUid: abtUid} = payload}, state) do
+  def handle_info(
+        {:iso14443a,
+         %NFC.ISO14443a{
+           abtAtq: abtAtq,
+           abtUid: abtUid,
+           abtAts: abtAts,
+           btSak: btSak
+         } = payload},
+        state
+      ) do
     Logger.info("NFC scanned: #{inspect(payload)}")
 
+    safe_payload = %{
+      abtAtq: Base.encode16(abtAtq),
+      abtUid: Base.encode16(abtUid),
+      abtAts: Base.encode16(abtAts),
+      btSak: btSak
+    }
+
     if(state.channel) do
-      _ = Channel.push_async(state.channel, "iso14443a", %{abtUid: Base.encode16(abtUid)})
+      _ = Channel.push_async(state.channel, "iso14443a", safe_payload)
     end
 
     {:noreply, state}
