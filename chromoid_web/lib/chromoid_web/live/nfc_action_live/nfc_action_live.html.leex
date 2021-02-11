@@ -8,18 +8,30 @@
         <p> <%= label f, :module, class: "font-bold text-xl" %> </p>
         <p> <%= error_tag f, :module, class: "text-red-600" %></p>
         <%= select f, :module, @implementations %>
-        <div>
-          <%= for {name, type} <- @fields do %>
-            <p> <%= label f, name, class: "font-bold text-xl" %> </p>
-            <%= error_tag f, name, class: "text-red-600" %>
-            <%= case type do %>
-              <% :string -> %>
-                <p> <%= text_input f, name, class: "bg-gray-100 w-full pl-2" %> </p>
-              <% :integer -> %>
-                <p> <%= number_input f, name, class: "bg-gray-100 w-full pl-2" %> </p>
-            <% end %>
+
+        <div class="flex bg-blue-300 pt-4 pb-4">
+          <p class="text-sm p-2">
+            <%= @moduledoc %>
+          </p>
+        </div>
+
+        <p> <%= label f, :args, "Arguments", class: "font-bold text-xl" %> </p>
+        <p> <%= error_tag f, :args, class: "text-red-600" %> </p>
+        <div class="flex flex-wrap">
+          <%= for {name, type, opts} <- @fields do %>
+            <div class="m-4">
+              <p> <%= label f, name, class: "font-bold text-xl" %> </p>
+              <%= error_tag f, name, class: "text-red-600" %>
+              <%= case type do %>
+                <% :string -> %>
+                  <p> <%= text_input f, name, placeholder: opts[:placeholder], class: "bg-gray-100 w-full pl-2" %> </p>
+                <% :integer -> %>
+                  <p> <%= number_input f, name, placeholder: opts[:placeholder], class: "bg-gray-100 w-full pl-2" %> </p>
+              <% end %>
+            </div>
           <% end %>
         </div>
+
         <%= submit "Save", class: "rounded text-gray-800 rounded bg-green-500 shadow-xl p-2" %>
     </div>
 
@@ -27,7 +39,7 @@
     <div class="max-w-sm w-full lg:max-w-full py-1">
       <div class="border-r border-b border-l border-gray-400 lg:border-l-0 lg:border-t lg:border-gray-400 bg-white rounded-b lg:rounded-b-none lg:rounded-r p-4 flex flex-col justify-between leading-normal">
         <%= action.module %>
-        <%= for {name, type} <- action.module.fields do %>
+        <%= for {name, type, _opts} <- action.module.fields do %>
           <%= case type do %>
             <% :string -> %>
               <span class="font-bold text-xl"> <%= name %> </span>

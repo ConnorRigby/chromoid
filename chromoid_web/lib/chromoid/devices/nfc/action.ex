@@ -22,7 +22,7 @@ defmodule Chromoid.Devices.NFC.Action do
   def validate_args(%Ecto.Changeset{} = changeset, attrs) do
     if module = get_field(changeset, :module) do
       Enum.reduce(module.fields, changeset, fn
-        {name, type}, changeset ->
+        {name, type, _}, changeset ->
           args = get_field(changeset, :args, %{})
 
           case Ecto.Type.cast(type, attrs[name] || attrs["#{name}"]) do
@@ -48,7 +48,7 @@ defmodule Chromoid.Devices.NFC.Action do
 
   @callback perform(t()) :: :ok | {:error, String.t()}
 
-  @callback fields :: [{name :: atom, type :: atom()}]
+  @callback fields :: [{name :: atom, type :: atom(), Keyword.t()}]
 
   @doc """
   Dipatch function

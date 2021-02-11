@@ -22,7 +22,8 @@ defmodule ChromoidWeb.NFCActionLive do
      |> assign(:changeset, changeset)
      |> load_actions()
      |> load_implementations()
-     |> load_fields()}
+     |> load_fields()
+     |> load_docs()}
   end
 
   @impl true
@@ -32,7 +33,8 @@ defmodule ChromoidWeb.NFCActionLive do
     {:noreply,
      socket
      |> assign(:changeset, changeset)
-     |> load_fields()}
+     |> load_fields()
+     |> load_docs()}
   end
 
   def handle_event("save", %{"action" => attrs}, socket) do
@@ -43,14 +45,19 @@ defmodule ChromoidWeb.NFCActionLive do
         {:noreply,
          socket
          |> put_flash(:info, "Action saved")
+         |> assign(:changeset, new_changeset)
          |> load_actions()
-         |> assign(:changeset, new_changeset)}
+         |> load_fields()
+         |> load_docs()}
 
       {:error, changeset} ->
         {:noreply,
          socket
          |> put_flash(:error, "Failed to save Action see errors below")
-         |> assign(:changeset, changeset)}
+         |> assign(:changeset, changeset)
+         |> load_actions()
+         |> load_fields()
+         |> load_docs()}
     end
   end
 
@@ -59,8 +66,7 @@ defmodule ChromoidWeb.NFCActionLive do
       {:ok, deleted} ->
         {:noreply,
          socket
-         |> put_flash(:info, "Deleted #{inspect(deleted)} action")
-         |> load_actions()}
+         |> put_flash(:info, "Deleted #{inspect(deleted)} action")}
     end
   end
 
@@ -80,12 +86,25 @@ defmodule ChromoidWeb.NFCActionLive do
 
   def load_fields(socket) do
     module =
-      Ecto.Changeset.get_field(
-        socket.assigns.changeset,
-        :module,
-        Chromoid.Devices.NFC.LoggerAction
-      ) || Chromoid.Devices.NFC.LoggerAction
+      Ecto.Changeset.get_field(socket.assigns.changeset, :module) ||
+        hd(socket.assigns.implementations)
 
     assign(socket, :fields, module.fields)
+  end
+
+  def load_docs(socket) do
+    module =
+      Ecto.Changeset.get_field(
+        socket.assigns.changeset,
+        :module
+      ) || Chromoid.Devices.NFC.LoggerAction
+
+    case Code.fetch_docs(module) do
+      {:docs_v1, _, :elixir, _, %{"en" => module_doc}, _, _} ->
+        assign(socket, :moduledoc, module_doc)
+
+      _ ->
+        assign(socket, :moduledoc, "No documentation")
+    end
   end
 end
