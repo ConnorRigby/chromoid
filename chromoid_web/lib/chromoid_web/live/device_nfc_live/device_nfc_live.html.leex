@@ -78,7 +78,9 @@
               <div class="text-gray-900 pl-2"> <%= nfc.btSak %> </div>
             </div>
           </div>
-        <%= link "Webhooks", to: Routes.nfc_webhook_path(@socket, :show, @device.id, nfc.id), class: "px-4 bg-transparent p-3 rounded-lg text-indigo-500 hover:bg-gray-100 hover:text-indigo-400 mr-2" %>
+          <%= link "Webhooks", to: Routes.nfc_webhook_path(@socket, :show, @device.id, nfc.id), class: "px-4 bg-transparent p-3 rounded-lg text-indigo-500 hover:bg-gray-100 hover:text-indigo-400 mr-2" %>
+          <%= link "Actions", to: Routes.nfc_action_path(@socket, :show, @device.id, nfc.id), class: "px-4 bg-transparent p-3 rounded-lg text-indigo-500 hover:bg-gray-100 hover:text-indigo-400 mr-2" %>
+
         </div>
       </div>
     </div>

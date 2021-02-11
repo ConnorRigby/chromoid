@@ -32,7 +32,9 @@ defmodule Chromoid.Application do
       # Start the Endpoint (http/https)
       ChromoidWeb.Endpoint,
       # Start the NFC/RFID WebHook processor
-      Chromoid.Devices.NFC.WebHookProcessor
+      Chromoid.Devices.NFC.WebHookProcessor,
+      # Start the NFC/RFID Action processor
+      Chromoid.Devices.NFC.ActionProcessor
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html

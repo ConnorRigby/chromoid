@@ -1,12 +1,12 @@
 defmodule ChromoidWeb.NFCWebhookLive do
   use ChromoidWeb, :live_view
-  alias Phoenix.Socket.Broadcast
+  # alias Phoenix.Socket.Broadcast
 
   alias Chromoid.Devices.{
     Device,
     NFC,
-    NFC.ISO14443a,
-    NFC.WebHook
+    NFC.ISO14443a
+    # NFC.WebHook
   }
 
   @impl true

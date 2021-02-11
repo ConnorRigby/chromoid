@@ -1,0 +1,46 @@
+<div class="mx-4 my-1 w-max">
+    <%= f = form_for @changeset, "#", phx_change: :validate, phx_submit: :save, class: "max-w-sm w-full lg:max-w-full py-1" %>
+      <div
+        class="border-r border-b border-l border-gray-400 lg:border-l-0 lg:border-t lg:border-gray-400 bg-white rounded-b lg:rounded-b-none lg:rounded-r p-4 leading-normal"
+      >
+        <span class="text-xl font-bold w-full pb-2"> New Action </span>
+        <p> <%= error_tag f, :nfc_iso14443a_id, class: "text-red-600" %> </p>
+        <p> <%= label f, :module, class: "font-bold text-xl" %> </p>
+        <p> <%= error_tag f, :module, class: "text-red-600" %></p>
+        <%= select f, :module, @implementations %>
+        <div>
+          <%= for {name, type} <- @fields do %>
+            <p> <%= label f, name, class: "font-bold text-xl" %> </p>
+            <%= error_tag f, name, class: "text-red-600" %>
+            <%= case type do %>
+              <% :string -> %>
+                <p> <%= text_input f, name, class: "bg-gray-100 w-full pl-2" %> </p>
+              <% :integer -> %>
+                <p> <%= number_input f, name, class: "bg-gray-100 w-full pl-2" %> </p>
+            <% end %>
+          <% end %>
+        </div>
+        <%= submit "Save", class: "rounded text-gray-800 rounded bg-green-500 shadow-xl p-2" %>
+    </div>
+
+  <%= for action <- @actions do %>
+    <div class="max-w-sm w-full lg:max-w-full py-1">
+      <div class="border-r border-b border-l border-gray-400 lg:border-l-0 lg:border-t lg:border-gray-400 bg-white rounded-b lg:rounded-b-none lg:rounded-r p-4 flex flex-col justify-between leading-normal">
+        <%= action.module %>
+        <%= for {name, type} <- action.module.fields do %>
+          <%= case type do %>
+            <% :string -> %>
+              <span class="font-bold text-xl"> <%= name %> </span>
+              <p> <%= action.args["#{name}"] %> </p>
+            <% :integer -> %>
+              <span class="font-bold text-xl"> <%= name %> </span>
+              <p> <%= action.args["#{name}"] %> </p>
+          <% end %>
+        <% end %>
+        <div class="flex justify-left">
+          <button class="bg-red-800 rounded shadow-xl pr-2 pl-2 mr-2" type="button" phx-click="delete" phx-value-action_id="<%= action.id %>"> Delete </button>
+        </div>
+      </div>
+    </div>
+  <% end %>
+</div>

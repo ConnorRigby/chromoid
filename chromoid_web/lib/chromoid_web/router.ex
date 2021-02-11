@@ -36,7 +36,8 @@ defmodule ChromoidWeb.Router do
     live "/devices", DeviceLive, :index
     live "/devices/:id", DeviceLive, :show
     live "/devices/:id/nfc", DeviceNFCLive, :show
-    live "/devices/:device_id/nfc/:nfc_id", NFCWebhookLive, :show
+    live "/devices/:device_id/nfc/:nfc_id/webhooks", NFCWebhookLive, :show
+    live "/devices/:device_id/nfc/:nfc_id/actions", NFCActionLive, :show
     live "/recipes", RecipeLive, :index
     get "/devices/:id/stream", DeviceController, :stream
     get "/devices/:id/live.mjpg", DeviceController, :live

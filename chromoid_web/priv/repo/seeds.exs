@@ -13,7 +13,7 @@
 alias Chromoid.Repo
 alias Chromoid.Devices.Device
 alias Chromoid.Devices.NFC
-alias Chromoid.Devices.{NFC.ISO14443a, NFC.WebHook}
+alias Chromoid.Devices.{NFC.ISO14443a, NFC.WebHook, NFC.Action}
 
 device =
   %Device{
@@ -46,6 +46,7 @@ nfc =
   |> Repo.insert!()
 
 {:ok, %WebHook{}} = NFC.new_webhook(nfc, %{url: "https://httpbin.org/post"})
+{:ok, %Action{}} = NFC.new_action(nfc, %{module: Chromoid.Devices.NFC.LoggerAction, args: %{}})
 
 %ChromoidDiscord.Guild.Config{
   guild_id: 755_804_994_053_341_194,

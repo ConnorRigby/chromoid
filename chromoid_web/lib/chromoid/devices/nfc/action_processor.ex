@@ -1,12 +1,12 @@
-defmodule Chromoid.Devices.NFC.WebHookProcessor do
+defmodule Chromoid.Devices.NFC.ActionProcessor do
   @moduledoc """
-  Handles sending HTTP posts when RFID devices are scanned
+  Handles processing actions for NFC reads
   """
 
   require Logger
   use GenServer
   alias Phoenix.Socket.Broadcast
-  alias Chromoid.Devices.{NFC, NFC.ISO14443a, NFC.WebHook}
+  alias Chromoid.Devices.{NFC, NFC.ISO14443a, NFC.Action}
 
   @endpoint ChromoidWeb.Endpoint
   @nfc_topic "nfc"
@@ -22,7 +22,6 @@ defmodule Chromoid.Devices.NFC.WebHookProcessor do
 
   @impl true
   def init(_args) do
-    :ok = :hackney_pool.start_pool(:nfc_webhooks, timeout: 15000, max_connections: 100)
     :ok = @endpoint.subscribe(@nfc_topic)
     {:ok, %{}}
   end
@@ -33,11 +32,11 @@ defmodule Chromoid.Devices.NFC.WebHookProcessor do
         state
       ) do
     %ISO14443a{} = nfc = NFC.get_iso14443a(iso14443a_id)
-    Logger.info("Processing NFC Webhook: #{inspect(nfc)}")
+    Logger.info("Processing NFC action: #{inspect(nfc)}")
 
-    for webhook <- NFC.load_webhooks(nfc) do
-      response = WebHook.execute(webhook, nfc)
-      Logger.info("Executed Webhook: #{inspect(webhook)} response: #{inspect(response)}")
+    for action <- NFC.load_actions(nfc) do
+      result = Action.perform(action)
+      Logger.info("Executed action: #{inspect(action)} result: #{inspect(result)}")
     end
 
     {:noreply, state}

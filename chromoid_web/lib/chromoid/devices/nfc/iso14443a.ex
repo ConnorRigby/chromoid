@@ -9,6 +9,7 @@ defmodule Chromoid.Devices.NFC.ISO14443a do
     field :abtAts, :string
     field :btSak, :integer, null: false
     has_many :webhooks, Chromoid.Devices.NFC.WebHook, foreign_key: :nfc_iso14443a_id
+    has_many :actions, Chromoid.Devices.NFC.Action, foreign_key: :nfc_iso14443a_id
     timestamps()
   end
 

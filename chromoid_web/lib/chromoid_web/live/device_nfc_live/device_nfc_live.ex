@@ -7,7 +7,7 @@ defmodule ChromoidWeb.DeviceNFCLive do
 
   alias Chromoid.Devices.{
     Device,
-    NFC,
+    # NFC,
     NFC.ISO14443a
   }
 
