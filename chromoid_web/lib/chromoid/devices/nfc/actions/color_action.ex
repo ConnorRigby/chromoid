@@ -1,4 +1,11 @@
 defmodule Chromoid.Devices.NFC.ColorAction do
+  @moduledoc """
+  Changes the color of one a ble_link by it's `address`
+
+  * `address` format can be like A4:C1:38:F0:BA:29 or A4C138F0BA29
+  * `color` format can be one of the html common color names or #rrggbb
+  """
+
   require Logger
   alias Chromoid.Devices.NFC.Action
   # import Chromoid.Devices.Ble.Utils

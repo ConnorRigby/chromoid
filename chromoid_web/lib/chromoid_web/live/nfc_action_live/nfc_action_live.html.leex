@@ -10,9 +10,7 @@
         <%= select f, :module, @implementations %>
 
         <div class="flex bg-blue-300 pt-4 pb-4">
-          <p class="text-sm p-2">
-            <%= @moduledoc %>
-          </p>
+          <%= content_tag :p, @moduledoc, class: "text-sm p-2" %>
         </div>
 
         <p> <%= label f, :args, "Arguments", class: "font-bold text-xl" %> </p>

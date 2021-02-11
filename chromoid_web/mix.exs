@@ -70,6 +70,7 @@ defmodule Chromoid.MixProject do
       {:extty, "~> 0.1"},
       {:hackney, "~> 1.16"},
       {:crontab, "~> 1.1"},
+      {:earmark, "~> 1.4"},
       {:nerves_reactor, path: "/home/connor/workspace/reactor", only: :reactor},
       @nostrum
     ]
@@ -95,6 +96,7 @@ defmodule Chromoid.MixProject do
       include_executables_for: [:unix],
       applications: [runtime_tools: :permanent],
       steps: [:assemble],
+      strip_beams: [keep: ["Docs"]],
       cookie: "aHR0cHM6Ly9kaXNjb3JkLmdnL25tOENFVDJNc1A="
     ]
   end

@@ -97,11 +97,12 @@ defmodule ChromoidWeb.NFCActionLive do
       Ecto.Changeset.get_field(
         socket.assigns.changeset,
         :module
-      ) || Chromoid.Devices.NFC.LoggerAction
+      ) ||
+        hd(socket.assigns.implementations)
 
     case Code.fetch_docs(module) do
-      {:docs_v1, _, :elixir, _, %{"en" => module_doc}, _, _} ->
-        assign(socket, :moduledoc, module_doc)
+      {:docs_v1, _, :elixir, _, %{"en" => moduledoc}, _, _} ->
+        assign(socket, :moduledoc, Earmark.as_html!(moduledoc))
 
       _ ->
         assign(socket, :moduledoc, "No documentation")
