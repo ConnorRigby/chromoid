@@ -1,6 +1,6 @@
 defmodule Chromoid.Lua.Discord.User do
   use Chromoid.Lua.Class, :new
-  alias Chromoid.Lua.Discord.User.Flags
+  # alias Chromoid.Lua.Discord.User.Flags
 
   alloc properties: [
           avatar: :string,

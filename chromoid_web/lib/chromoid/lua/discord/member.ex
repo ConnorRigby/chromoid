@@ -27,9 +27,7 @@ defmodule Chromoid.Lua.Discord.Member do
 end
 
 defimpl Chromoid.Lua.Object, for: Nostrum.Struct.Guild.Member do
-  def to_lua(member, properties) do
-    IO.inspect(properties, label: "member props")
-
+  def to_lua(_member, properties) do
     [
       {"user", properties[:user]},
       {"addRole", properties[:addRole]}
