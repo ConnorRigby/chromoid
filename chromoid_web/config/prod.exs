@@ -53,7 +53,7 @@ config :chromoid, Chromoid.Repo,
 config :chromoid, Chromoid.Lua.ScriptStorage, root_dir: "/scripts"
 
 config :chromoid, ChromoidWeb.Endpoint,
-  url: [host: "chromo.id", port: 443],
+  url: [host: "chromo.id", port: 80],
   cache_static_manifest: "priv/static/cache_manifest.json",
   server: true,
   secret_key_base: secret_key_base,
