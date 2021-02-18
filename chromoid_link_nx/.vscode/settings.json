@@ -1,0 +1,7 @@
+{
+  "files.associations": {
+    "*.lua": "lua",
+    "json.h": "c",
+    "inet.h": "c"
+  }
+}
