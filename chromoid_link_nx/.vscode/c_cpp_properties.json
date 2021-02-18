@@ -7,7 +7,8 @@
                 "/opt/devkitpro/libnx/include/",
                 "/opt/devkitpro/portlibs/switch/include/",
                 "/opt/devkitpro/portlibs/switch/include/**/*",
-                "/opt/devkitpro/portlibs/switch/include"
+                "/opt/devkitpro/portlibs/switch/include",
+                "${workspaceFolder}/nanovg/include"
             ],
             "defines": [],
             "compilerPath": "/opt/devkitpro/devkitA64/bin/aarch64-none-elf-gcc",

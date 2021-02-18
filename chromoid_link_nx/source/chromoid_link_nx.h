@@ -2,7 +2,6 @@
 #define CHROMOID_LINK_NX_H
 
 #include <libwebsockets.h>
-struct my_conn;
 
 void websocket_interrupt();
 
