@@ -71,6 +71,7 @@ defmodule Chromoid.MixProject do
       {:hackney, "~> 1.16"},
       {:crontab, "~> 1.1"},
       {:earmark, "~> 1.4"},
+      {:scenic, "~> 0.10"},
       {:nerves_reactor, path: "/home/connor/workspace/reactor", only: :reactor},
       @nostrum
     ]

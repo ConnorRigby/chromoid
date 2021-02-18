@@ -16,7 +16,16 @@ config :chromoid, ChromoidWeb.Endpoint,
   secret_key_base: "H+QAcy4Ig4TMY9Lj7YdfxKEQTJMVz3cpT3hPg8qjpLNtAJBw56Ft8qTLAk6tFagQ",
   render_errors: [view: ChromoidWeb.ErrorView, accepts: ~w(html json), layout: false],
   pubsub_server: Chromoid.PubSub,
-  live_view: [signing_salt: "yuoSPch1"]
+  live_view: [signing_salt: "yuoSPch1"],
+  http: [
+    dispatch: [
+      {:_,
+       [
+         {"/console_socket/websocket", ChromoidWeb.ConsoleSocket, []},
+         {:_, Phoenix.Endpoint.Cowboy2Handler, {ChromoidWeb.Endpoint, []}}
+       ]}
+    ]
+  ]
 
 # Configures Elixir's Logger
 config :logger, :console,

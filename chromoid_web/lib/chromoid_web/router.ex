@@ -18,6 +18,7 @@ defmodule ChromoidWeb.Router do
   scope "/", ChromoidWeb do
     pipe_through :browser
     get "/", PageController, :index
+    live "/test", TestLive, :index
     get "/discord/oauth", DiscordOauthController, :oauth
   end
 

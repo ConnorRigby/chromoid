@@ -6,6 +6,19 @@ defmodule Chromoid.Application do
   use Application
 
   def start(_type, _args) do
+    main_viewport_config = %{
+      name: :main_viewport,
+      size: {1280, 720},
+      default_scene: {DefaultScene, nil},
+      drivers: [
+        %{
+          module: Scenic.Driver.Nerves.NX,
+          name: :nx,
+          opts: [resizeable: false, title: "asdf"]
+        }
+      ]
+    }
+
     children = [
       # Start the Ecto repository
       Chromoid.Repo,
@@ -26,15 +39,16 @@ defmodule Chromoid.Application do
       Chromoid.Schedule.Presence,
       Chromoid.Schedule.Registry,
       # Start the schedule handler supervisor
-      Chromoid.ScheduleSupervisor,
+      # Chromoid.ScheduleSupervisor,
       # Start the Runner checkup process
-      Chromoid.Schedule.Runner,
+      # Chromoid.Schedule.Runner,
       # Start the Endpoint (http/https)
       ChromoidWeb.Endpoint,
       # Start the NFC/RFID WebHook processor
       Chromoid.Devices.NFC.WebHookProcessor,
       # Start the NFC/RFID Action processor
-      Chromoid.Devices.NFC.ActionProcessor
+      Chromoid.Devices.NFC.ActionProcessor,
+      {Scenic, [viewports: [main_viewport_config]]}
     ]
 
     # See https://hexdocs.pm/elixir/Supervisor.html
