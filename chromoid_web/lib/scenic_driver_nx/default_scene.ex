@@ -40,7 +40,7 @@ defmodule DefaultScene do
         text_spec(@note, translate: {20, 120}),
         rect_spec({width, height})
       ])
-      |> circle(150, fill: :green, translate: {300, 350})
+      # |> circle(150, fill: :green, translate: {300, 350})
 
     {:ok, graph, push: graph}
   end
@@ -55,7 +55,9 @@ defmodule DefaultScene do
 
     graph =
       graph
-      |> circle(150, fill: :blue, translate: {500, 350})
+      |> circle(150, fill: :blue, translate: {500, 600})
+      |> circle(150, fill: :blue, translate: {750, 600})
+      |> ellipse({150, 400}, fill: :blue, translate: {650, 200})
 
     {:noreply, graph, push: graph}
   end

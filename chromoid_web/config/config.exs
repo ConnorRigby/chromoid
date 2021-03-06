@@ -11,21 +11,21 @@ config :chromoid,
   ecto_repos: [Chromoid.Repo]
 
 # Configures the endpoint
+dispatch = [
+  _: [
+    {"/console_socket/websocket", ChromoidWeb.ConsoleSocket, []},
+    {:_, Phoenix.Endpoint.Cowboy2Handler, {SocksWeb.Endpoint, []}}
+  ]
+]
+
 config :chromoid, ChromoidWeb.Endpoint,
   url: [host: "localhost"],
   secret_key_base: "H+QAcy4Ig4TMY9Lj7YdfxKEQTJMVz3cpT3hPg8qjpLNtAJBw56Ft8qTLAk6tFagQ",
   render_errors: [view: ChromoidWeb.ErrorView, accepts: ~w(html json), layout: false],
   pubsub_server: Chromoid.PubSub,
   live_view: [signing_salt: "yuoSPch1"],
-  http: [
-    dispatch: [
-      {:_,
-       [
-         {"/console_socket/websocket", ChromoidWeb.ConsoleSocket, []},
-         {:_, Phoenix.Endpoint.Cowboy2Handler, {ChromoidWeb.Endpoint, []}}
-       ]}
-    ]
-  ]
+  http: [dispatch: dispatch]
+  # https: [dispatch: dispatch]
 
 # Configures Elixir's Logger
 config :logger, :console,

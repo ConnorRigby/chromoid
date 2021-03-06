@@ -1,17 +1,23 @@
-FROM erlang:23.1.1-alpine as build
+FROM alpine:latest AS app_base
+WORKDIR /app
+RUN apk add --no-cache openssl ncurses-libs bash chromium-chromedriver chromium python3 py3-pip
+RUN pip3 install -U selenium
+RUN pip3 install -U erlang-py
+
+FROM erlang:23.2.7-alpine as build
 ENV ELIXIR_VERSION="v1.11.1-otp-23"
 
 # # install elixir
 RUN wget https://repo.hex.pm/builds/elixir/$ELIXIR_VERSION.zip && \
   mkdir -p /usr/local/elixir && \
-  unzip -d /usr/local/elixir $ELIXIR_VERSION.zip
+  unzip -q -d /usr/local/elixir $ELIXIR_VERSION.zip
 ENV PATH=/usr/local/elixir/bin:$PATH
 
 RUN apk add bash npm make alpine-sdk
 
 RUN mix do local.hex --force, local.rebar --force
 
-FROM build AS compile
+FROM build AS deps
 
 WORKDIR /app
 
@@ -22,7 +28,6 @@ ARG DISCORD_CLIENT_ID
 ARG DISCORD_CLIENT_SECRET
 ARG PORT=4000
 ARG COMMIT
-ARG DIST_PASSWORD
 
 ENV MIX_ENV=prod
 ENV SECRET_KEY_BASE=${SECRET_KEY_BASE}
@@ -31,41 +36,37 @@ ENV DISCORD_TOKEN=${DISCORD_TOKEN}
 ENV DISCORD_CLIENT_ID=${DISCORD_CLIENT_ID}
 ENV DISCORD_CLIENT_SECRET=${DISCORD_CLIENT_SECRET}
 ENV PORT=${PORT}
-ENV CHROMOID_COMMIT=${COMMIT}
-ENV DIST_CERTFILE=/app/cert.pem
-ENV DIST_PASSWORD=${DIST_PASSWORD}
-ENV DIST_KEYFILE=/app/key.pem
-ENV DIST_OPTFILE=/app/ssl.conf
+ENV COMMIT=${COMMIT}
 
 COPY mix.exs mix.lock ./
-COPY config config
-
 RUN mix do deps.get, deps.compile
 
+FROM deps as assets
 # build assets
 COPY assets/package.json assets/package-lock.json ./assets/
 RUN npm --prefix ./assets install --progress=false --no-audit --loglevel=error
 
-COPY rel rel
-COPY priv priv
 COPY assets assets
-RUN npm run --prefix ./assets deploy; mix phx.digest
+RUN npm run --prefix ./assets deploy
+
+FROM deps as compile
 
 # compile and build release
 COPY lib lib
-RUN mix do compile, release
+COPY rel rel
+COPY priv priv
+RUN mix compile
 
-# prepare release image
-FROM alpine:latest AS app
+FROM compile as release
 
-WORKDIR /app
+COPY --from=assets /app/priv/static ./priv/static
+RUN mix phx.digest
+RUN mix release --overwrite
 
-RUN apk add --no-cache openssl ncurses-libs bash
-
-COPY --from=compile --chown=nobody:nobody /app/_build/prod/rel/chromoid ./
+FROM app_base as app
+COPY --from=release --chown=nobody:nobody /app/_build/prod/rel/chromoid ./
 RUN chown nobody:nobody /app
 
 USER nobody:nobody
 ENV HOME=/app
-
 ENTRYPOINT ["bin/chromoid", "start"]

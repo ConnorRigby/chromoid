@@ -9,7 +9,7 @@ defmodule Chromoid.Application do
     main_viewport_config = %{
       name: :main_viewport,
       size: {1280, 720},
-      default_scene: {DefaultScene, nil},
+      default_scene: {SpeediViewUI.Scene.Dash, nil},
       drivers: [
         %{
           module: Scenic.Driver.Nerves.NX,
